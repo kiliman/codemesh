@@ -8,6 +8,7 @@
     "dev:client": "pnpm --filter client dev",
     "dev:example-server": "pnpm --filter example-server dev",
     "dev:codemode-server": "pnpm --filter codemode-server dev",
+    "dev:codemode-server:watch": "pnpm --filter codemode-server dev:watch",
     "start:client": "pnpm --filter client start",
     "start:example-server": "pnpm --filter example-server start",
     "start:codemode-server": "pnpm --filter codemode-server start",

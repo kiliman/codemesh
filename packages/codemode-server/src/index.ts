@@ -5,7 +5,8 @@ import { z } from "zod";
 import { randomUUID } from "node:crypto";
 import express, { type Request, type Response } from "express";
 import cors from "cors";
-import { ConfigLoader } from "./src/config.js";
+import { ConfigLoader } from "./config.js";
+import { ToolDiscoveryService } from "./toolDiscovery.js";
 
 // CodeMode MCP Server - executes TypeScript code against discovered MCP tools
 const getCodeModeServer = () => {
@@ -26,7 +27,10 @@ const getCodeModeServer = () => {
       description: "Execute TypeScript code that can call discovered MCP tools",
       inputSchema: {
         code: z.string().describe("TypeScript code to execute"),
-        discoveryEndpoint: z.string().optional().describe("MCP server endpoint to discover tools from"),
+        discoveryEndpoint: z
+          .string()
+          .optional()
+          .describe("MCP server endpoint to discover tools from"),
       },
     },
     async ({ code, discoveryEndpoint }): Promise<CallToolResult> => {
@@ -37,7 +41,9 @@ const getCodeModeServer = () => {
           content: [
             {
               type: "text",
-              text: `CodeMode Server received code:\n\n${code}\n\nDiscovery endpoint: ${discoveryEndpoint || 'none specified'}\n\n[Implementation pending - Phase 1 complete]`,
+              text: `CodeMode Server received code:\n\n${code}\n\nDiscovery endpoint: ${
+                discoveryEndpoint || "none specified"
+              }\n\n[Implementation pending - Phase 1 complete]`,
             },
           ],
         };
@@ -59,19 +65,33 @@ const getCodeModeServer = () => {
     "discover-tools",
     {
       title: "Discover MCP Tools",
-      description: "Discover available tools from configured MCP servers and generate TypeScript definitions",
+      description:
+        "Discover available tools from configured MCP servers and generate TypeScript definitions",
       inputSchema: {
-        configPath: z.string().optional().describe("Path to MCP configuration file (defaults to ./mcp-config.json)"),
-        serverId: z.string().optional().describe("Specific server ID to discover (discovers all if not specified)"),
+        configPath: z
+          .string()
+          .optional()
+          .describe(
+            "Path to MCP configuration file (defaults to ./mcp-config.json)"
+          ),
+        serverId: z
+          .string()
+          .optional()
+          .describe(
+            "Specific server ID to discover (discovers all if not specified)"
+          ),
       },
     },
-    async ({ configPath = "./mcp-config.json", serverId }): Promise<CallToolResult> => {
+    async ({
+      configPath = "./mcp-config.json",
+      serverId,
+    }): Promise<CallToolResult> => {
       try {
         const configLoader = ConfigLoader.getInstance();
         const config = configLoader.loadConfig(configPath);
 
         const serversToDiscover = serverId
-          ? config.servers.filter(s => s.id === serverId)
+          ? config.servers.filter((s) => s.id === serverId)
           : config.servers;
 
         if (serversToDiscover.length === 0) {
@@ -87,23 +107,16 @@ const getCodeModeServer = () => {
           };
         }
 
-        const results = [];
-        for (const server of serversToDiscover) {
-          results.push(`📡 Server: ${server.name} (${server.id})`);
-          results.push(`   Type: ${server.type}`);
-          if (server.type === "http" && server.url) {
-            results.push(`   URL: ${server.url}`);
-          } else if (server.type === "stdio" && server.command) {
-            results.push(`   Command: ${server.command.join(" ")}`);
-          }
-          results.push("");
-        }
+        // Use the ToolDiscoveryService to actually discover tools
+        const discoveryService = ToolDiscoveryService.getInstance();
+        const discoveryResults = await discoveryService.discoverAllTools(serversToDiscover);
+        const summary = discoveryService.generateDiscoverySummary(discoveryResults);
 
         return {
           content: [
             {
               type: "text",
-              text: `🔍 Discovered ${serversToDiscover.length} MCP server(s):\n\n${results.join("\n")}\n[Tool enumeration implementation pending - Phase 2]`,
+              text: summary,
             },
           ],
         };
@@ -128,6 +141,14 @@ const CODEMODE_PORT = process.env.CODEMODE_PORT
   : 3002;
 
 const app = express();
+
+// Debug middleware to log all requests
+app.use((req, res, next) => {
+  console.log(`🚦 Request: ${req.method} ${req.url}`);
+  console.log(`🏷️ Content-Type: ${req.headers['content-type']}`);
+  next();
+});
+
 app.use(express.json());
 app.use(cors({ origin: "*" }));
 
@@ -137,6 +158,11 @@ const transports: { [sessionId: string]: StreamableHTTPServerTransport } = {};
 // MCP endpoint handlers (same pattern as the example server)
 const mcpHandler = async (req: Request, res: Response) => {
   const sessionId = req.headers["mcp-session-id"] as string | undefined;
+
+  console.log(`🔍 MCP request: ${req.method} ${req.url}`);
+  console.log(`📋 Headers:`, req.headers);
+  console.log(`📦 Body:`, req.body);
+  console.log(`🆔 Session ID:`, sessionId);
 
   try {
     let transport: StreamableHTTPServerTransport;
@@ -193,7 +219,7 @@ app.get("/mcp", mcpHandler);
 app.delete("/mcp", mcpHandler);
 
 app.listen(CODEMODE_PORT, () => {
-  console.log(`🚀 CodeMode MCP Server listening on port ${CODEMODE_PORT}`);
+  console.log(`🚀 CodeMode MCP Server listening on port ${CODEMODE_PORT} [DEBUG ENABLED]`);
   console.log(`📡 Connect with: http://localhost:${CODEMODE_PORT}/mcp`);
 });
 
