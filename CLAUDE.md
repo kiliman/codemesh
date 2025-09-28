@@ -24,24 +24,32 @@ packages/
    - Can connect to MCP servers and call tools
    - Useful for testing during development
 
-3. **Basic Server Discovery** (`packages/codemode-server/src/index.ts`)
-   - `discover-tools` tool that reads MCP configuration
-   - Successfully loads and validates server configurations
+3. **Tool Discovery Service** (`packages/codemode-server/src/toolDiscovery.ts`)
+   - Connects to and enumerates tools from configured MCP servers
+   - Extracts tool schemas, descriptions, and metadata
+   - Proper connection management with error handling
+
+4. **TypeScript Type Generation** (`packages/codemode-server/src/typeGenerator.ts`)
+   - Converts JSON schemas to TypeScript interfaces using json-schema-to-typescript
+   - Generates type-safe function signatures for discovered tools
+   - Creates comprehensive tool metadata for runtime resolution
+
+5. **Tiered Discovery Workflow** (`packages/codemode-server/src/index.ts`)
+   - `discover-tools` - High-level tool overview (context-efficient)
+   - `get-tool-apis` - Selective TypeScript API loading for specific tools
+   - `generate-types` - File-based type generation for development/debugging
 
 ### 🚧 In Progress
-4. **Tool Schema Extraction** (`packages/codemode-server/src/toolDiscovery.ts`)
-   - Created ToolDiscoveryService to connect to MCP servers
-   - Extracts tool schemas and generates summaries
-   - Currently has module resolution issues with client SDK
+6. **Runtime API Wrapper**
+   - Create runtime that makes generated TypeScript functions callable
+   - Proxy function calls to actual MCP tools
+   - In-memory execution environment for agent code
 
 ### 📋 Pending
-5. **TypeScript Type Generation**
-   - Generate TypeScript definitions from discovered tool schemas
-   - Create runtime-accessible type information
-
-6. **Code Execution Runtime**
-   - Implement actual TypeScript code execution against MCP tools
-   - Create API wrapper that proxies calls to actual MCP servers
+7. **Enhanced Execute-Code Tool**
+   - Integrate runtime API wrapper with code execution
+   - Inject tool APIs into TypeScript execution context
+   - Complete end-to-end CodeMode functionality
 
 ## Key Files
 

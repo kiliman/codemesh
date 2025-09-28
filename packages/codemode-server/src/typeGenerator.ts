@@ -148,7 +148,7 @@ export class TypeGeneratorService {
   /**
    * Create a safe function name from tool name and server ID
    */
-  private createSafeFunctionName(toolName: string, serverId: string): string {
+  public createSafeFunctionName(toolName: string, serverId: string): string {
     // Convert to camelCase and make it unique
     const safeName = toolName.replace(/[^a-zA-Z0-9]/g, '_');
     const safeServerId = serverId.replace(/[^a-zA-Z0-9]/g, '_');

@@ -236,6 +236,135 @@ const getCodeModeServer = () => {
     }
   );
 
+  // Register a tool to get TypeScript APIs for specific tools (context-efficient)
+  server.registerTool(
+    "get-tool-apis",
+    {
+      title: "Get Tool APIs",
+      description: "Get TypeScript type definitions for specific tools (context-efficient)",
+      inputSchema: {
+        toolNames: z
+          .array(z.string())
+          .describe("Array of tool names to get TypeScript APIs for"),
+        configPath: z
+          .string()
+          .optional()
+          .describe(
+            "Path to MCP configuration file (defaults to ./mcp-config.json)"
+          ),
+        serverId: z
+          .string()
+          .optional()
+          .describe(
+            "Specific server ID to get tools from (searches all if not specified)"
+          ),
+      },
+    },
+    async ({
+      toolNames,
+      configPath = "./mcp-config.json",
+      serverId,
+    }): Promise<CallToolResult> => {
+      try {
+        const configLoader = ConfigLoader.getInstance();
+        const config = configLoader.loadConfig(configPath);
+
+        const serversToSearch = serverId
+          ? config.servers.filter((s) => s.id === serverId)
+          : config.servers;
+
+        if (serversToSearch.length === 0) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: serverId
+                  ? `❌ Server with ID '${serverId}' not found in configuration`
+                  : "❌ No servers configured",
+              },
+            ],
+          };
+        }
+
+        // Discover tools from the servers
+        const discoveryService = ToolDiscoveryService.getInstance();
+        const discoveryResults = await discoveryService.discoverAllTools(serversToSearch);
+
+        // Filter discovered tools to only the requested ones
+        const requestedTools: any[] = [];
+        for (const result of discoveryResults) {
+          if (result.success) {
+            for (const tool of result.tools) {
+              if (toolNames.includes(tool.name)) {
+                requestedTools.push(tool);
+              }
+            }
+          }
+        }
+
+        if (requestedTools.length === 0) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: `❌ None of the requested tools [${toolNames.join(', ')}] were found in the configured servers`,
+              },
+            ],
+          };
+        }
+
+        // Generate TypeScript types for only the requested tools
+        const typeGenerator = TypeGeneratorService.getInstance();
+
+        // Create a mock discovery result with only the requested tools
+        const filteredResults = [{
+          serverId: "filtered",
+          serverName: "Filtered Tools",
+          success: true,
+          tools: requestedTools,
+        }];
+
+        const generatedTypes = await typeGenerator.generateTypes(filteredResults);
+
+        // Return the TypeScript definitions as text
+        const response = [
+          `🔧 TypeScript APIs for requested tools: ${toolNames.join(', ')}`,
+          `📊 Found ${requestedTools.length} of ${toolNames.length} requested tools`,
+          "",
+          "TypeScript Type Definitions:",
+          "```typescript",
+          generatedTypes.combinedTypes,
+          "",
+          generatedTypes.toolsNamespace,
+          "```",
+          "",
+          "Tool Mapping:",
+          ...requestedTools.map(tool =>
+            `🔧 ${tool.name} → ${typeGenerator.createSafeFunctionName(tool.name, tool.serverId)}()`
+          ),
+        ];
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: response.join("\n"),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `❌ Error getting tool APIs: ${error}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
   return server;
 };
 
