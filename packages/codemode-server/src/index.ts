@@ -7,6 +7,7 @@ import express, { type Request, type Response } from "express";
 import cors from "cors";
 import { ConfigLoader } from "./config.js";
 import { ToolDiscoveryService } from "./toolDiscovery.js";
+import { TypeGeneratorService } from "./typeGenerator.js";
 
 // CodeMode MCP Server - executes TypeScript code against discovered MCP tools
 const getCodeModeServer = () => {
@@ -126,6 +127,108 @@ const getCodeModeServer = () => {
             {
               type: "text",
               text: `❌ Error discovering tools: ${error}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  // Register a tool to generate TypeScript types from discovered tools
+  server.registerTool(
+    "generate-types",
+    {
+      title: "Generate TypeScript Types",
+      description: "Generate TypeScript type definitions from discovered MCP tools",
+      inputSchema: {
+        configPath: z
+          .string()
+          .optional()
+          .describe(
+            "Path to MCP configuration file (defaults to ./mcp-config.json)"
+          ),
+        outputDir: z
+          .string()
+          .optional()
+          .describe(
+            "Directory to save generated types (defaults to ./generated)"
+          ),
+        serverId: z
+          .string()
+          .optional()
+          .describe(
+            "Specific server ID to generate types for (generates for all if not specified)"
+          ),
+      },
+    },
+    async ({
+      configPath = "./mcp-config.json",
+      outputDir = "./generated",
+      serverId,
+    }): Promise<CallToolResult> => {
+      try {
+        const configLoader = ConfigLoader.getInstance();
+        const config = configLoader.loadConfig(configPath);
+
+        const serversToProcess = serverId
+          ? config.servers.filter((s) => s.id === serverId)
+          : config.servers;
+
+        if (serversToProcess.length === 0) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: serverId
+                  ? `❌ Server with ID '${serverId}' not found in configuration`
+                  : "❌ No servers configured for type generation",
+              },
+            ],
+          };
+        }
+
+        // First discover tools from the servers
+        const discoveryService = ToolDiscoveryService.getInstance();
+        const discoveryResults = await discoveryService.discoverAllTools(serversToProcess);
+
+        // Generate TypeScript types from discovered tools
+        const typeGenerator = TypeGeneratorService.getInstance();
+        const generatedTypes = await typeGenerator.generateTypes(discoveryResults);
+
+        // Save the generated types to files
+        await typeGenerator.saveGeneratedTypes(generatedTypes, outputDir);
+
+        // Create a summary of what was generated
+        const summary = [
+          "🎯 TypeScript Type Generation Complete",
+          `📊 Generated types for ${generatedTypes.tools.length} tools`,
+          `📁 Output directory: ${outputDir}`,
+          "",
+          "Generated files:",
+          "📄 types.ts - TypeScript interfaces for tool inputs",
+          "📄 tools.ts - Tool function signatures and metadata",
+          "📄 metadata.json - Runtime tool metadata",
+          "",
+          "Generated tool functions:",
+          ...generatedTypes.tools.map(tool =>
+            `🔧 ${tool.toolName} → ${tool.inputTypeName}`
+          ),
+        ];
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: summary.join("\n"),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `❌ Error generating types: ${error}`,
             },
           ],
         };
