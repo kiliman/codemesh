@@ -45,6 +45,8 @@ interface CliOptions {
   listTools?: boolean;
   callTool?: string;
   toolArgs?: string;
+  toolArgsFile?: string;
+  codeFile?: string;
   listPrompts?: boolean;
   getPrompt?: string;
   promptArgs?: string;
@@ -73,6 +75,12 @@ function parseCliArgs(): CliOptions {
         break;
       case '--tool-args':
         options.toolArgs = args[++i];
+        break;
+      case '--tool-args-file':
+        options.toolArgsFile = args[++i];
+        break;
+      case '--code-file':
+        options.codeFile = args[++i];
         break;
       case '--list-prompts':
         options.listPrompts = true;
@@ -115,6 +123,8 @@ function printCliHelp(): void {
   console.log("  --list-tools                 List available tools");
   console.log("  --call-tool <name>           Call a tool");
   console.log("  --tool-args <json>           JSON arguments for tool call");
+  console.log("  --tool-args-file <file>      Load JSON arguments from file");
+  console.log("  --code-file <file>           Load TypeScript code from file (for execute-code tool)");
   console.log("  --list-prompts               List available prompts");
   console.log("  --get-prompt <name>          Get a prompt");
   console.log("  --prompt-args <json>         JSON arguments for prompt");
@@ -148,7 +158,21 @@ async function runCliMode(options: CliOptions): Promise<void> {
 
     if (options.callTool) {
       let toolArgs = {};
-      if (options.toolArgs) {
+
+      // Load tool args from file if specified
+      if (options.toolArgsFile) {
+        try {
+          const fs = await import('node:fs/promises');
+          const argsContent = await fs.readFile(options.toolArgsFile, 'utf-8');
+          toolArgs = JSON.parse(argsContent);
+          console.log(`📄 Loaded tool args from ${options.toolArgsFile}`);
+        } catch (error) {
+          console.error(`❌ Error loading tool args file ${options.toolArgsFile}:`, error);
+          return;
+        }
+      }
+      // Otherwise use inline args
+      else if (options.toolArgs) {
         try {
           toolArgs = JSON.parse(options.toolArgs);
         } catch (error) {
@@ -156,6 +180,20 @@ async function runCliMode(options: CliOptions): Promise<void> {
           return;
         }
       }
+
+      // Special handling for execute-code tool with --code-file
+      if (options.callTool === 'execute-code' && options.codeFile) {
+        try {
+          const fs = await import('node:fs/promises');
+          const codeContent = await fs.readFile(options.codeFile, 'utf-8');
+          toolArgs = { ...toolArgs, code: codeContent };
+          console.log(`📄 Loaded code from ${options.codeFile}`);
+        } catch (error) {
+          console.error(`❌ Error loading code file ${options.codeFile}:`, error);
+          return;
+        }
+      }
+
       await callTool(options.callTool, toolArgs);
     }
 

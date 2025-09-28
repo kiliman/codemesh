@@ -19,10 +19,11 @@ packages/
    - Supports HTTP, stdio, and websocket server types
    - Singleton ConfigLoader with Zod validation
 
-2. **Client CLI Mode** (`packages/client/`)
+2. **Enhanced Client CLI Mode** (`packages/client/`)
    - Works in both interactive and CLI modes
-   - Can connect to MCP servers and call tools
-   - Useful for testing during development
+   - **NEW**: `--tool-args-file` and `--code-file` options for clean argument passing
+   - **NEW**: Supports HEREDOC patterns for complex JSON/TypeScript
+   - Can connect to MCP servers and call tools without bash escaping hell
 
 3. **Tool Discovery Service** (`packages/codemode-server/src/toolDiscovery.ts`)
    - Connects to and enumerates tools from configured MCP servers
@@ -39,17 +40,23 @@ packages/
    - `get-tool-apis` - Selective TypeScript API loading for specific tools
    - `generate-types` - File-based type generation for development/debugging
 
-### 🚧 In Progress
-6. **Runtime API Wrapper**
-   - Create runtime that makes generated TypeScript functions callable
-   - Proxy function calls to actual MCP tools
-   - In-memory execution environment for agent code
+6. **Runtime API Wrapper** (`packages/codemode-server/src/runtimeWrapper.ts`)
+   - ✅ Creates runtime that makes generated TypeScript functions callable
+   - ✅ Proxies function calls to actual MCP tools with proper connection management
+   - ✅ In-memory execution environment for agent code
+   - ✅ Safe function name generation (tool_serverId pattern)
 
-### 📋 Pending
 7. **Enhanced Execute-Code Tool**
-   - Integrate runtime API wrapper with code execution
-   - Inject tool APIs into TypeScript execution context
-   - Complete end-to-end CodeMode functionality
+   - ✅ Integrated runtime API wrapper with code execution tool
+   - ✅ Injects tool APIs into TypeScript execution context
+   - ✅ Shows execution environment ready with available tools
+   - 🚧 Actual TypeScript execution with vm2/similar (next phase)
+
+### 🚧 Next Phase
+8. **Actual Code Execution**
+   - Implement TypeScript code execution using vm2 or similar sandbox
+   - Execute injected code with access to runtime wrapper tools
+   - Return actual execution results instead of preview
 
 ## Key Files
 
@@ -68,31 +75,55 @@ pnpm dev:example-server
 # Start codemode server
 pnpm dev:codemode-server:watch
 
-# Test with CLI client
+# Test with CLI client - old way
 pnpm client -- --connect http://localhost:3002/mcp --call-tool discover-tools
+
+# Test with new file-based CLI - much cleaner!
+npx tsx packages/client/index.ts --connect http://localhost:3002/mcp --call-tool execute-code --tool-args-file tmp/execute-args.json --code-file tmp/greet-claudia.ts
+
+# Test with HEREDOC (no files needed)
+npx tsx packages/client/index.ts --connect http://localhost:3002/mcp --call-tool execute-code --tool-args "$(cat <<'EOF'
+{
+  "code": "const result = await greet_example_server({ name: 'Claudia' }); return result;",
+  "toolNames": ["greet"],
+  "configPath": "/Users/michael/Projects/learn/mcp/codemode/mcp-config.json"
+}
+EOF
+)"
 
 # Build all packages
 pnpm build
 ```
 
-## Current Issue
+## Major Breakthrough
 
-The ToolDiscoveryService has a module resolution issue importing MCP client modules. Need to either:
-1. Fix the import paths for the client SDK
-2. Use a different approach for connecting to MCP servers
-3. Move the tool discovery logic to the existing client package
+The **tiered discovery workflow** solves the major UX issue with MCP:
+
+**Problem**: Traditional MCP clutters agent context with ALL available tools, even unused ones.
+
+**Solution**: Our three-tier approach:
+1. **`discover-tools`** - High-level overview of what's available
+2. **`get-tool-apis`** - Load TypeScript APIs only for tools you'll actually use
+3. **`execute-code`** - Execute code with access to only the loaded tools
+
+This drastically reduces context usage while maintaining full functionality!
 
 ## Architecture Notes
 
 - Uses pnpm monorepo structure
 - TypeScript with ESM modules (.js extensions required)
-- Express server for HTTP MCP transport
+- Express server for HTTP MCP transport with debug logging
 - Streamable HTTP transport with SSE support
+- Context-efficient tiered discovery prevents tool pollution
+- File-based CLI arguments eliminate bash escaping hell
 
-## Next Steps
+## Current Status
 
-1. Fix module resolution for MCP client imports
-2. Complete tool schema extraction implementation
-3. Generate TypeScript type definitions
-4. Implement code execution runtime
-5. Add comprehensive testing
+✅ **Runtime infrastructure complete** - All components working together:
+- Tool discovery ✅
+- Type generation ✅
+- Runtime wrapper ✅
+- Execute-code tool integration ✅
+- Enhanced CLI with file support ✅
+
+🚧 **Next**: Actual TypeScript code execution (vm2 integration)

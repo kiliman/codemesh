@@ -8,6 +8,7 @@ import cors from "cors";
 import { ConfigLoader } from "./config.js";
 import { ToolDiscoveryService } from "./toolDiscovery.js";
 import { TypeGeneratorService } from "./typeGenerator.js";
+import { RuntimeWrapper } from "./runtimeWrapper.js";
 
 // CodeMode MCP Server - executes TypeScript code against discovered MCP tools
 const getCodeModeServer = () => {
@@ -28,23 +29,112 @@ const getCodeModeServer = () => {
       description: "Execute TypeScript code that can call discovered MCP tools",
       inputSchema: {
         code: z.string().describe("TypeScript code to execute"),
-        discoveryEndpoint: z
+        toolNames: z
+          .array(z.string())
+          .optional()
+          .describe("Array of tool names to make available (discovers all if not specified)"),
+        configPath: z
           .string()
           .optional()
-          .describe("MCP server endpoint to discover tools from"),
+          .describe("Path to MCP configuration file (defaults to ./mcp-config.json)"),
+        serverId: z
+          .string()
+          .optional()
+          .describe("Specific server ID to use tools from (searches all if not specified)"),
       },
     },
-    async ({ code, discoveryEndpoint }): Promise<CallToolResult> => {
+    async ({
+      code,
+      toolNames,
+      configPath = "./mcp-config.json",
+      serverId
+    }): Promise<CallToolResult> => {
       try {
-        // TODO: Phase 1 - Basic implementation
-        // For now, just return the code that would be executed
+        const configLoader = ConfigLoader.getInstance();
+        const config = configLoader.loadConfig(configPath);
+
+        const serversToUse = serverId
+          ? config.servers.filter((s) => s.id === serverId)
+          : config.servers;
+
+        if (serversToUse.length === 0) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: serverId
+                  ? `❌ Server with ID '${serverId}' not found in configuration`
+                  : "❌ No servers configured for code execution",
+              },
+            ],
+          };
+        }
+
+        // Discover tools from the servers
+        const discoveryService = ToolDiscoveryService.getInstance();
+        const discoveryResults = await discoveryService.discoverAllTools(serversToUse);
+
+        // Filter tools if specific ones were requested
+        let toolsToUse: any[] = [];
+        for (const result of discoveryResults) {
+          if (result.success) {
+            if (toolNames) {
+              // Only include requested tools
+              toolsToUse.push(...result.tools.filter(tool => toolNames.includes(tool.name)));
+            } else {
+              // Include all discovered tools
+              toolsToUse.push(...result.tools);
+            }
+          }
+        }
+
+        if (toolsToUse.length === 0) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: toolNames
+                  ? `❌ None of the requested tools [${toolNames.join(', ')}] were found`
+                  : "❌ No tools discovered for code execution",
+              },
+            ],
+          };
+        }
+
+        // Create runtime wrapper and register tools
+        const runtime = new RuntimeWrapper();
+        await runtime.registerTools(toolsToUse, serversToUse);
+
+        // Create the tools object that will be available in the execution context
+        const tools = runtime.createToolsObject();
+
+        // For now, simulate code execution by showing what tools are available
+        // TODO: Implement actual TypeScript execution with vm2 or similar
+        const result = [
+          "🚀 CodeMode Execution Environment Ready",
+          `📋 Code to execute:`,
+          "```typescript",
+          code,
+          "```",
+          "",
+          `🔧 Available tools: ${Object.keys(tools).join(', ')}`,
+          "",
+          runtime.getSummary(),
+          "",
+          "🚧 Actual TypeScript execution coming in next phase!",
+          "",
+          "The code would execute with access to:",
+          ...Object.keys(tools).map(name => `  • ${name}(input) → Promise<ToolResult>`)
+        ];
+
+        // Clean up runtime for now
+        await runtime.cleanup();
+
         return {
           content: [
             {
               type: "text",
-              text: `CodeMode Server received code:\n\n${code}\n\nDiscovery endpoint: ${
-                discoveryEndpoint || "none specified"
-              }\n\n[Implementation pending - Phase 1 complete]`,
+              text: result.join('\n'),
             },
           ],
         };
@@ -53,7 +143,7 @@ const getCodeModeServer = () => {
           content: [
             {
               type: "text",
-              text: `Error executing code: ${error}`,
+              text: `❌ Error executing code: ${error}`,
             },
           ],
         };
