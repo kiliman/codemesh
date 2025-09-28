@@ -8,7 +8,9 @@
     "strict": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "types": ["node"]
+    "types": ["node"],
+    "declaration": true,
+    "outDir": "./dist"
   },
   "include": ["*.ts"],
   "exclude": ["node_modules", "dist"]

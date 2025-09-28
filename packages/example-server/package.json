@@ -1,7 +1,7 @@
 {
-  "name": "client",
+  "name": "example-server",
   "version": "1.0.0",
-  "description": "",
+  "description": "Example MCP server with demonstration tools, prompts, and resources",
   "type": "module",
   "main": "index.js",
   "scripts": {
@@ -16,10 +16,14 @@
   "packageManager": "pnpm@10.15.1",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.18.2",
-    "ajv": "^8.17.1"
+    "express": "^5.1.0",
+    "cors": "^2.8.5",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/node": "^24.5.2",
+    "@types/express": "^5.0.0",
+    "@types/cors": "^2.8.17",
     "typescript": "^5.5.4"
   }
 }

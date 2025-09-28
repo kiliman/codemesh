@@ -25,7 +25,7 @@ Create a single MCP server that accepts TypeScript code and executes it against 
 - **Result Serialization**: Convert execution results back to MCP format
 
 #### 4. Example Target Server (already exists)
-- **Current server**: Keep as-is for testing
+- **Example server**: Renamed to `example-server` for clarity
 - **Tools**: greet, multi-greet, collect-user-info, etc.
 - **Will be exposed via**: Generated TypeScript API
 

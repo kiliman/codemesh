@@ -1,22 +1,27 @@
 {
-  "name": "server",
+  "name": "codemode-server",
   "version": "1.0.0",
-  "description": "",
+  "description": "CodeMode MCP Server - Execute TypeScript code against discovered MCP tools",
   "type": "module",
   "main": "index.js",
   "scripts": {
+    "build": "tsc",
     "dev": "node index.ts",
+    "start": "node dist/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
+  "keywords": ["mcp", "codemode", "typescript", "tools"],
   "author": "",
   "license": "ISC",
   "packageManager": "pnpm@10.15.1",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.18.2",
+    "typescript": "^5.5.4",
+    "vm2": "^3.9.19",
+    "json-schema-to-typescript": "^15.0.2",
+    "zod": "^3.23.8",
     "express": "^5.1.0",
-    "cors": "^2.8.5",
-    "zod": "^3.23.8"
+    "cors": "^2.8.5"
   },
   "devDependencies": {
     "@types/node": "^24.5.2",

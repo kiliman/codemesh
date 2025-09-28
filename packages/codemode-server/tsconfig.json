@@ -12,6 +12,6 @@
     "declaration": true,
     "outDir": "./dist"
   },
-  "include": ["*.ts"],
+  "include": ["*.ts", "src/**/*"],
   "exclude": ["node_modules", "dist"]
 }

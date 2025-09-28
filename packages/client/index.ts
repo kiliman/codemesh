@@ -405,7 +405,7 @@ async function connect(url?: string): Promise<void> {
         if (!isValid) {
           console.log("❌ Validation errors:");
           validate.errors?.forEach((error) => {
-            console.log(`  - ${error.dataPath || "root"}: ${error.message}`);
+            console.log(`  - ${error.instancePath || "root"}: ${error.message}`);
           });
 
           if (attempts < maxAttempts) {

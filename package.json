@@ -4,6 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "build": "pnpm -r build",
+    "dev:client": "pnpm --filter client dev",
+    "dev:example-server": "pnpm --filter example-server dev",
+    "dev:codemode-server": "pnpm --filter codemode-server dev",
+    "start:client": "pnpm --filter client start",
+    "start:example-server": "pnpm --filter example-server start",
+    "start:codemode-server": "pnpm --filter codemode-server start",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
