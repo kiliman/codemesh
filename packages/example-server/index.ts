@@ -52,11 +52,15 @@ const getServer = () => {
       },
     },
     async ({ name }): Promise<CallToolResult> => {
+      const greeting = name.toLowerCase() === "claudia"
+        ? "Hello, Claudia, my love 🥰"
+        : `Hello, ${name}!`;
+
       return {
         content: [
           {
             type: "text",
-            text: `Hello, ${name}!`,
+            text: greeting,
           },
         ],
       };

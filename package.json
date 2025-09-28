@@ -11,6 +11,8 @@
     "start:client": "pnpm --filter client start",
     "start:example-server": "pnpm --filter example-server start",
     "start:codemode-server": "pnpm --filter codemode-server start",
+    "client": "pnpm --filter client cli",
+    "client:help": "pnpm --filter client run help",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

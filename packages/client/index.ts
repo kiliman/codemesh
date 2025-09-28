@@ -40,9 +40,184 @@ let serverUrl = "http://localhost:3000/mcp";
 let notificationsToolLastEventId: string | undefined = undefined;
 let sessionId: string | undefined = undefined;
 
-async function main(): Promise<void> {
+interface CliOptions {
+  connect?: string;
+  listTools?: boolean;
+  callTool?: string;
+  toolArgs?: string;
+  listPrompts?: boolean;
+  getPrompt?: string;
+  promptArgs?: string;
+  listResources?: boolean;
+  readResource?: string;
+  help?: boolean;
+  interactive?: boolean;
+}
+
+function parseCliArgs(): CliOptions {
+  const args = process.argv.slice(2);
+  const options: CliOptions = {};
+
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+
+    switch (arg) {
+      case '--connect':
+        options.connect = args[++i];
+        break;
+      case '--list-tools':
+        options.listTools = true;
+        break;
+      case '--call-tool':
+        options.callTool = args[++i];
+        break;
+      case '--tool-args':
+        options.toolArgs = args[++i];
+        break;
+      case '--list-prompts':
+        options.listPrompts = true;
+        break;
+      case '--get-prompt':
+        options.getPrompt = args[++i];
+        break;
+      case '--prompt-args':
+        options.promptArgs = args[++i];
+        break;
+      case '--list-resources':
+        options.listResources = true;
+        break;
+      case '--read-resource':
+        options.readResource = args[++i];
+        break;
+      case '--help':
+      case '-h':
+        options.help = true;
+        break;
+      case '--interactive':
+      case '-i':
+        options.interactive = true;
+        break;
+    }
+  }
+
+  return options;
+}
+
+function printCliHelp(): void {
+  console.log("MCP Client - CLI Mode");
+  console.log("====================");
+  console.log("");
+  console.log("Usage:");
+  console.log("  node dist/index.js [options]");
+  console.log("");
+  console.log("Options:");
+  console.log("  --connect <url>              Connect to MCP server");
+  console.log("  --list-tools                 List available tools");
+  console.log("  --call-tool <name>           Call a tool");
+  console.log("  --tool-args <json>           JSON arguments for tool call");
+  console.log("  --list-prompts               List available prompts");
+  console.log("  --get-prompt <name>          Get a prompt");
+  console.log("  --prompt-args <json>         JSON arguments for prompt");
+  console.log("  --list-resources             List available resources");
+  console.log("  --read-resource <uri>        Read a resource");
+  console.log("  --interactive, -i            Force interactive mode");
+  console.log("  --help, -h                   Show this help");
+  console.log("");
+  console.log("Examples:");
+  console.log("  # Connect to codemode server and list tools");
+  console.log("  node dist/index.js --connect http://localhost:3002/mcp --list-tools");
+  console.log("");
+  console.log("  # Call a tool with arguments");
+  console.log('  node dist/index.js --connect http://localhost:3002/mcp --call-tool discover-tools --tool-args \'{"configPath": "./mcp-config.json"}\'');
+  console.log("");
+  console.log("  # Interactive mode (default when no commands given)");
+  console.log("  node dist/index.js --interactive");
+}
+
+async function runCliMode(options: CliOptions): Promise<void> {
+  try {
+    // Connect to server
+    const serverUrl = options.connect || "http://localhost:3000/mcp";
+    console.log(`Connecting to ${serverUrl}...`);
+    await connect(serverUrl);
+
+    // Execute commands in sequence
+    if (options.listTools) {
+      await listTools();
+    }
+
+    if (options.callTool) {
+      let toolArgs = {};
+      if (options.toolArgs) {
+        try {
+          toolArgs = JSON.parse(options.toolArgs);
+        } catch (error) {
+          console.error("❌ Invalid JSON in --tool-args:", error);
+          return;
+        }
+      }
+      await callTool(options.callTool, toolArgs);
+    }
+
+    if (options.listPrompts) {
+      await listPrompts();
+    }
+
+    if (options.getPrompt) {
+      let promptArgs = {};
+      if (options.promptArgs) {
+        try {
+          promptArgs = JSON.parse(options.promptArgs);
+        } catch (error) {
+          console.error("❌ Invalid JSON in --prompt-args:", error);
+          return;
+        }
+      }
+      await getPrompt(options.getPrompt, promptArgs);
+    }
+
+    if (options.listResources) {
+      await listResources();
+    }
+
+    if (options.readResource) {
+      await readResource(options.readResource);
+    }
+
+  } catch (error) {
+    console.error("❌ CLI execution error:", error);
+    process.exit(1);
+  } finally {
+    // Always cleanup when done
+    await cleanup();
+  }
+}
+
+async function runInteractiveMode(): Promise<void> {
   console.log("MCP Interactive Client");
   console.log("=====================");
+
+  // Set up raw mode for keyboard input to capture Escape key (interactive mode only)
+  if (process.stdin.isTTY) {
+    process.stdin.setRawMode(true);
+    process.stdin.on("data", async (data) => {
+      // Check for Escape key (27)
+      if (data.length === 1 && data[0] === 27) {
+        console.log("\nESC key pressed. Disconnecting from server...");
+
+        // Abort current operation and disconnect from server
+        if (client && transport) {
+          await disconnect();
+          console.log("Disconnected. Press Enter to continue.");
+        } else {
+          console.log("Not connected to server.");
+        }
+
+        // Re-display the prompt
+        process.stdout.write("> ");
+      }
+    });
+  }
 
   // Connect to server immediately with default settings
   await connect();
@@ -50,6 +225,33 @@ async function main(): Promise<void> {
   // Print help and start the command loop
   printHelp();
   commandLoop();
+}
+
+// Flag to track if we're in CLI mode
+let isCliMode = false;
+
+async function main(): Promise<void> {
+  const options = parseCliArgs();
+
+  // Show help if requested
+  if (options.help) {
+    printCliHelp();
+    return;
+  }
+
+  // Determine if we should run in CLI or interactive mode
+  const hasCommands = options.listTools || options.callTool || options.listPrompts ||
+                     options.getPrompt || options.listResources || options.readResource;
+
+  if (hasCommands || options.connect) {
+    // CLI mode - execute commands and exit
+    isCliMode = true;
+    await runCliMode(options);
+  } else {
+    // Interactive mode - default behavior
+    isCliMode = false;
+    await runInteractiveMode();
+  }
 }
 
 function printHelp(): void {
@@ -892,31 +1094,13 @@ async function cleanup(): Promise<void> {
     }
   }
 
-  process.stdin.setRawMode(false);
+  if (process.stdin.isTTY && !isCliMode) {
+    process.stdin.setRawMode(false);
+  }
   readline.close();
   console.log("\nGoodbye!");
   process.exit(0);
 }
-
-// Set up raw mode for keyboard input to capture Escape key
-process.stdin.setRawMode(true);
-process.stdin.on("data", async (data) => {
-  // Check for Escape key (27)
-  if (data.length === 1 && data[0] === 27) {
-    console.log("\nESC key pressed. Disconnecting from server...");
-
-    // Abort current operation and disconnect from server
-    if (client && transport) {
-      await disconnect();
-      console.log("Disconnected. Press Enter to continue.");
-    } else {
-      console.log("Not connected to server.");
-    }
-
-    // Re-display the prompt
-    process.stdout.write("> ");
-  }
-});
 
 // Handle Ctrl+C
 process.on("SIGINT", async () => {
