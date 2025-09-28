@@ -12,6 +12,13 @@
       "type": "stdio",
       "command": ["node", "src/index.ts"],
       "cwd": "/Users/michael/Projects/learn/mcp/codemode/packages/weather-server"
+    },
+    {
+      "id": "filesystem-server",
+      "name": "Filesystem MCP Server",
+      "type": "stdio",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-filesystem", "/Users/michael/Projects/learn/mcp/codemode", "/Users/michael/Projects"],
+      "cwd": "/Users/michael/Projects/learn/mcp/codemode"
     }
   ]
 }

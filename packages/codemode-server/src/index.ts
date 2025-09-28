@@ -17,7 +17,7 @@ const getCodeModeServer = () => {
     {
       name: "codemode-server",
       version: "1.0.0",
-      description: "Execute TypeScript code against MCP tools",
+      description: "CodeMode MCP Server: Execute complex TypeScript code against multiple MCP tools. Ideal for tasks requiring data analysis, filtering, or multi-tool coordination. Use discover-tools → get-tool-apis → execute-code workflow.",
     },
     { capabilities: { logging: {} } }
   );
@@ -27,7 +27,7 @@ const getCodeModeServer = () => {
     "execute-code",
     {
       title: "Execute TypeScript Code",
-      description: "Execute TypeScript code that can call discovered MCP tools",
+      description: "CODEMODE STEP 3: Execute TypeScript code that can call multiple MCP tools and process their results. Write code that uses the tool functions you got from get-tool-apis. This approach is ideal for complex tasks requiring data analysis, filtering, correlation, or multi-step processing that would be difficult with individual tool calls.",
       inputSchema: {
         code: z.string().describe("TypeScript code to execute"),
         toolNames: z
@@ -147,7 +147,7 @@ const getCodeModeServer = () => {
     {
       title: "Discover MCP Tools",
       description:
-        "Discover available tools from configured MCP servers and generate TypeScript definitions",
+        "CODEMODE STEP 1: Discover available tools from configured MCP servers. Use this first to see what tools are available before writing code. This is the preferred approach for complex tasks that require multiple tool calls or data processing across different MCP servers.",
       inputSchema: {
         configPath: z
           .string()
@@ -219,7 +219,7 @@ const getCodeModeServer = () => {
     "generate-types",
     {
       title: "Generate TypeScript Types",
-      description: "Generate TypeScript type definitions from discovered MCP tools",
+      description: "CODEMODE OPTIONAL: Generate complete TypeScript type definitions for all discovered MCP tools. Prefer get-tool-apis for context efficiency unless you need all types.",
       inputSchema: {
         configPath: z
           .string()
@@ -321,7 +321,7 @@ const getCodeModeServer = () => {
     "get-tool-apis",
     {
       title: "Get Tool APIs",
-      description: "Get TypeScript type definitions for specific tools (context-efficient)",
+      description: "CODEMODE STEP 2: Get TypeScript type definitions for specific tools you want to use in your code. This generates the imports and function signatures you'll need. Use this after discover-tools to get only the APIs you need.",
       inputSchema: {
         toolNames: z
           .array(z.string())
