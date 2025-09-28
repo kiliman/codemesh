@@ -5,6 +5,13 @@
       "name": "Example MCP Server",
       "type": "http",
       "url": "http://localhost:3000/mcp"
+    },
+    {
+      "id": "weather-server",
+      "name": "Weather MCP Server",
+      "type": "stdio",
+      "command": ["node", "src/index.ts"],
+      "cwd": "/Users/michael/Projects/learn/mcp/codemode/packages/weather-server"
     }
   ]
 }

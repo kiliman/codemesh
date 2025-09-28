@@ -1,4 +1,5 @@
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
+import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import type { McpServerConfig } from "./config.js";
@@ -28,7 +29,7 @@ export interface RuntimeTool {
 
 export class RuntimeWrapper {
   private connections: Map<string, Client> = new Map();
-  private transports: Map<string, StreamableHTTPClientTransport> = new Map();
+  private transports: Map<string, StreamableHTTPClientTransport | StdioClientTransport> = new Map();
   private tools: Map<string, RuntimeTool> = new Map();
   private serverConfigs: Map<string, McpServerConfig> = new Map();
 
@@ -91,14 +92,33 @@ export class RuntimeWrapper {
       throw new Error(`Server configuration not found for ${serverId}`);
     }
 
-    if (serverConfig.type !== "http" || !serverConfig.url) {
-      throw new Error(`Only HTTP servers are currently supported (server: ${serverId})`);
+    console.log(`🔌 Connecting to ${serverConfig.name} (${serverConfig.type})...`);
+
+    let transport: StreamableHTTPClientTransport | StdioClientTransport;
+
+    if (serverConfig.type === "http") {
+      if (!serverConfig.url) {
+        throw new Error(`HTTP server ${serverId} missing URL`);
+      }
+      console.log(`📡 HTTP connection to ${serverConfig.url}`);
+      transport = new StreamableHTTPClientTransport(new URL(serverConfig.url));
+
+    } else if (serverConfig.type === "stdio") {
+      if (!serverConfig.command || serverConfig.command.length === 0) {
+        throw new Error(`Stdio server ${serverId} missing command`);
+      }
+
+      console.log(`🖥️ Spawning process: ${serverConfig.command.join(' ')}`);
+      transport = new StdioClientTransport({
+        command: serverConfig.command[0],
+        args: serverConfig.command.slice(1),
+        cwd: serverConfig.cwd || process.cwd(),
+        env: { ...process.env, ...serverConfig.env },
+      });
+
+    } else {
+      throw new Error(`Unsupported server type: ${serverConfig.type} (server: ${serverId})`);
     }
-
-    console.log(`🔌 Connecting to ${serverConfig.name} at ${serverConfig.url}...`);
-
-    // Create transport
-    const transport = new StreamableHTTPClientTransport(new URL(serverConfig.url));
 
     // Create client
     const client = new Client(

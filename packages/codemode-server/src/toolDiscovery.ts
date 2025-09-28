@@ -1,4 +1,5 @@
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
+import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import type { Tool } from "@modelcontextprotocol/sdk/types.js";
 import type { McpServerConfig } from "./config.js";
@@ -105,6 +106,86 @@ export class ToolDiscoveryService {
   }
 
   /**
+   * Discover tools from stdio-based MCP servers
+   */
+  async discoverFromStdioServer(server: McpServerConfig): Promise<DiscoveryResult> {
+    if (server.type !== "stdio" || !server.command || server.command.length === 0) {
+      return {
+        serverId: server.id,
+        serverName: server.name,
+        success: false,
+        tools: [],
+        error: "Server is not stdio type or command missing"
+      };
+    }
+
+    console.log(`🔍 Discovering tools from ${server.name} via stdio...`);
+
+    try {
+      // Create stdio transport and let SDK handle the process spawning
+      const transport = new StdioClientTransport({
+        command: server.command[0],
+        args: server.command.slice(1),
+        cwd: server.cwd || process.cwd(),
+        env: { ...process.env, ...server.env },
+      });
+
+      // Create MCP client
+      const client = new Client(
+        {
+          name: "codemode-discovery-client",
+          version: "1.0.0",
+        },
+        {
+          capabilities: {
+            elicitation: {},
+          },
+        }
+      );
+
+      // Connect to the server
+      await client.connect(transport);
+      console.log(`✅ Connected to ${server.name}`);
+
+      // List available tools
+      const toolsResponse = await client.listTools({});
+      const tools: Tool[] = toolsResponse.tools || [];
+
+      console.log(`📋 Found ${tools.length} tool(s) in ${server.name}`);
+
+      // Convert tools to our format
+      const discoveredTools: DiscoveredTool[] = tools.map(tool => ({
+        name: tool.name,
+        description: tool.description,
+        inputSchema: tool.inputSchema,
+        serverId: server.id,
+        serverName: server.name,
+      }));
+
+      // Disconnect from the server
+      await transport.close();
+      console.log(`🔌 Disconnected from ${server.name}`);
+
+      return {
+        serverId: server.id,
+        serverName: server.name,
+        success: true,
+        tools: discoveredTools,
+      };
+
+    } catch (error) {
+      console.error(`❌ Failed to discover tools from ${server.name}:`, error);
+      return {
+        serverId: server.id,
+        serverName: server.name,
+        success: false,
+        tools: [],
+        error: error instanceof Error ? error.message : String(error)
+      };
+    }
+  }
+
+  /**
    * Discover tools from all configured MCP servers
    */
   async discoverAllTools(servers: McpServerConfig[]): Promise<DiscoveryResult[]> {
@@ -112,18 +193,21 @@ export class ToolDiscoveryService {
 
     const results: DiscoveryResult[] = [];
 
-    // For now, only support HTTP servers (stdio would require process management)
+    // Separate servers by type
     const httpServers = servers.filter(server => server.type === "http");
+    const stdioServers = servers.filter(server => server.type === "stdio");
 
-    if (httpServers.length === 0) {
-      console.log("⚠️ No HTTP servers found for discovery");
-      return results;
-    }
+    console.log(`📊 Found ${httpServers.length} HTTP and ${stdioServers.length} stdio servers`);
 
-    // Discover tools from each HTTP server sequentially
+    // Discover tools from each server sequentially
     // TODO: Could parallelize this for better performance
     for (const server of httpServers) {
       const result = await this.discoverFromHttpServer(server);
+      results.push(result);
+    }
+
+    for (const server of stdioServers) {
+      const result = await this.discoverFromStdioServer(server);
       results.push(result);
     }
 

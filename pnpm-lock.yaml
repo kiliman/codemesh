@@ -92,6 +92,22 @@ importers:
         specifier: ^5.5.4
         version: 5.9.2
 
+  packages/weather-server:
+    dependencies:
+      '@modelcontextprotocol/sdk':
+        specifier: ^1.18.2
+        version: 1.18.2
+      zod:
+        specifier: ^3.25.76
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^24.5.2
+        version: 24.5.2
+      typescript:
+        specifier: ^5.9.2
+        version: 5.9.2
+
 packages:
 
   '@apidevtools/json-schema-ref-parser@11.9.3':
