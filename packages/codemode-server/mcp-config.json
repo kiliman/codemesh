@@ -10,7 +10,7 @@
       "id": "weather-server",
       "name": "Weather MCP Server",
       "type": "stdio",
-      "command": ["node", "src/index.ts"],
+      "command": ["npx", "tsx", "src/index.ts"],
       "cwd": "/Users/michael/Projects/learn/mcp/codemode/packages/weather-server"
     },
     {
