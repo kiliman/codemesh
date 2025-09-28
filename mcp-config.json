@@ -1,0 +1,10 @@
+{
+  "servers": [
+    {
+      "id": "example-server",
+      "name": "Example MCP Server",
+      "type": "http",
+      "url": "http://localhost:3000/mcp"
+    }
+  ]
+}

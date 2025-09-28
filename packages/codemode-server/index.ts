@@ -5,6 +5,7 @@ import { z } from "zod";
 import { randomUUID } from "node:crypto";
 import express, { type Request, type Response } from "express";
 import cors from "cors";
+import { ConfigLoader } from "./src/config.js";
 
 // CodeMode MCP Server - executes TypeScript code against discovered MCP tools
 const getCodeModeServer = () => {
@@ -53,24 +54,56 @@ const getCodeModeServer = () => {
     }
   );
 
-  // Register a tool to discover available MCP tools from other servers
+  // Register a tool to discover available MCP tools from configured servers
   server.registerTool(
     "discover-tools",
     {
       title: "Discover MCP Tools",
-      description: "Discover available tools from MCP servers and generate TypeScript definitions",
+      description: "Discover available tools from configured MCP servers and generate TypeScript definitions",
       inputSchema: {
-        endpoint: z.string().describe("MCP server endpoint to discover tools from"),
+        configPath: z.string().optional().describe("Path to MCP configuration file (defaults to ./mcp-config.json)"),
+        serverId: z.string().optional().describe("Specific server ID to discover (discovers all if not specified)"),
       },
     },
-    async ({ endpoint }): Promise<CallToolResult> => {
+    async ({ configPath = "./mcp-config.json", serverId }): Promise<CallToolResult> => {
       try {
-        // TODO: Phase 2 - Tool discovery implementation
+        const configLoader = ConfigLoader.getInstance();
+        const config = configLoader.loadConfig(configPath);
+
+        const serversToDiscover = serverId
+          ? config.servers.filter(s => s.id === serverId)
+          : config.servers;
+
+        if (serversToDiscover.length === 0) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: serverId
+                  ? `❌ Server with ID '${serverId}' not found in configuration`
+                  : "❌ No servers configured for discovery",
+              },
+            ],
+          };
+        }
+
+        const results = [];
+        for (const server of serversToDiscover) {
+          results.push(`📡 Server: ${server.name} (${server.id})`);
+          results.push(`   Type: ${server.type}`);
+          if (server.type === "http" && server.url) {
+            results.push(`   URL: ${server.url}`);
+          } else if (server.type === "stdio" && server.command) {
+            results.push(`   Command: ${server.command.join(" ")}`);
+          }
+          results.push("");
+        }
+
         return {
           content: [
             {
               type: "text",
-              text: `Tool discovery for endpoint: ${endpoint}\n\n[Implementation pending - Phase 2]`,
+              text: `🔍 Discovered ${serversToDiscover.length} MCP server(s):\n\n${results.join("\n")}\n[Tool enumeration implementation pending - Phase 2]`,
             },
           ],
         };
@@ -79,7 +112,7 @@ const getCodeModeServer = () => {
           content: [
             {
               type: "text",
-              text: `Error discovering tools: ${error}`,
+              text: `❌ Error discovering tools: ${error}`,
             },
           ],
         };
