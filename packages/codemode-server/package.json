@@ -11,23 +11,29 @@
     "start": "node dist/src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": ["mcp", "codemode", "typescript", "tools"],
+  "keywords": [
+    "mcp",
+    "codemode",
+    "typescript",
+    "tools"
+  ],
   "author": "",
   "license": "ISC",
   "packageManager": "pnpm@10.15.1",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.18.2",
-    "typescript": "^5.5.4",
-    "vm2": "^3.9.19",
-    "json-schema-to-typescript": "^15.0.2",
-    "zod": "^3.23.8",
+    "cors": "^2.8.5",
     "express": "^5.1.0",
-    "cors": "^2.8.5"
+    "json-schema-to-typescript": "^15.0.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2",
+    "vm2": "^3.9.19",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@types/node": "^24.5.2",
-    "@types/express": "^5.0.0",
     "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/node": "^24.5.2",
     "tsx": "^4.16.5"
   }
 }

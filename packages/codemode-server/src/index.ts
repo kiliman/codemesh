@@ -9,6 +9,7 @@ import { ConfigLoader } from "./config.js";
 import { ToolDiscoveryService } from "./toolDiscovery.js";
 import { TypeGeneratorService } from "./typeGenerator.js";
 import { RuntimeWrapper } from "./runtimeWrapper.js";
+import { CodeExecutor } from "./codeExecutor.js";
 
 // CodeMode MCP Server - executes TypeScript code against discovered MCP tools
 const getCodeModeServer = () => {
@@ -108,35 +109,24 @@ const getCodeModeServer = () => {
         // Create the tools object that will be available in the execution context
         const tools = runtime.createToolsObject();
 
-        // For now, simulate code execution by showing what tools are available
-        // TODO: Implement actual TypeScript execution with vm2 or similar
-        const result = [
-          "🚀 CodeMode Execution Environment Ready",
-          `📋 Code to execute:`,
-          "```typescript",
-          code,
-          "```",
-          "",
-          `🔧 Available tools: ${Object.keys(tools).join(', ')}`,
-          "",
-          runtime.getSummary(),
-          "",
-          "🚧 Actual TypeScript execution coming in next phase!",
-          "",
-          "The code would execute with access to:",
-          ...Object.keys(tools).map(name => `  • ${name}(input) → Promise<ToolResult>`)
-        ];
+        // Execute the TypeScript code with access to the tools
+        const codeExecutor = CodeExecutor.getInstance();
+        const executionResult = await codeExecutor.executeCode(code, tools);
 
-        // Clean up runtime for now
+        // Clean up runtime connections
         await runtime.cleanup();
+
+        // Format the execution result
+        const resultText = codeExecutor.formatResult(executionResult);
 
         return {
           content: [
             {
               type: "text",
-              text: result.join('\n'),
+              text: resultText,
             },
           ],
+          isError: !executionResult.success,
         };
       } catch (error) {
         return {
