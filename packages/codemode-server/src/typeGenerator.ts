@@ -10,6 +10,12 @@ export interface GeneratedToolType {
   outputTypeName?: string;
   outputTypeDefinition?: string;
   functionSignature: string;
+  // New properties for namespaced API
+  namespacedServerName: string;
+  namespacedInputTypeName: string;
+  namespacedOutputTypeName?: string;
+  camelCaseMethodName: string;
+  serverObjectName: string;
 }
 
 export interface GeneratedTypes {
@@ -66,11 +72,14 @@ export class TypeGeneratorService {
       }
     }
 
-    // Combine all type definitions
-    const combinedTypes = this.generateCombinedTypes(typeDefinitions);
+    // Generate clean namespaced types and server interfaces
+    const namespacedTypes = this.generateNamespacedTypes(generatedTools);
 
-    // Generate tools namespace with all function signatures
-    const toolsNamespace = this.generateToolsNamespace(functionSignatures, generatedTools);
+    // Use only namespaced types
+    const combinedTypes = namespacedTypes;
+
+    // Generate tools namespace with only namespaced server objects
+    const toolsNamespace = this.generateNamespacedToolsNamespace(generatedTools);
 
     console.log(`🎯 Generated TypeScript types for ${generatedTools.length} tools`);
 
@@ -132,6 +141,15 @@ export class TypeGeneratorService {
       outputTypeDefinition ? outputTypeName : undefined,
     );
 
+    // Generate namespaced properties
+    const namespacedServerName = this.convertServerName(tool.serverId);
+    const namespacedInputTypeName = this.createNamespacedTypeName(tool.name, 'Input');
+    const namespacedOutputTypeName = outputTypeDefinition
+      ? this.createNamespacedTypeName(tool.name, 'Output')
+      : undefined;
+    const camelCaseMethodName = this.convertToolName(tool.name);
+    const serverObjectName = this.createServerObjectName(tool.serverId);
+
     return {
       toolName: tool.name,
       serverId: tool.serverId,
@@ -141,6 +159,12 @@ export class TypeGeneratorService {
       outputTypeName: outputTypeDefinition ? outputTypeName : undefined,
       outputTypeDefinition,
       functionSignature,
+      // New namespaced properties
+      namespacedServerName,
+      namespacedInputTypeName,
+      namespacedOutputTypeName,
+      camelCaseMethodName,
+      serverObjectName,
     };
   }
 
@@ -165,6 +189,15 @@ export class TypeGeneratorService {
   }
 
   /**
+   * Create a namespaced type name for use within server namespace
+   */
+  private createNamespacedTypeName(toolName: string, suffix: string): string {
+    // Simple PascalCase name for use within namespace
+    const safeName = this.toPascalCase(toolName);
+    return `${safeName}${suffix}`;
+  }
+
+  /**
    * Generate a TypeScript function signature for a tool
    */
   private generateFunctionSignature(tool: DiscoveredTool, inputTypeName: string, outputTypeName?: string): string {
@@ -180,14 +213,57 @@ export class TypeGeneratorService {
   }
 
   /**
+   * Convert string to camelCase
+   */
+  private toCamelCase(str: string): string {
+    return str.replace(/[-_](.)/g, (_, char) => char.toUpperCase());
+  }
+
+  /**
+   * Convert string to PascalCase
+   */
+  private toPascalCase(str: string): string {
+    const camelCase = this.toCamelCase(str);
+    return camelCase.charAt(0).toUpperCase() + camelCase.slice(1);
+  }
+
+  /**
+   * Convert server ID to proper server name
+   */
+  private convertServerName(serverId: string): string {
+    // "weather-server" → "WeatherServer"
+    // "geocode-server" → "GeocodeServer"
+    // "example-server" → "ExampleServer"
+    return this.toPascalCase(serverId.replace(/-server$/, ''));
+  }
+
+  /**
+   * Convert tool name to camelCase method name
+   */
+  public convertToolName(toolName: string): string {
+    // "get_forecast" → "getForecast"
+    // "geocode" → "geocode"
+    return this.toCamelCase(toolName);
+  }
+
+  /**
    * Create a safe function name from tool name and server ID
    */
   public createSafeFunctionName(toolName: string, serverId: string): string {
-    // Convert to camelCase and make it unique
+    // For backwards compatibility - still used in runtime wrapper
     const safeName = toolName.replace(/[^a-zA-Z0-9]/g, '_');
     const safeServerId = serverId.replace(/[^a-zA-Z0-9]/g, '_');
 
     return `${safeName}_${safeServerId}`;
+  }
+
+  /**
+   * Create server object name for namespaced API
+   */
+  public createServerObjectName(serverId: string): string {
+    // "weather-server" → "weatherServer"
+    const baseServerId = serverId.replace(/-server$/, '');
+    return this.toCamelCase(baseServerId) + 'Server';
   }
 
   /**
@@ -211,7 +287,135 @@ export interface ToolResultWithOutput<T> extends ToolResult {
 
 `;
 
-    return header + toolResultType + typeDefinitions.join('\n');
+    // Legacy flat types for backwards compatibility
+    const legacyTypes = `// Legacy flat types for backwards compatibility
+${typeDefinitions.join('\n')}
+
+`;
+
+    return header + toolResultType + legacyTypes;
+  }
+
+  /**
+   * Generate namespaced types and server interfaces
+   */
+  private generateNamespacedTypes(tools: GeneratedToolType[]): string {
+    // Group tools by server
+    const serverGroups = new Map<string, GeneratedToolType[]>();
+    for (const tool of tools) {
+      const serverName = tool.namespacedServerName;
+      if (!serverGroups.has(serverName)) {
+        serverGroups.set(serverName, []);
+      }
+      serverGroups.get(serverName)!.push(tool);
+    }
+
+    // Add preamble with type definitions
+    let namespacedTypes = `// Import CallToolResult from MCP SDK
+import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
+
+// Re-export for consistency
+export type ToolResult = CallToolResult;
+
+export interface ToolResultWithOutput<T> extends ToolResult {
+  structuredContent?: T;
+}
+
+`;
+
+    // Generate namespace and interface for each server
+    for (const [serverName, serverTools] of serverGroups) {
+      const serverObjectName = serverTools[0].serverObjectName;
+
+      // Generate namespace with types
+      namespacedTypes += `// ${serverName} namespace with input/output types\n`;
+      namespacedTypes += `export namespace ${serverName} {\n`;
+
+      // Add input/output types to namespace
+      for (const tool of serverTools) {
+        // Generate simplified types for namespace (without banners)
+        namespacedTypes += `  export interface ${tool.namespacedInputTypeName} {\n`;
+        // Extract the interface content from the generated type definition
+        const inputInterface = this.extractInterfaceContent(tool.inputTypeDefinition, tool.inputTypeName);
+        namespacedTypes += inputInterface.split('\n').map(line => `    ${line}`).join('\n');
+        namespacedTypes += `\n  }\n\n`;
+
+        if (tool.outputTypeDefinition && tool.namespacedOutputTypeName) {
+          namespacedTypes += `  export interface ${tool.namespacedOutputTypeName} {\n`;
+          const outputInterface = this.extractInterfaceContent(tool.outputTypeDefinition, tool.outputTypeName!);
+          namespacedTypes += outputInterface.split('\n').map(line => `    ${line}`).join('\n');
+          namespacedTypes += `\n  }\n\n`;
+        }
+      }
+
+      namespacedTypes += `}\n\n`;
+
+      // Generate server interface
+      namespacedTypes += `// ${serverName} interface with methods\n`;
+      namespacedTypes += `export interface ${serverName} {\n`;
+
+      for (const tool of serverTools) {
+        const inputType = `${serverName}.${tool.namespacedInputTypeName}`;
+        const returnType = tool.namespacedOutputTypeName
+          ? `Promise<ToolResultWithOutput<${serverName}.${tool.namespacedOutputTypeName}>>`
+          : 'Promise<ToolResult>';
+
+        if (tool.toolName) {
+          namespacedTypes += `  /**\n   * ${tool.toolName} - ${tool.serverName}\n   */\n`;
+        }
+        namespacedTypes += `  ${tool.camelCaseMethodName}(input: ${inputType}): ${returnType};\n\n`;
+      }
+
+      namespacedTypes += `}\n\n`;
+    }
+
+    return namespacedTypes;
+  }
+
+  /**
+   * Extract interface content from generated type definition
+   */
+  private extractInterfaceContent(typeDefinition: string, typeName: string): string {
+    // Remove banner comments and extract just the interface body
+    const lines = typeDefinition.split('\n');
+    const interfaceStartIndex = lines.findIndex(line => line.includes(`export interface ${typeName}`));
+    if (interfaceStartIndex === -1) return '  // No properties';
+
+    const interfaceStart = lines[interfaceStartIndex];
+    const openBraceIndex = interfaceStart.indexOf('{');
+    let content = '';
+    let braceCount = 0;
+    let started = false;
+
+    for (let i = interfaceStartIndex; i < lines.length; i++) {
+      const line = lines[i];
+
+      for (const char of line) {
+        if (char === '{') {
+          braceCount++;
+          started = true;
+        } else if (char === '}') {
+          braceCount--;
+        }
+      }
+
+      if (started && braceCount > 0) {
+        // Extract content inside the interface
+        const lineContent = i === interfaceStartIndex
+          ? line.substring(openBraceIndex + 1).trim()
+          : line.trim();
+
+        if (lineContent) {
+          content += `  ${lineContent}\n`;
+        }
+      }
+
+      if (started && braceCount === 0) {
+        break;
+      }
+    }
+
+    return content || '    // No properties';
   }
 
   /**
@@ -222,6 +426,23 @@ export interface ToolResultWithOutput<T> extends ToolResult {
 // This file is auto-generated by CodeMode - do not edit manually
 
 export interface McpTools {`;
+
+    // Group tools by server for server object declarations
+    const serverGroups = new Map<string, GeneratedToolType[]>();
+    for (const tool of tools) {
+      const serverObjectName = tool.serverObjectName;
+      if (!serverGroups.has(serverObjectName)) {
+        serverGroups.set(serverObjectName, []);
+      }
+      serverGroups.get(serverObjectName)!.push(tool);
+    }
+
+    // Generate server object declarations
+    let serverDeclarations = '\n  // Namespaced server objects\n';
+    for (const [serverObjectName, serverTools] of serverGroups) {
+      const serverTypeName = serverTools[0].namespacedServerName;
+      serverDeclarations += `  ${serverObjectName}: ${serverTypeName};\n`;
+    }
 
     const footer = `}
 
@@ -238,11 +459,25 @@ ${tools
   .join(',\n')}
 } as const;
 
+// Server metadata for namespaced API
+export const SERVER_METADATA = {
+${Array.from(serverGroups.entries())
+  .map(
+    ([serverObjectName, serverTools]) => `  "${serverObjectName}": {
+    serverId: "${serverTools[0].serverId}",
+    serverName: "${serverTools[0].serverName}",
+    namespacedServerName: "${serverTools[0].namespacedServerName}",
+  }`,
+  )
+  .join(',\n')}
+} as const;
+
 // Export for runtime use
 export type ToolName = keyof McpTools;
+export type ServerObjectName = keyof typeof SERVER_METADATA;
 `;
 
-    return header + functionSignatures.join('\n') + '\n' + footer;
+    return header + functionSignatures.join('\n') + serverDeclarations + '\n' + footer;
   }
 
   /**
@@ -279,5 +514,50 @@ export type ToolName = keyof McpTools;
     };
     await fs.writeFile(metadataPath, JSON.stringify(metadata, null, 2), 'utf-8');
     console.log(`📁 Saved metadata to ${metadataPath}`);
+  }
+
+  /**
+   * Generate clean tools namespace with only namespaced server objects
+   */
+  private generateNamespacedToolsNamespace(tools: GeneratedToolType[]): string {
+    // Group tools by server
+    const serverGroups = new Map<string, GeneratedToolType[]>();
+    for (const tool of tools) {
+      if (!serverGroups.has(tool.serverObjectName)) {
+        serverGroups.set(tool.serverObjectName, []);
+      }
+      serverGroups.get(tool.serverObjectName)!.push(tool);
+    }
+
+    const serverObjects = Array.from(serverGroups.keys())
+      .map(serverObjectName => `  ${serverObjectName}: ${serverObjectName.charAt(0).toUpperCase() + serverObjectName.slice(1).replace('Server', '')};`)
+      .join('\n');
+
+    const serverMetadata = Array.from(serverGroups.entries())
+      .map(([serverObjectName, serverTools]) => {
+        const firstTool = serverTools[0];
+        return `  "${serverObjectName}": {
+    serverId: "${firstTool.serverId}",
+    serverName: "${firstTool.serverName}",
+    namespacedServerName: "${firstTool.namespacedServerName}",
+  }`;
+      })
+      .join(',\n');
+
+    return `// Generated tools namespace for CodeMode execution
+// This file is auto-generated by CodeMode - do not edit manually
+
+export interface McpTools {
+${serverObjects}
+}
+
+// Server metadata for namespaced API
+export const SERVER_METADATA = {
+${serverMetadata}
+} as const;
+
+// Export for runtime use
+export type ServerObjectName = keyof typeof SERVER_METADATA;
+`;
   }
 }

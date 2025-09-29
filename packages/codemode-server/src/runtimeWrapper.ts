@@ -4,6 +4,7 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import type { McpServerConfig } from './config.js';
 import type { DiscoveredTool } from './toolDiscovery.js';
+import { TypeGeneratorService } from './typeGenerator.js';
 
 // Re-export CallToolResult from MCP SDK as our ToolResult
 export type ToolResult = CallToolResult;
@@ -181,7 +182,7 @@ export class RuntimeWrapper {
   }
 
   /**
-   * Create a tools object with callable functions
+   * Create a tools object with callable functions (legacy flat API)
    */
   createToolsObject(): Record<string, (input: unknown) => Promise<ToolResult>> {
     const toolsObject: Record<string, (input: unknown) => Promise<ToolResult>> = {};
@@ -193,6 +194,56 @@ export class RuntimeWrapper {
     }
 
     return toolsObject;
+  }
+
+  /**
+   * Create server objects with namespaced methods (new API)
+   */
+  createServerObjects(): Record<string, Record<string, (input: unknown) => Promise<ToolResult>>> {
+    const typeGenerator = TypeGeneratorService.getInstance();
+    const serverObjects: Record<string, Record<string, (input: unknown) => Promise<ToolResult>>> = {};
+
+    // Group tools by server
+    const serverGroups = new Map<string, RuntimeTool[]>();
+    for (const [functionName, runtimeTool] of this.tools) {
+      const serverObjectName = typeGenerator.createServerObjectName(runtimeTool.serverId);
+      if (!serverGroups.has(serverObjectName)) {
+        serverGroups.set(serverObjectName, []);
+      }
+      serverGroups.get(serverObjectName)!.push(runtimeTool);
+    }
+
+    // Create server objects with methods
+    for (const [serverObjectName, serverTools] of serverGroups) {
+      const serverObject: Record<string, (input: unknown) => Promise<ToolResult>> = {};
+
+      for (const runtimeTool of serverTools) {
+        const methodName = this.convertToolNameToCamelCase(runtimeTool.originalName);
+        const functionName = runtimeTool.name; // This is the flat function name
+
+        serverObject[methodName] = async (input: unknown) => {
+          return this.callTool(functionName, input);
+        };
+      }
+
+      serverObjects[serverObjectName] = serverObject;
+    }
+
+    return serverObjects;
+  }
+
+  /**
+   * Create runtime API with namespaced server objects
+   */
+  createRuntimeApi(): Record<string, any> {
+    return this.createServerObjects();
+  }
+
+  /**
+   * Convert tool name to camelCase for method names
+   */
+  private convertToolNameToCamelCase(toolName: string): string {
+    return toolName.replace(/[-_](.)/g, (_, char) => char.toUpperCase());
   }
 
   /**
