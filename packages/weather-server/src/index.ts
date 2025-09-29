@@ -78,6 +78,34 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           },
           required: ['state'],
         },
+        outputSchema: {
+          type: 'object',
+          properties: {
+            features: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  properties: {
+                    type: 'object',
+                    properties: {
+                      event: { type: 'string' },
+                      severity: { type: 'string', enum: ['Extreme', 'Severe', 'Moderate', 'Minor'] },
+                      areaDesc: { type: 'string' },
+                      headline: { type: 'string' },
+                      description: { type: 'string' },
+                      instruction: { type: 'string' },
+                      effective: { type: 'string' },
+                      expires: { type: 'string' },
+                      ends: { type: 'string' }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          required: ['features']
+        }
       },
       {
         name: 'get_forecast',
@@ -96,6 +124,31 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           },
           required: ['latitude', 'longitude'],
         },
+        outputSchema: {
+          type: 'object',
+          properties: {
+            properties: {
+              type: 'object',
+              properties: {
+                periods: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      name: { type: 'string' },
+                      temperature: { type: 'number' },
+                      temperatureUnit: { type: 'string' },
+                      windSpeed: { type: 'string' },
+                      windDirection: { type: 'string' },
+                      shortForecast: { type: 'string' },
+                      detailedForecast: { type: 'string' }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       },
     ],
   };
