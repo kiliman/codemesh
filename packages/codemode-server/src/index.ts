@@ -27,7 +27,7 @@ const getCodeModeServer = () => {
     "execute-code",
     {
       title: "Execute TypeScript Code",
-      description: "CODEMODE STEP 3: Execute TypeScript code that can call multiple MCP tools and process their results. Write code that uses the tool functions you got from get-tool-apis. This approach is ideal for complex tasks requiring data analysis, filtering, correlation, or multi-step processing that would be difficult with individual tool calls.",
+      description: "CODEMODE STEP 3: Execute TypeScript code that can call multiple MCP tools and process their results. Tools are available as global functions using their generated names (e.g., await get_alerts_weather_server({ state: 'NC' })). Do NOT use 'tools.' or 'mcpTools.' prefixes. This approach is ideal for complex tasks requiring data analysis, filtering, correlation, or multi-step processing that would be difficult with individual tool calls.",
       inputSchema: {
         code: z.string().describe("TypeScript code to execute"),
         toolNames: z
@@ -321,7 +321,7 @@ const getCodeModeServer = () => {
     "get-tool-apis",
     {
       title: "Get Tool APIs",
-      description: "CODEMODE STEP 2: Get TypeScript type definitions for specific tools you want to use in your code. This generates the imports and function signatures you'll need. Use this after discover-tools to get only the APIs you need.",
+      description: "CODEMODE STEP 2: Get TypeScript type definitions for specific tools you want to use in your code. This generates the imports and function signatures you'll need. Use this after discover-tools to get only the APIs you need. The tools will be available as global functions in your execution environment (e.g., await get_alerts_weather_server({ state: 'NC' })).",
       inputSchema: {
         toolNames: z
           .array(z.string())

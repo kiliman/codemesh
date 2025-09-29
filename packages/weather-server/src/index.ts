@@ -67,7 +67,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
     tools: [
       {
         name: 'get_alerts',
-        description: 'Get weather alerts for a state',
+        description: 'Get weather alerts for a state. Returns JSON with features array containing alert objects. Each alert has properties: { event, severity, areaDesc, headline, description, instruction, effective, expires, ends }. Severity levels: Extreme, Severe, Moderate, Minor.',
         inputSchema: {
           type: 'object',
           properties: {
@@ -81,7 +81,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       },
       {
         name: 'get_forecast',
-        description: 'Get weather forecast for a location',
+        description: 'Get weather forecast for a location. Returns JSON with properties.periods array containing forecast objects with name, temperature, temperatureUnit, windSpeed, windDirection, shortForecast, detailedForecast.',
         inputSchema: {
           type: 'object',
           properties: {
