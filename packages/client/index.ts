@@ -1,6 +1,6 @@
-import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
-import { createInterface } from "node:readline";
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
+import { createInterface } from 'node:readline';
 import type {
   ListToolsRequest,
   CallToolRequest,
@@ -9,7 +9,7 @@ import type {
   ListResourcesRequest,
   ResourceLink,
   ReadResourceRequest,
-} from "@modelcontextprotocol/sdk/types.js";
+} from '@modelcontextprotocol/sdk/types.js';
 import {
   ListToolsResultSchema,
   CallToolResultSchema,
@@ -20,9 +20,9 @@ import {
   ResourceListChangedNotificationSchema,
   ElicitRequestSchema,
   ReadResourceResultSchema,
-} from "@modelcontextprotocol/sdk/types.js";
-import { getDisplayName } from "@modelcontextprotocol/sdk/shared/metadataUtils.js";
-import Ajv from "ajv";
+} from '@modelcontextprotocol/sdk/types.js';
+import { getDisplayName } from '@modelcontextprotocol/sdk/shared/metadataUtils.js';
+import Ajv from 'ajv';
 
 // Create readline interface for user input
 const readline = createInterface({
@@ -36,7 +36,7 @@ let notificationCount = 0;
 // Global client and transport for interactive commands
 let client: Client | null = null;
 let transport: StreamableHTTPClientTransport | null = null;
-let serverUrl = "http://localhost:3000/mcp";
+let serverUrl = 'http://localhost:3000/mcp';
 let notificationsToolLastEventId: string | undefined = undefined;
 let sessionId: string | undefined = undefined;
 
@@ -112,42 +112,44 @@ function parseCliArgs(): CliOptions {
 }
 
 function printCliHelp(): void {
-  console.log("MCP Client - CLI Mode");
-  console.log("====================");
-  console.log("");
-  console.log("Usage:");
-  console.log("  node dist/index.js [options]");
-  console.log("");
-  console.log("Options:");
-  console.log("  --connect <url>              Connect to MCP server");
-  console.log("  --list-tools                 List available tools");
-  console.log("  --call-tool <name>           Call a tool");
-  console.log("  --tool-args <json>           JSON arguments for tool call");
-  console.log("  --tool-args-file <file>      Load JSON arguments from file");
-  console.log("  --code-file <file>           Load TypeScript code from file (for execute-code tool)");
-  console.log("  --list-prompts               List available prompts");
-  console.log("  --get-prompt <name>          Get a prompt");
-  console.log("  --prompt-args <json>         JSON arguments for prompt");
-  console.log("  --list-resources             List available resources");
-  console.log("  --read-resource <uri>        Read a resource");
-  console.log("  --interactive, -i            Force interactive mode");
-  console.log("  --help, -h                   Show this help");
-  console.log("");
-  console.log("Examples:");
-  console.log("  # Connect to codemode server and list tools");
-  console.log("  node dist/index.js --connect http://localhost:3002/mcp --list-tools");
-  console.log("");
-  console.log("  # Call a tool with arguments");
-  console.log('  node dist/index.js --connect http://localhost:3002/mcp --call-tool discover-tools --tool-args \'{"configPath": "./mcp-config.json"}\'');
-  console.log("");
-  console.log("  # Interactive mode (default when no commands given)");
-  console.log("  node dist/index.js --interactive");
+  console.log('MCP Client - CLI Mode');
+  console.log('====================');
+  console.log('');
+  console.log('Usage:');
+  console.log('  node dist/index.js [options]');
+  console.log('');
+  console.log('Options:');
+  console.log('  --connect <url>              Connect to MCP server');
+  console.log('  --list-tools                 List available tools');
+  console.log('  --call-tool <name>           Call a tool');
+  console.log('  --tool-args <json>           JSON arguments for tool call');
+  console.log('  --tool-args-file <file>      Load JSON arguments from file');
+  console.log('  --code-file <file>           Load TypeScript code from file (for execute-code tool)');
+  console.log('  --list-prompts               List available prompts');
+  console.log('  --get-prompt <name>          Get a prompt');
+  console.log('  --prompt-args <json>         JSON arguments for prompt');
+  console.log('  --list-resources             List available resources');
+  console.log('  --read-resource <uri>        Read a resource');
+  console.log('  --interactive, -i            Force interactive mode');
+  console.log('  --help, -h                   Show this help');
+  console.log('');
+  console.log('Examples:');
+  console.log('  # Connect to codemode server and list tools');
+  console.log('  node dist/index.js --connect http://localhost:3002/mcp --list-tools');
+  console.log('');
+  console.log('  # Call a tool with arguments');
+  console.log(
+    '  node dist/index.js --connect http://localhost:3002/mcp --call-tool discover-tools --tool-args \'{"configPath": "./mcp-config.json"}\'',
+  );
+  console.log('');
+  console.log('  # Interactive mode (default when no commands given)');
+  console.log('  node dist/index.js --interactive');
 }
 
 async function runCliMode(options: CliOptions): Promise<void> {
   try {
     // Connect to server
-    const serverUrl = options.connect || "http://localhost:3000/mcp";
+    const serverUrl = options.connect || 'http://localhost:3000/mcp';
     console.log(`Connecting to ${serverUrl}...`);
     await connect(serverUrl);
 
@@ -176,7 +178,7 @@ async function runCliMode(options: CliOptions): Promise<void> {
         try {
           toolArgs = JSON.parse(options.toolArgs);
         } catch (error) {
-          console.error("❌ Invalid JSON in --tool-args:", error);
+          console.error('❌ Invalid JSON in --tool-args:', error);
           return;
         }
       }
@@ -207,7 +209,7 @@ async function runCliMode(options: CliOptions): Promise<void> {
         try {
           promptArgs = JSON.parse(options.promptArgs);
         } catch (error) {
-          console.error("❌ Invalid JSON in --prompt-args:", error);
+          console.error('❌ Invalid JSON in --prompt-args:', error);
           return;
         }
       }
@@ -221,9 +223,8 @@ async function runCliMode(options: CliOptions): Promise<void> {
     if (options.readResource) {
       await readResource(options.readResource);
     }
-
   } catch (error) {
-    console.error("❌ CLI execution error:", error);
+    console.error('❌ CLI execution error:', error);
     process.exit(1);
   } finally {
     // Always cleanup when done
@@ -232,27 +233,27 @@ async function runCliMode(options: CliOptions): Promise<void> {
 }
 
 async function runInteractiveMode(): Promise<void> {
-  console.log("MCP Interactive Client");
-  console.log("=====================");
+  console.log('MCP Interactive Client');
+  console.log('=====================');
 
   // Set up raw mode for keyboard input to capture Escape key (interactive mode only)
   if (process.stdin.isTTY) {
     process.stdin.setRawMode(true);
-    process.stdin.on("data", async (data) => {
+    process.stdin.on('data', async (data) => {
       // Check for Escape key (27)
       if (data.length === 1 && data[0] === 27) {
-        console.log("\nESC key pressed. Disconnecting from server...");
+        console.log('\nESC key pressed. Disconnecting from server...');
 
         // Abort current operation and disconnect from server
         if (client && transport) {
           await disconnect();
-          console.log("Disconnected. Press Enter to continue.");
+          console.log('Disconnected. Press Enter to continue.');
         } else {
-          console.log("Not connected to server.");
+          console.log('Not connected to server.');
         }
 
         // Re-display the prompt
-        process.stdout.write("> ");
+        process.stdout.write('> ');
       }
     });
   }
@@ -278,8 +279,13 @@ async function main(): Promise<void> {
   }
 
   // Determine if we should run in CLI or interactive mode
-  const hasCommands = options.listTools || options.callTool || options.listPrompts ||
-                     options.getPrompt || options.listResources || options.readResource;
+  const hasCommands =
+    options.listTools ||
+    options.callTool ||
+    options.listPrompts ||
+    options.getPrompt ||
+    options.listResources ||
+    options.readResource;
 
   if (hasCommands || options.connect) {
     // CLI mode - execute commands and exit
@@ -293,149 +299,139 @@ async function main(): Promise<void> {
 }
 
 function printHelp(): void {
-  console.log("\nAvailable commands:");
+  console.log('\nAvailable commands:');
+  console.log('  connect [url]              - Connect to MCP server (default: http://localhost:3000/mcp)');
+  console.log('  disconnect                 - Disconnect from server');
+  console.log('  terminate-session          - Terminate the current session');
+  console.log('  reconnect                  - Reconnect to the server');
+  console.log('  list-tools                 - List available tools');
+  console.log('  call-tool <name> [args]    - Call a tool with optional JSON arguments');
+  console.log('  greet [name]               - Call the greet tool');
+  console.log('  multi-greet [name]         - Call the multi-greet tool with notifications');
   console.log(
-    "  connect [url]              - Connect to MCP server (default: http://localhost:3000/mcp)"
+    '  collect-info [type]        - Test elicitation with collect-user-info tool (contact/preferences/feedback)',
   );
-  console.log("  disconnect                 - Disconnect from server");
-  console.log("  terminate-session          - Terminate the current session");
-  console.log("  reconnect                  - Reconnect to the server");
-  console.log("  list-tools                 - List available tools");
+  console.log('  start-notifications [interval] [count] - Start periodic notifications');
   console.log(
-    "  call-tool <name> [args]    - Call a tool with optional JSON arguments"
+    '  run-notifications-tool-with-resumability [interval] [count] - Run notification tool with resumability',
   );
-  console.log("  greet [name]               - Call the greet tool");
-  console.log(
-    "  multi-greet [name]         - Call the multi-greet tool with notifications"
-  );
-  console.log(
-    "  collect-info [type]        - Test elicitation with collect-user-info tool (contact/preferences/feedback)"
-  );
-  console.log(
-    "  start-notifications [interval] [count] - Start periodic notifications"
-  );
-  console.log(
-    "  run-notifications-tool-with-resumability [interval] [count] - Run notification tool with resumability"
-  );
-  console.log("  list-prompts               - List available prompts");
-  console.log(
-    "  get-prompt [name] [args]   - Get a prompt with optional JSON arguments"
-  );
-  console.log("  list-resources             - List available resources");
-  console.log("  read-resource <uri>        - Read a specific resource by URI");
-  console.log("  help                       - Show this help");
-  console.log("  quit                       - Exit the program");
+  console.log('  list-prompts               - List available prompts');
+  console.log('  get-prompt [name] [args]   - Get a prompt with optional JSON arguments');
+  console.log('  list-resources             - List available resources');
+  console.log('  read-resource <uri>        - Read a specific resource by URI');
+  console.log('  help                       - Show this help');
+  console.log('  quit                       - Exit the program');
 }
 
 function commandLoop(): void {
-  readline.question("\n> ", async (input) => {
+  readline.question('\n> ', async (input) => {
     const args = input.trim().split(/\s+/);
     const command = args[0]?.toLowerCase();
 
     try {
       switch (command) {
-        case "connect":
+        case 'connect':
           await connect(args[1]);
           break;
 
-        case "disconnect":
+        case 'disconnect':
           await disconnect();
           break;
 
-        case "terminate-session":
+        case 'terminate-session':
           await terminateSession();
           break;
 
-        case "reconnect":
+        case 'reconnect':
           await reconnect();
           break;
 
-        case "list-tools":
+        case 'list-tools':
           await listTools();
           break;
 
-        case "call-tool":
+        case 'call-tool':
           if (args.length < 2) {
-            console.log("Usage: call-tool <name> [args]");
+            console.log('Usage: call-tool <name> [args]');
           } else {
             const toolName = args[1];
             let toolArgs = {};
             if (args.length > 2) {
               try {
-                toolArgs = JSON.parse(args.slice(2).join(" "));
+                toolArgs = JSON.parse(args.slice(2).join(' '));
               } catch {
-                console.log("Invalid JSON arguments. Using empty args.");
+                console.log('Invalid JSON arguments. Using empty args.');
               }
             }
             await callTool(toolName, toolArgs);
           }
           break;
 
-        case "greet":
-          await callGreetTool(args[1] || "MCP User");
+        case 'greet':
+          await callGreetTool(args[1] || 'MCP User');
           break;
 
-        case "multi-greet":
-          await callMultiGreetTool(args[1] || "MCP User");
+        case 'multi-greet':
+          await callMultiGreetTool(args[1] || 'MCP User');
           break;
 
-        case "collect-info":
-          await callCollectInfoTool(args[1] || "contact");
+        case 'collect-info':
+          await callCollectInfoTool(args[1] || 'contact');
           break;
 
-        case "start-notifications": {
+        case 'start-notifications': {
           const interval = args[1] ? parseInt(args[1], 10) : 2000;
           const count = args[2] ? parseInt(args[2], 10) : 10;
           await startNotifications(interval, count);
           break;
         }
 
-        case "run-notifications-tool-with-resumability": {
+        case 'run-notifications-tool-with-resumability': {
           const interval = args[1] ? parseInt(args[1], 10) : 2000;
           const count = args[2] ? parseInt(args[2], 10) : 10;
           await runNotificationsToolWithResumability(interval, count);
           break;
         }
 
-        case "list-prompts":
+        case 'list-prompts':
           await listPrompts();
           break;
 
-        case "get-prompt":
+        case 'get-prompt':
           if (args.length < 2) {
-            console.log("Usage: get-prompt <name> [args]");
+            console.log('Usage: get-prompt <name> [args]');
           } else {
             const promptName = args[1];
             let promptArgs = {};
             if (args.length > 2) {
               try {
-                promptArgs = JSON.parse(args.slice(2).join(" "));
+                promptArgs = JSON.parse(args.slice(2).join(' '));
               } catch {
-                console.log("Invalid JSON arguments. Using empty args.");
+                console.log('Invalid JSON arguments. Using empty args.');
               }
             }
             await getPrompt(promptName, promptArgs);
           }
           break;
 
-        case "list-resources":
+        case 'list-resources':
           await listResources();
           break;
 
-        case "read-resource":
+        case 'read-resource':
           if (args.length < 2) {
-            console.log("Usage: read-resource <uri>");
+            console.log('Usage: read-resource <uri>');
           } else {
             await readResource(args[1]);
           }
           break;
 
-        case "help":
+        case 'help':
           printHelp();
           break;
 
-        case "quit":
-        case "exit":
+        case 'quit':
+        case 'exit':
           await cleanup();
           return;
 
@@ -456,7 +452,7 @@ function commandLoop(): void {
 
 async function connect(url?: string): Promise<void> {
   if (client) {
-    console.log("Already connected. Disconnect first.");
+    console.log('Already connected. Disconnect first.');
     return;
   }
 
@@ -470,24 +466,24 @@ async function connect(url?: string): Promise<void> {
     // Create a new client with elicitation capability
     client = new Client(
       {
-        name: "example-client",
-        version: "1.0.0",
+        name: 'example-client',
+        version: '1.0.0',
       },
       {
         capabilities: {
           elicitation: {},
         },
-      }
+      },
     );
     client.onerror = (error) => {
-      console.error("\x1b[31mClient error:", error, "\x1b[0m");
+      console.error('\x1b[31mClient error:', error, '\x1b[0m');
     };
 
     // Set up elicitation request handler with proper validation
     client.setRequestHandler(ElicitRequestSchema, async (request) => {
-      console.log("\n🔔 Elicitation Request Received:");
+      console.log('\n🔔 Elicitation Request Received:');
       console.log(`Message: ${request.params.message}`);
-      console.log("Requested Schema:");
+      console.log('Requested Schema:');
       console.log(JSON.stringify(request.params.requestedSchema, null, 2));
 
       const schema = request.params.requestedSchema;
@@ -503,9 +499,7 @@ async function connect(url?: string): Promise<void> {
 
       while (attempts < maxAttempts) {
         attempts++;
-        console.log(
-          `\nPlease provide the following information (attempt ${attempts}/${maxAttempts}):`
-        );
+        console.log(`\nPlease provide the following information (attempt ${attempts}/${maxAttempts}):`);
 
         const content: Record<string, unknown> = {};
         let inputCancelled = false;
@@ -533,9 +527,9 @@ async function connect(url?: string): Promise<void> {
             prompt += ` (${field.description})`;
           }
           if (field.enum) {
-            prompt += ` [options: ${field.enum.join(", ")}]`;
+            prompt += ` [options: ${field.enum.join(', ')}]`;
           }
-          if (field.type === "number" || field.type === "integer") {
+          if (field.type === 'number' || field.type === 'integer') {
             if (field.minimum !== undefined && field.maximum !== undefined) {
               prompt += ` [${field.minimum}-${field.maximum}]`;
             } else if (field.minimum !== undefined) {
@@ -544,17 +538,17 @@ async function connect(url?: string): Promise<void> {
               prompt += ` [max: ${field.maximum}]`;
             }
           }
-          if (field.type === "string" && field.format) {
+          if (field.type === 'string' && field.format) {
             prompt += ` [format: ${field.format}]`;
           }
           if (isRequired) {
-            prompt += " *required*";
+            prompt += ' *required*';
           }
           if (field.default !== undefined) {
             prompt += ` [default: ${field.default}]`;
           }
 
-          prompt += ": ";
+          prompt += ': ';
 
           const answer = await new Promise<string>((resolve) => {
             readline.question(prompt, (input) => {
@@ -563,47 +557,39 @@ async function connect(url?: string): Promise<void> {
           });
 
           // Check for cancellation
-          if (
-            answer.toLowerCase() === "cancel" ||
-            answer.toLowerCase() === "c"
-          ) {
+          if (answer.toLowerCase() === 'cancel' || answer.toLowerCase() === 'c') {
             inputCancelled = true;
             break;
           }
 
           // Parse and validate the input
           try {
-            if (answer === "" && field.default !== undefined) {
+            if (answer === '' && field.default !== undefined) {
               content[fieldName] = field.default;
-            } else if (answer === "" && !isRequired) {
+            } else if (answer === '' && !isRequired) {
               // Skip optional empty fields
               continue;
-            } else if (answer === "") {
+            } else if (answer === '') {
               throw new Error(`${fieldName} is required`);
             } else {
               // Parse the value based on type
               let parsedValue: unknown;
 
-              if (field.type === "boolean") {
-                parsedValue =
-                  answer.toLowerCase() === "true" ||
-                  answer.toLowerCase() === "yes" ||
-                  answer === "1";
-              } else if (field.type === "number") {
+              if (field.type === 'boolean') {
+                parsedValue = answer.toLowerCase() === 'true' || answer.toLowerCase() === 'yes' || answer === '1';
+              } else if (field.type === 'number') {
                 parsedValue = parseFloat(answer);
                 if (isNaN(parsedValue as number)) {
                   throw new Error(`${fieldName} must be a valid number`);
                 }
-              } else if (field.type === "integer") {
+              } else if (field.type === 'integer') {
                 parsedValue = parseInt(answer, 10);
                 if (isNaN(parsedValue as number)) {
                   throw new Error(`${fieldName} must be a valid integer`);
                 }
               } else if (field.enum) {
                 if (!field.enum.includes(answer)) {
-                  throw new Error(
-                    `${fieldName} must be one of: ${field.enum.join(", ")}`
-                  );
+                  throw new Error(`${fieldName} must be one of: ${field.enum.join(', ')}`);
                 }
                 parsedValue = answer;
               } else {
@@ -620,22 +606,20 @@ async function connect(url?: string): Promise<void> {
         }
 
         if (inputCancelled) {
-          return { action: "cancel" };
+          return { action: 'cancel' };
         }
 
         // If we didn't complete all fields due to an error, try again
         if (
           Object.keys(content).length !==
-          Object.keys(properties).filter(
-            (name) => required.includes(name) || content[name] !== undefined
-          ).length
+          Object.keys(properties).filter((name) => required.includes(name) || content[name] !== undefined).length
         ) {
           if (attempts < maxAttempts) {
-            console.log("Please try again...");
+            console.log('Please try again...');
             continue;
           } else {
-            console.log("Maximum attempts reached. Declining request.");
-            return { action: "decline" };
+            console.log('Maximum attempts reached. Declining request.');
+            return { action: 'decline' };
           }
         }
 
@@ -643,52 +627,49 @@ async function connect(url?: string): Promise<void> {
         const isValid = validate(content);
 
         if (!isValid) {
-          console.log("❌ Validation errors:");
+          console.log('❌ Validation errors:');
           validate.errors?.forEach((error) => {
-            console.log(`  - ${error.instancePath || "root"}: ${error.message}`);
+            console.log(`  - ${error.instancePath || 'root'}: ${error.message}`);
           });
 
           if (attempts < maxAttempts) {
-            console.log("Please correct the errors and try again...");
+            console.log('Please correct the errors and try again...');
             continue;
           } else {
-            console.log("Maximum attempts reached. Declining request.");
-            return { action: "decline" };
+            console.log('Maximum attempts reached. Declining request.');
+            return { action: 'decline' };
           }
         }
 
         // Show the collected data and ask for confirmation
-        console.log("\n✅ Collected data:");
+        console.log('\n✅ Collected data:');
         console.log(JSON.stringify(content, null, 2));
 
         const confirmAnswer = await new Promise<string>((resolve) => {
-          readline.question(
-            "\nSubmit this information? (yes/no/cancel): ",
-            (input) => {
-              resolve(input.trim().toLowerCase());
-            }
-          );
+          readline.question('\nSubmit this information? (yes/no/cancel): ', (input) => {
+            resolve(input.trim().toLowerCase());
+          });
         });
 
-        if (confirmAnswer === "yes" || confirmAnswer === "y") {
+        if (confirmAnswer === 'yes' || confirmAnswer === 'y') {
           return {
-            action: "accept",
+            action: 'accept',
             content,
           };
-        } else if (confirmAnswer === "cancel" || confirmAnswer === "c") {
-          return { action: "cancel" };
-        } else if (confirmAnswer === "no" || confirmAnswer === "n") {
+        } else if (confirmAnswer === 'cancel' || confirmAnswer === 'c') {
+          return { action: 'cancel' };
+        } else if (confirmAnswer === 'no' || confirmAnswer === 'n') {
           if (attempts < maxAttempts) {
-            console.log("Please re-enter the information...");
+            console.log('Please re-enter the information...');
             continue;
           } else {
-            return { action: "decline" };
+            return { action: 'decline' };
           }
         }
       }
 
-      console.log("Maximum attempts reached. Declining request.");
-      return { action: "decline" };
+      console.log('Maximum attempts reached. Declining request.');
+      return { action: 'decline' };
     });
 
     transport = new StreamableHTTPClientTransport(new URL(serverUrl), {
@@ -696,53 +677,42 @@ async function connect(url?: string): Promise<void> {
     });
 
     // Set up notification handlers
-    client.setNotificationHandler(
-      LoggingMessageNotificationSchema,
-      (notification) => {
-        notificationCount++;
-        console.log(
-          `\nNotification #${notificationCount}: ${notification.params.level} - ${notification.params.data}`
-        );
-        // Re-display the prompt
-        process.stdout.write("> ");
-      }
-    );
+    client.setNotificationHandler(LoggingMessageNotificationSchema, (notification) => {
+      notificationCount++;
+      console.log(`\nNotification #${notificationCount}: ${notification.params.level} - ${notification.params.data}`);
+      // Re-display the prompt
+      process.stdout.write('> ');
+    });
 
-    client.setNotificationHandler(
-      ResourceListChangedNotificationSchema,
-      async (_) => {
-        console.log(`\nResource list changed notification received!`);
-        try {
-          if (!client) {
-            console.log("Client disconnected, cannot fetch resources");
-            return;
-          }
-          const resourcesResult = await client.request(
-            {
-              method: "resources/list",
-              params: {},
-            },
-            ListResourcesResultSchema
-          );
-          console.log(
-            "Available resources count:",
-            resourcesResult.resources.length
-          );
-        } catch {
-          console.log("Failed to list resources after change notification");
+    client.setNotificationHandler(ResourceListChangedNotificationSchema, async (_) => {
+      console.log(`\nResource list changed notification received!`);
+      try {
+        if (!client) {
+          console.log('Client disconnected, cannot fetch resources');
+          return;
         }
-        // Re-display the prompt
-        process.stdout.write("> ");
+        const resourcesResult = await client.request(
+          {
+            method: 'resources/list',
+            params: {},
+          },
+          ListResourcesResultSchema,
+        );
+        console.log('Available resources count:', resourcesResult.resources.length);
+      } catch {
+        console.log('Failed to list resources after change notification');
       }
-    );
+      // Re-display the prompt
+      process.stdout.write('> ');
+    });
 
     // Connect the client
     await client.connect(transport);
     sessionId = transport.sessionId;
-    console.log("Transport created with session ID:", sessionId);
-    console.log("Connected to MCP server");
+    console.log('Transport created with session ID:', sessionId);
+    console.log('Connected to MCP server');
   } catch (error) {
-    console.error("Failed to connect:", error);
+    console.error('Failed to connect:', error);
     client = null;
     transport = null;
   }
@@ -750,49 +720,47 @@ async function connect(url?: string): Promise<void> {
 
 async function disconnect(): Promise<void> {
   if (!client || !transport) {
-    console.log("Not connected.");
+    console.log('Not connected.');
     return;
   }
 
   try {
     await transport.close();
-    console.log("Disconnected from MCP server");
+    console.log('Disconnected from MCP server');
     client = null;
     transport = null;
   } catch (error) {
-    console.error("Error disconnecting:", error);
+    console.error('Error disconnecting:', error);
   }
 }
 
 async function terminateSession(): Promise<void> {
   if (!client || !transport) {
-    console.log("Not connected.");
+    console.log('Not connected.');
     return;
   }
 
   try {
-    console.log("Terminating session with ID:", transport.sessionId);
+    console.log('Terminating session with ID:', transport.sessionId);
     await transport.terminateSession();
-    console.log("Session terminated successfully");
+    console.log('Session terminated successfully');
 
     // Check if sessionId was cleared after termination
     if (!transport.sessionId) {
-      console.log("Session ID has been cleared");
+      console.log('Session ID has been cleared');
       sessionId = undefined;
 
       // Also close the transport and clear client objects
       await transport.close();
-      console.log("Transport closed after session termination");
+      console.log('Transport closed after session termination');
       client = null;
       transport = null;
     } else {
-      console.log(
-        "Server responded with 405 Method Not Allowed (session termination not supported)"
-      );
-      console.log("Session ID is still active:", transport.sessionId);
+      console.log('Server responded with 405 Method Not Allowed (session termination not supported)');
+      console.log('Session ID is still active:', transport.sessionId);
     }
   } catch (error) {
-    console.error("Error terminating session:", error);
+    console.error('Error terminating session:', error);
   }
 }
 
@@ -805,30 +773,23 @@ async function reconnect(): Promise<void> {
 
 async function listTools(): Promise<void> {
   if (!client) {
-    console.log("Not connected to server.");
+    console.log('Not connected to server.');
     return;
   }
 
   try {
     const toolsRequest: ListToolsRequest = {
-      method: "tools/list",
+      method: 'tools/list',
       params: {},
     };
-    const toolsResult = await client.request(
-      toolsRequest,
-      ListToolsResultSchema
-    );
+    const toolsResult = await client.request(toolsRequest, ListToolsResultSchema);
 
-    console.log("Available tools:");
+    console.log('Available tools:');
     if (toolsResult.tools.length === 0) {
-      console.log("  No tools available");
+      console.log('  No tools available');
     } else {
       for (const tool of toolsResult.tools) {
-        console.log(
-          `  - id: ${tool.name}, name: ${getDisplayName(tool)}, description: ${
-            tool.description
-          }`
-        );
+        console.log(`  - id: ${tool.name}, name: ${getDisplayName(tool)}, description: ${tool.description}`);
       }
     }
   } catch (error) {
@@ -836,18 +797,15 @@ async function listTools(): Promise<void> {
   }
 }
 
-async function callTool(
-  name: string,
-  args: Record<string, unknown>
-): Promise<void> {
+async function callTool(name: string, args: Record<string, unknown>): Promise<void> {
   if (!client) {
-    console.log("Not connected to server.");
+    console.log('Not connected to server.');
     return;
   }
 
   try {
     const request: CallToolRequest = {
-      method: "tools/call",
+      method: 'tools/call',
       params: {
         name,
         arguments: args,
@@ -857,13 +815,13 @@ async function callTool(
     console.log(`Calling tool '${name}' with args:`, args);
     const result = await client.request(request, CallToolResultSchema);
 
-    console.log("Tool result:");
+    console.log('Tool result:');
     const resourceLinks: ResourceLink[] = [];
 
     result.content.forEach((item) => {
-      if (item.type === "text") {
+      if (item.type === 'text') {
         console.log(`  ${item.text}`);
-      } else if (item.type === "resource_link") {
+      } else if (item.type === 'resource_link') {
         const resourceLink = item as ResourceLink;
         resourceLinks.push(resourceLink);
         console.log(`  📁 Resource Link: ${resourceLink.name}`);
@@ -874,11 +832,11 @@ async function callTool(
         if (resourceLink.description) {
           console.log(`     Description: ${resourceLink.description}`);
         }
-      } else if (item.type === "resource") {
+      } else if (item.type === 'resource') {
         console.log(`  [Embedded Resource: ${item.resource.uri}]`);
-      } else if (item.type === "image") {
+      } else if (item.type === 'image') {
         console.log(`  [Image: ${item.mimeType}]`);
-      } else if (item.type === "audio") {
+      } else if (item.type === 'audio') {
         console.log(`  [Audio: ${item.mimeType}]`);
       } else {
         console.log(`  [Unknown content type]:`, item);
@@ -887,9 +845,7 @@ async function callTool(
 
     // Offer to read resource links
     if (resourceLinks.length > 0) {
-      console.log(
-        `\nFound ${resourceLinks.length} resource link(s). Use 'read-resource <uri>' to read their content.`
-      );
+      console.log(`\nFound ${resourceLinks.length} resource link(s). Use 'read-resource <uri>' to read their content.`);
     }
   } catch (error) {
     console.log(`Error calling tool ${name}: ${error}`);
@@ -897,56 +853,40 @@ async function callTool(
 }
 
 async function callGreetTool(name: string): Promise<void> {
-  await callTool("greet", { name });
+  await callTool('greet', { name });
 }
 
 async function callMultiGreetTool(name: string): Promise<void> {
-  console.log("Calling multi-greet tool with notifications...");
-  await callTool("multi-greet", { name });
+  console.log('Calling multi-greet tool with notifications...');
+  await callTool('multi-greet', { name });
 }
 
 async function callCollectInfoTool(infoType: string): Promise<void> {
-  console.log(
-    `Testing elicitation with collect-user-info tool (${infoType})...`
-  );
-  await callTool("collect-user-info", { infoType });
+  console.log(`Testing elicitation with collect-user-info tool (${infoType})...`);
+  await callTool('collect-user-info', { infoType });
 }
 
-async function startNotifications(
-  interval: number,
-  count: number
-): Promise<void> {
-  console.log(
-    `Starting notification stream: interval=${interval}ms, count=${
-      count || "unlimited"
-    }`
-  );
-  await callTool("start-notification-stream", { interval, count });
+async function startNotifications(interval: number, count: number): Promise<void> {
+  console.log(`Starting notification stream: interval=${interval}ms, count=${count || 'unlimited'}`);
+  await callTool('start-notification-stream', { interval, count });
 }
 
-async function runNotificationsToolWithResumability(
-  interval: number,
-  count: number
-): Promise<void> {
+async function runNotificationsToolWithResumability(interval: number, count: number): Promise<void> {
   if (!client) {
-    console.log("Not connected to server.");
+    console.log('Not connected to server.');
     return;
   }
 
   try {
     console.log(
-      `Starting notification stream with resumability: interval=${interval}ms, count=${
-        count || "unlimited"
-      }`
+      `Starting notification stream with resumability: interval=${interval}ms, count=${count || 'unlimited'}`,
     );
-    console.log(
-      `Using resumption token: ${notificationsToolLastEventId || "none"}`
-    );
+    console.log(`Using resumption token: ${notificationsToolLastEventId || 'none'}`);
 
     const request: CallToolRequest = {
-      method: "tools/call",
+      method: 'tools/call',
       params: {
-        name: "start-notification-stream",
+        name: 'start-notification-stream',
         arguments: { interval, count },
       },
     };
@@ -961,9 +901,9 @@ async function runNotificationsToolWithResumability(
       onresumptiontoken: onLastEventIdUpdate,
     });
 
-    console.log("Tool result:");
+    console.log('Tool result:');
     result.content.forEach((item) => {
-      if (item.type === "text") {
+      if (item.type === 'text') {
         console.log(`  ${item.text}`);
       } else {
         console.log(`  ${item.type} content:`, item);
@@ -976,29 +916,22 @@ async function runNotificationsToolWithResumability(
 
 async function listPrompts(): Promise<void> {
   if (!client) {
-    console.log("Not connected to server.");
+    console.log('Not connected to server.');
     return;
   }
 
   try {
     const promptsRequest: ListPromptsRequest = {
-      method: "prompts/list",
+      method: 'prompts/list',
       params: {},
     };
-    const promptsResult = await client.request(
-      promptsRequest,
-      ListPromptsResultSchema
-    );
-    console.log("Available prompts:");
+    const promptsResult = await client.request(promptsRequest, ListPromptsResultSchema);
+    console.log('Available prompts:');
     if (promptsResult.prompts.length === 0) {
-      console.log("  No prompts available");
+      console.log('  No prompts available');
     } else {
       for (const prompt of promptsResult.prompts) {
-        console.log(
-          `  - id: ${prompt.name}, name: ${getDisplayName(
-            prompt
-          )}, description: ${prompt.description}`
-        );
+        console.log(`  - id: ${prompt.name}, name: ${getDisplayName(prompt)}, description: ${prompt.description}`);
       }
     }
   } catch (error) {
@@ -1006,29 +939,23 @@ async function listPrompts(): Promise<void> {
   }
 }
 
-async function getPrompt(
-  name: string,
-  args: Record<string, unknown>
-): Promise<void> {
+async function getPrompt(name: string, args: Record<string, unknown>): Promise<void> {
   if (!client) {
-    console.log("Not connected to server.");
+    console.log('Not connected to server.');
     return;
   }
 
   try {
     const promptRequest: GetPromptRequest = {
-      method: "prompts/get",
+      method: 'prompts/get',
       params: {
         name,
         arguments: args as Record<string, string>,
       },
     };
 
-    const promptResult = await client.request(
-      promptRequest,
-      GetPromptResultSchema
-    );
-    console.log("Prompt template:");
+    const promptResult = await client.request(promptRequest, GetPromptResultSchema);
+    console.log('Prompt template:');
     promptResult.messages.forEach((msg, index) => {
       console.log(`  [${index + 1}] ${msg.role}: ${msg.content.text}`);
     });
@@ -1039,30 +966,23 @@ async function getPrompt(
 
 async function listResources(): Promise<void> {
   if (!client) {
-    console.log("Not connected to server.");
+    console.log('Not connected to server.');
     return;
   }
 
   try {
     const resourcesRequest: ListResourcesRequest = {
-      method: "resources/list",
+      method: 'resources/list',
       params: {},
     };
-    const resourcesResult = await client.request(
-      resourcesRequest,
-      ListResourcesResultSchema
-    );
+    const resourcesResult = await client.request(resourcesRequest, ListResourcesResultSchema);
 
-    console.log("Available resources:");
+    console.log('Available resources:');
     if (resourcesResult.resources.length === 0) {
-      console.log("  No resources available");
+      console.log('  No resources available');
     } else {
       for (const resource of resourcesResult.resources) {
-        console.log(
-          `  - id: ${resource.name}, name: ${getDisplayName(
-            resource
-          )}, description: ${resource.uri}`
-        );
+        console.log(`  - id: ${resource.name}, name: ${getDisplayName(resource)}, description: ${resource.uri}`);
       }
     }
   } catch (error) {
@@ -1072,37 +992,37 @@ async function listResources(): Promise<void> {
 
 async function readResource(uri: string): Promise<void> {
   if (!client) {
-    console.log("Not connected to server.");
+    console.log('Not connected to server.');
     return;
   }
 
   try {
     const request: ReadResourceRequest = {
-      method: "resources/read",
+      method: 'resources/read',
       params: { uri },
     };
 
     console.log(`Reading resource: ${uri}`);
     const result = await client.request(request, ReadResourceResultSchema);
 
-    console.log("Resource contents:");
+    console.log('Resource contents:');
     for (const content of result.contents) {
       console.log(`  URI: ${content.uri}`);
       if (content.mimeType) {
         console.log(`  Type: ${content.mimeType}`);
       }
 
-      if ("text" in content && typeof content.text === "string") {
-        console.log("  Content:");
-        console.log("  ---");
+      if ('text' in content && typeof content.text === 'string') {
+        console.log('  Content:');
+        console.log('  ---');
         console.log(
           content.text
-            .split("\n")
-            .map((line: string) => "  " + line)
-            .join("\n")
+            .split('\n')
+            .map((line: string) => '  ' + line)
+            .join('\n'),
         );
-        console.log("  ---");
-      } else if ("blob" in content && typeof content.blob === "string") {
+        console.log('  ---');
+      } else if ('blob' in content && typeof content.blob === 'string') {
         console.log(`  [Binary data: ${content.blob.length} bytes]`);
       }
     }
@@ -1117,18 +1037,18 @@ async function cleanup(): Promise<void> {
       // First try to terminate the session gracefully
       if (transport.sessionId) {
         try {
-          console.log("Terminating session before exit...");
+          console.log('Terminating session before exit...');
           await transport.terminateSession();
-          console.log("Session terminated successfully");
+          console.log('Session terminated successfully');
         } catch (error) {
-          console.error("Error terminating session:", error);
+          console.error('Error terminating session:', error);
         }
       }
 
       // Then close the transport
       await transport.close();
     } catch (error) {
-      console.error("Error closing transport:", error);
+      console.error('Error closing transport:', error);
     }
   }
 
@@ -1136,18 +1056,18 @@ async function cleanup(): Promise<void> {
     process.stdin.setRawMode(false);
   }
   readline.close();
-  console.log("\nGoodbye!");
+  console.log('\nGoodbye!');
   process.exit(0);
 }
 
 // Handle Ctrl+C
-process.on("SIGINT", async () => {
-  console.log("\nReceived SIGINT. Cleaning up...");
+process.on('SIGINT', async () => {
+  console.log('\nReceived SIGINT. Cleaning up...');
   await cleanup();
 });
 
 // Start the interactive client
 main().catch((error: unknown) => {
-  console.error("Error running MCP client:", error);
+  console.error('Error running MCP client:', error);
   process.exit(1);
 });

@@ -1,5 +1,5 @@
-import { compile } from "json-schema-to-typescript";
-import type { DiscoveredTool, DiscoveryResult } from "./toolDiscovery.js";
+import { compile } from 'json-schema-to-typescript';
+import type { DiscoveredTool, DiscoveryResult } from './toolDiscovery.js';
 
 export interface GeneratedToolType {
   toolName: string;
@@ -7,6 +7,8 @@ export interface GeneratedToolType {
   serverName: string;
   inputTypeName: string;
   inputTypeDefinition: string;
+  outputTypeName?: string;
+  outputTypeDefinition?: string;
   functionSignature: string;
 }
 
@@ -52,6 +54,9 @@ export class TypeGeneratorService {
           const generatedTool = await this.generateToolType(tool);
           generatedTools.push(generatedTool);
           typeDefinitions.push(generatedTool.inputTypeDefinition);
+          if (generatedTool.outputTypeDefinition) {
+            typeDefinitions.push(generatedTool.outputTypeDefinition);
+          }
           functionSignatures.push(generatedTool.functionSignature);
 
           console.log(`✅ Generated types for ${tool.name}`);
@@ -81,9 +86,10 @@ export class TypeGeneratorService {
    */
   private async generateToolType(tool: DiscoveredTool): Promise<GeneratedToolType> {
     // Create a safe type name from tool name
-    const inputTypeName = this.createSafeTypeName(tool.name, tool.serverId);
+    const inputTypeName = this.createSafeTypeName(tool.name, tool.serverId, 'Input');
+    const outputTypeName = this.createSafeTypeName(tool.name, tool.serverId, 'Output');
 
-    // Convert JSON schema to TypeScript interface
+    // Convert input JSON schema to TypeScript interface
     let inputTypeDefinition: string;
     try {
       if (tool.inputSchema && typeof tool.inputSchema === 'object') {
@@ -98,12 +104,33 @@ export class TypeGeneratorService {
         inputTypeDefinition = `// Input type for ${tool.name} tool from ${tool.serverName}\nexport interface ${inputTypeName} {}\n`;
       }
     } catch (error) {
-      console.warn(`⚠️ Failed to generate schema for ${tool.name}, using empty interface:`, error);
+      console.warn(`⚠️ Failed to generate input schema for ${tool.name}, using empty interface:`, error);
       inputTypeDefinition = `// Input type for ${tool.name} tool from ${tool.serverName}\nexport interface ${inputTypeName} {}\n`;
     }
 
+    // Convert output JSON schema to TypeScript interface (if present)
+    let outputTypeDefinition: string | undefined;
+    if (tool.outputSchema && typeof tool.outputSchema === 'object') {
+      try {
+        outputTypeDefinition = await compile(tool.outputSchema as any, outputTypeName, {
+          bannerComment: `// Output type for ${tool.name} tool from ${tool.serverName}`,
+          style: {
+            singleQuote: false,
+          },
+        });
+        console.log(`✨ Generated output type for ${tool.name}`);
+      } catch (error) {
+        console.warn(`⚠️ Failed to generate output schema for ${tool.name}:`, error);
+        outputTypeDefinition = undefined;
+      }
+    }
+
     // Generate function signature
-    const functionSignature = this.generateFunctionSignature(tool, inputTypeName);
+    const functionSignature = this.generateFunctionSignature(
+      tool,
+      inputTypeName,
+      outputTypeDefinition ? outputTypeName : undefined,
+    );
 
     return {
       toolName: tool.name,
@@ -111,6 +138,8 @@ export class TypeGeneratorService {
       serverName: tool.serverName,
       inputTypeName,
       inputTypeDefinition,
+      outputTypeName: outputTypeDefinition ? outputTypeName : undefined,
+      outputTypeDefinition,
       functionSignature,
     };
   }
@@ -118,31 +147,36 @@ export class TypeGeneratorService {
   /**
    * Create a safe TypeScript type name from tool name and server ID
    */
-  private createSafeTypeName(toolName: string, serverId: string): string {
+  private createSafeTypeName(toolName: string, serverId: string, suffix: string): string {
     // Convert to PascalCase and make it unique
     const safeName = toolName
       .replace(/[^a-zA-Z0-9]/g, '_')
       .split('_')
-      .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
       .join('');
 
     const safeServerId = serverId
       .replace(/[^a-zA-Z0-9]/g, '_')
       .split('_')
-      .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
       .join('');
 
-    return `${safeName}${safeServerId}Input`;
+    return `${safeName}${safeServerId}${suffix}`;
   }
 
   /**
    * Generate a TypeScript function signature for a tool
    */
-  private generateFunctionSignature(tool: DiscoveredTool, inputTypeName: string): string {
-    const description = tool.description ? `\n  /**\n   * ${tool.description}\n   * Server: ${tool.serverName}\n   */` : '';
+  private generateFunctionSignature(tool: DiscoveredTool, inputTypeName: string, outputTypeName?: string): string {
+    const description = tool.description
+      ? `\n  /**\n   * ${tool.description}\n   * Server: ${tool.serverName}\n   */`
+      : '';
+
+    // Use structured output type if available, otherwise fall back to ToolResult
+    const returnType = outputTypeName ? `Promise<ToolResultWithOutput<${outputTypeName}>>` : 'Promise<ToolResult>';
 
     return `${description}
-  ${this.createSafeFunctionName(tool.name, tool.serverId)}(input: ${inputTypeName}): Promise<ToolResult>;`;
+  ${this.createSafeFunctionName(tool.name, tool.serverId)}(input: ${inputTypeName}): ${returnType};`;
   }
 
   /**
@@ -165,18 +199,14 @@ export class TypeGeneratorService {
 
 `;
 
-    const toolResultType = `export interface ToolResult {
-  content: Array<{
-    type: "text" | "image" | "resource";
-    text?: string;
-    data?: string;
-    url?: string;
-    mimeType?: string;
-  }>;
-  isError?: boolean;
-  _meta?: {
-    progressToken?: string;
-  };
+    const toolResultType = `// Import CallToolResult from MCP SDK
+import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
+
+// Re-export for consistency
+export type ToolResult = CallToolResult;
+
+export interface ToolResultWithOutput<T> extends ToolResult {
+  structuredContent?: T;
 }
 
 `;
@@ -197,11 +227,15 @@ export interface McpTools {`;
 
 // Tool metadata for runtime resolution
 export const TOOL_METADATA = {
-${tools.map(tool => `  "${this.createSafeFunctionName(tool.toolName, tool.serverId)}": {
+${tools
+  .map(
+    (tool) => `  "${this.createSafeFunctionName(tool.toolName, tool.serverId)}": {
     originalName: "${tool.toolName}",
     serverId: "${tool.serverId}",
     serverName: "${tool.serverName}",
-  }`).join(',\n')}
+  }`,
+  )
+  .join(',\n')}
 } as const;
 
 // Export for runtime use
@@ -235,7 +269,7 @@ export type ToolName = keyof McpTools;
     const metadataPath = path.join(outputDir, 'metadata.json');
     const metadata = {
       generatedAt: new Date().toISOString(),
-      tools: generatedTypes.tools.map(tool => ({
+      tools: generatedTypes.tools.map((tool) => ({
         toolName: tool.toolName,
         serverId: tool.serverId,
         serverName: tool.serverName,

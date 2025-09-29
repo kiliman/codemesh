@@ -5,7 +5,7 @@ async function testMCPServer() {
   console.log('Testing Weather MCP Server...\n');
 
   const server = spawn('node', ['src/index.ts'], {
-    stdio: ['pipe', 'pipe', 'inherit']
+    stdio: ['pipe', 'pipe', 'inherit'],
   });
 
   // Test list tools
@@ -13,7 +13,7 @@ async function testMCPServer() {
     jsonrpc: '2.0',
     id: 1,
     method: 'tools/list',
-    params: {}
+    params: {},
   };
 
   console.log('1. Testing tools/list...');
@@ -27,9 +27,9 @@ async function testMCPServer() {
     params: {
       name: 'get_alerts',
       arguments: {
-        state: 'CA'
-      }
-    }
+        state: 'CA',
+      },
+    },
   };
 
   setTimeout(() => {
@@ -46,9 +46,9 @@ async function testMCPServer() {
       name: 'get_forecast',
       arguments: {
         latitude: 37.7749,
-        longitude: -122.4194
-      }
-    }
+        longitude: -122.4194,
+      },
+    },
   };
 
   setTimeout(() => {
@@ -60,7 +60,7 @@ async function testMCPServer() {
   let responseCount = 0;
   server.stdout.on('data', (data) => {
     const responses = data.toString().trim().split('\n');
-    responses.forEach(response => {
+    responses.forEach((response) => {
       if (response.trim()) {
         try {
           const parsed = JSON.parse(response);

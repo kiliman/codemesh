@@ -1,23 +1,12 @@
-import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
-import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
-import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
-import type { McpServerConfig } from "./config.js";
-import type { DiscoveredTool } from "./toolDiscovery.js";
+import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
+import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
+import type { McpServerConfig } from './config.js';
+import type { DiscoveredTool } from './toolDiscovery.js';
 
-export interface ToolResult {
-  content: Array<{
-    type: "text" | "image" | "resource";
-    text?: string;
-    data?: string;
-    url?: string;
-    mimeType?: string;
-  }>;
-  isError?: boolean;
-  _meta?: {
-    progressToken?: string;
-  };
-}
+// Re-export CallToolResult from MCP SDK as our ToolResult
+export type ToolResult = CallToolResult;
 
 export interface RuntimeTool {
   name: string;
@@ -96,14 +85,13 @@ export class RuntimeWrapper {
 
     let transport: StreamableHTTPClientTransport | StdioClientTransport;
 
-    if (serverConfig.type === "http") {
+    if (serverConfig.type === 'http') {
       if (!serverConfig.url) {
         throw new Error(`HTTP server ${serverId} missing URL`);
       }
       console.log(`📡 HTTP connection to ${serverConfig.url}`);
       transport = new StreamableHTTPClientTransport(new URL(serverConfig.url));
-
-    } else if (serverConfig.type === "stdio") {
+    } else if (serverConfig.type === 'stdio') {
       if (!serverConfig.command || serverConfig.command.length === 0) {
         throw new Error(`Stdio server ${serverId} missing command`);
       }
@@ -113,9 +101,14 @@ export class RuntimeWrapper {
         command: serverConfig.command[0],
         args: serverConfig.command.slice(1),
         cwd: serverConfig.cwd || process.cwd(),
-        env: { ...process.env, ...serverConfig.env },
+        env: {
+          ...(Object.fromEntries(Object.entries(process.env).filter(([, value]) => value !== undefined)) as Record<
+            string,
+            string
+          >),
+          ...serverConfig.env,
+        },
       });
-
     } else {
       throw new Error(`Unsupported server type: ${serverConfig.type} (server: ${serverId})`);
     }
@@ -123,14 +116,14 @@ export class RuntimeWrapper {
     // Create client
     const client = new Client(
       {
-        name: "codemode-runtime-client",
-        version: "1.0.0",
+        name: 'codemode-runtime-client',
+        version: '1.0.0',
       },
       {
         capabilities: {
           elicitation: {},
         },
-      }
+      },
     );
 
     // Connect
@@ -151,7 +144,9 @@ export class RuntimeWrapper {
   async callTool(functionName: string, input: unknown): Promise<ToolResult> {
     const runtimeTool = this.tools.get(functionName);
     if (!runtimeTool) {
-      throw new Error(`Tool function '${functionName}' not found. Available tools: ${Array.from(this.tools.keys()).join(', ')}`);
+      throw new Error(
+        `Tool function '${functionName}' not found. Available tools: ${Array.from(this.tools.keys()).join(', ')}`,
+      );
     }
 
     console.log(`🔧 Executing ${functionName} (${runtimeTool.originalName} on ${runtimeTool.tool.serverName})`);
@@ -161,32 +156,27 @@ export class RuntimeWrapper {
       const client = await this.getConnection(runtimeTool.serverId);
 
       // Call the tool on the MCP server
-      const result: CallToolResult = await client.callTool({
+      const result = await client.callTool({
         name: runtimeTool.originalName,
-        arguments: input || {},
+        arguments: (input || {}) as { [key: string]: unknown },
       });
 
       console.log(`✅ ${functionName} executed successfully`);
 
-      // Convert MCP result to our ToolResult format
-      return {
-        content: result.content || [],
-        isError: result.isError,
-        _meta: result._meta,
-      };
-
+      // Return the CallToolResult directly (it is now our ToolResult type)
+      return result as CallToolResult;
     } catch (error) {
       console.error(`❌ Error executing ${functionName}:`, error);
 
       return {
         content: [
           {
-            type: "text",
+            type: 'text',
             text: `Error executing ${functionName}: ${error instanceof Error ? error.message : String(error)}`,
           },
         ],
         isError: true,
-      };
+      } as CallToolResult;
     }
   }
 
@@ -253,8 +243,8 @@ export class RuntimeWrapper {
       `📊 ${this.tools.size} tools registered`,
       `🌐 ${this.serverConfigs.size} server configurations`,
       `🔌 ${this.connections.size} active connections`,
-      "",
-      "Registered Tools:",
+      '',
+      'Registered Tools:',
     ];
 
     for (const [functionName, runtimeTool] of this.tools) {

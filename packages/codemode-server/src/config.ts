@@ -1,28 +1,28 @@
-import { z } from "zod";
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { z } from 'zod';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 
 // MCP Server Configuration Schema (compatible with VSCode's .vscode/mcp.json)
 const McpServerConfigSchema = z.object({
-  id: z.string().describe("Unique identifier for the server"),
-  name: z.string().describe("Human-readable name for the server"),
-  type: z.enum(["stdio", "http", "websocket"]).describe("Connection type"),
+  id: z.string().describe('Unique identifier for the server'),
+  name: z.string().describe('Human-readable name for the server'),
+  type: z.enum(['stdio', 'http', 'websocket']).describe('Connection type'),
 
   // For stdio servers
-  command: z.array(z.string()).optional().describe("Command and arguments to start the server"),
-  cwd: z.string().optional().describe("Working directory for the server process"),
-  env: z.record(z.string()).optional().describe("Environment variables for the server"),
+  command: z.array(z.string()).optional().describe('Command and arguments to start the server'),
+  cwd: z.string().optional().describe('Working directory for the server process'),
+  env: z.record(z.string()).optional().describe('Environment variables for the server'),
 
   // For HTTP/WebSocket servers
-  url: z.string().url().optional().describe("Server URL"),
+  url: z.string().url().optional().describe('Server URL'),
 
   // Optional configuration
-  timeout: z.number().optional().describe("Connection timeout in milliseconds"),
-  retries: z.number().optional().describe("Number of connection retries"),
+  timeout: z.number().optional().describe('Connection timeout in milliseconds'),
+  retries: z.number().optional().describe('Number of connection retries'),
 });
 
 const McpConfigSchema = z.object({
-  servers: z.array(McpServerConfigSchema).describe("List of MCP servers to connect to"),
+  servers: z.array(McpServerConfigSchema).describe('List of MCP servers to connect to'),
 });
 
 export type McpServerConfig = z.infer<typeof McpServerConfigSchema>;
@@ -47,7 +47,7 @@ export class ConfigLoader {
   public loadConfig(configPath: string): McpConfig {
     try {
       const configFile = resolve(configPath);
-      const configData = readFileSync(configFile, "utf-8");
+      const configData = readFileSync(configFile, 'utf-8');
       const parsedConfig = JSON.parse(configData);
 
       // Validate the configuration against our schema
@@ -59,11 +59,11 @@ export class ConfigLoader {
       return this.config;
     } catch (error) {
       if (error instanceof z.ZodError) {
-        console.error("❌ Invalid MCP configuration format:");
+        console.error('❌ Invalid MCP configuration format:');
         error.errors.forEach((err) => {
-          console.error(`  - ${err.path.join(".")}: ${err.message}`);
+          console.error(`  - ${err.path.join('.')}: ${err.message}`);
         });
-        throw new Error("Invalid MCP configuration format");
+        throw new Error('Invalid MCP configuration format');
       } else if (error instanceof SyntaxError) {
         throw new Error(`Invalid JSON in MCP configuration: ${error.message}`);
       } else {
@@ -77,7 +77,7 @@ export class ConfigLoader {
    */
   public getConfig(): McpConfig {
     if (!this.config) {
-      throw new Error("No MCP configuration loaded. Call loadConfig() first.");
+      throw new Error('No MCP configuration loaded. Call loadConfig() first.');
     }
     return this.config;
   }
@@ -89,7 +89,7 @@ export class ConfigLoader {
     if (!this.config) {
       return null;
     }
-    return this.config.servers.find(server => server.id === serverId) || null;
+    return this.config.servers.find((server) => server.id === serverId) || null;
   }
 
   /**
@@ -99,7 +99,7 @@ export class ConfigLoader {
     if (!this.config) {
       return [];
     }
-    return this.config.servers.filter(server => server.type === "http");
+    return this.config.servers.filter((server) => server.type === 'http');
   }
 
   /**
@@ -109,7 +109,7 @@ export class ConfigLoader {
     if (!this.config) {
       return [];
     }
-    return this.config.servers.filter(server => server.type === "stdio");
+    return this.config.servers.filter((server) => server.type === 'stdio');
   }
 
   /**

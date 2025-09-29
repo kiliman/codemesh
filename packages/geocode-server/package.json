@@ -1,7 +1,7 @@
 {
-  "name": "weather-server",
+  "name": "geocode-server",
   "version": "1.0.0",
-  "description": "",
+  "description": "MCP server for geocoding locations to coordinates",
   "main": "index.js",
   "scripts": {
     "build": "tsc",

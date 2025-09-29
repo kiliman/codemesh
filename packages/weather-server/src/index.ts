@@ -2,10 +2,7 @@
 
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import {
-  CallToolRequestSchema,
-  ListToolsRequestSchema,
-} from '@modelcontextprotocol/sdk/types.js';
+import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
 
 const GetAlertsArgsSchema = z.object({
@@ -59,7 +56,7 @@ const server = new Server(
     capabilities: {
       tools: {},
     },
-  }
+  },
 );
 
 server.setRequestHandler(ListToolsRequestSchema, async () => {
@@ -67,7 +64,8 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
     tools: [
       {
         name: 'get_alerts',
-        description: 'Get weather alerts for a state. Returns JSON with features array containing alert objects. Each alert has properties: { event, severity, areaDesc, headline, description, instruction, effective, expires, ends }. Severity levels: Extreme, Severe, Moderate, Minor.',
+        description:
+          'Get weather alerts for a state. Returns JSON with features array containing alert objects. Each alert has properties: { event, severity, areaDesc, headline, description, instruction, effective, expires, ends }. Severity levels: Extreme, Severe, Moderate, Minor.',
         inputSchema: {
           type: 'object',
           properties: {
@@ -90,26 +88,31 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                     type: 'object',
                     properties: {
                       event: { type: 'string' },
-                      severity: { type: 'string', enum: ['Extreme', 'Severe', 'Moderate', 'Minor'] },
+                      severity: {
+                        type: 'string',
+                        enum: ['Extreme', 'Severe', 'Moderate', 'Minor'],
+                      },
                       areaDesc: { type: 'string' },
                       headline: { type: 'string' },
                       description: { type: 'string' },
                       instruction: { type: 'string' },
+                      response: { type: 'string' },
                       effective: { type: 'string' },
                       expires: { type: 'string' },
-                      ends: { type: 'string' }
-                    }
-                  }
-                }
-              }
-            }
+                      ends: { type: 'string' },
+                    },
+                  },
+                },
+              },
+            },
           },
-          required: ['features']
-        }
+          required: ['features'],
+        },
       },
       {
         name: 'get_forecast',
-        description: 'Get weather forecast for a location. Returns JSON with properties.periods array containing forecast objects with name, temperature, temperatureUnit, windSpeed, windDirection, shortForecast, detailedForecast.',
+        description:
+          'Get weather forecast for a location. Returns JSON with properties.periods array containing forecast objects with name, temperature, temperatureUnit, windSpeed, windDirection, shortForecast, detailedForecast.',
         inputSchema: {
           type: 'object',
           properties: {
@@ -141,14 +144,14 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                       windSpeed: { type: 'string' },
                       windDirection: { type: 'string' },
                       shortForecast: { type: 'string' },
-                      detailedForecast: { type: 'string' }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
+                      detailedForecast: { type: 'string' },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
       },
     ],
   };
@@ -163,24 +166,14 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       const alerts = await fetchWeatherAlerts(state.toUpperCase());
 
       return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(alerts, null, 2),
-          },
-        ],
+        structuredContent: alerts,
       };
     } else if (name === 'get_forecast') {
       const { latitude, longitude } = GetForecastArgsSchema.parse(args);
       const forecast = await fetchWeatherForecast(latitude, longitude);
 
       return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(forecast, null, 2),
-          },
-        ],
+        structuredContent: forecast,
       };
     } else {
       throw new Error(`Unknown tool: ${name}`);

@@ -1,13 +1,14 @@
-import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
-import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
-import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import type { Tool } from "@modelcontextprotocol/sdk/types.js";
-import type { McpServerConfig } from "./config.js";
+import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
+import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import type { Tool } from '@modelcontextprotocol/sdk/types.js';
+import type { McpServerConfig } from './config.js';
 
 export interface DiscoveredTool {
   name: string;
   description?: string;
   inputSchema: unknown;
+  outputSchema?: unknown;
   serverId: string;
   serverName: string;
 }
@@ -36,13 +37,13 @@ export class ToolDiscoveryService {
    * Discover tools from HTTP-based MCP servers
    */
   async discoverFromHttpServer(server: McpServerConfig): Promise<DiscoveryResult> {
-    if (server.type !== "http" || !server.url) {
+    if (server.type !== 'http' || !server.url) {
       return {
         serverId: server.id,
         serverName: server.name,
         success: false,
         tools: [],
-        error: "Server is not HTTP type or URL missing"
+        error: 'Server is not HTTP type or URL missing',
       };
     }
 
@@ -55,14 +56,14 @@ export class ToolDiscoveryService {
       // Create MCP client
       const client = new Client(
         {
-          name: "codemode-discovery-client",
-          version: "1.0.0",
+          name: 'codemode-discovery-client',
+          version: '1.0.0',
         },
         {
           capabilities: {
             elicitation: {},
           },
-        }
+        },
       );
 
       // Connect to the server
@@ -78,6 +79,7 @@ export class ToolDiscoveryService {
         name: tool.name,
         description: tool.description,
         inputSchema: tool.inputSchema,
+        outputSchema: tool.outputSchema,
         serverId: server.id,
         serverName: server.name,
       }));
@@ -92,7 +94,6 @@ export class ToolDiscoveryService {
         success: true,
         tools: discoveredTools,
       };
-
     } catch (error) {
       console.error(`❌ Failed to discover tools from ${server.name}:`, error);
       return {
@@ -100,7 +101,7 @@ export class ToolDiscoveryService {
         serverName: server.name,
         success: false,
         tools: [],
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       };
     }
   }
@@ -109,13 +110,13 @@ export class ToolDiscoveryService {
    * Discover tools from stdio-based MCP servers
    */
   async discoverFromStdioServer(server: McpServerConfig): Promise<DiscoveryResult> {
-    if (server.type !== "stdio" || !server.command || server.command.length === 0) {
+    if (server.type !== 'stdio' || !server.command || server.command.length === 0) {
       return {
         serverId: server.id,
         serverName: server.name,
         success: false,
         tools: [],
-        error: "Server is not stdio type or command missing"
+        error: 'Server is not stdio type or command missing',
       };
     }
 
@@ -127,20 +128,26 @@ export class ToolDiscoveryService {
         command: server.command[0],
         args: server.command.slice(1),
         cwd: server.cwd || process.cwd(),
-        env: { ...process.env, ...server.env },
+        env: {
+          ...(Object.fromEntries(Object.entries(process.env).filter(([, value]) => value !== undefined)) as Record<
+            string,
+            string
+          >),
+          ...server.env,
+        },
       });
 
       // Create MCP client
       const client = new Client(
         {
-          name: "codemode-discovery-client",
-          version: "1.0.0",
+          name: 'codemode-discovery-client',
+          version: '1.0.0',
         },
         {
           capabilities: {
             elicitation: {},
           },
-        }
+        },
       );
 
       // Connect to the server
@@ -154,10 +161,11 @@ export class ToolDiscoveryService {
       console.log(`📋 Found ${tools.length} tool(s) in ${server.name}`);
 
       // Convert tools to our format
-      const discoveredTools: DiscoveredTool[] = tools.map(tool => ({
+      const discoveredTools: DiscoveredTool[] = tools.map((tool) => ({
         name: tool.name,
         description: tool.description,
         inputSchema: tool.inputSchema,
+        outputSchema: tool.outputSchema,
         serverId: server.id,
         serverName: server.name,
       }));
@@ -172,7 +180,6 @@ export class ToolDiscoveryService {
         success: true,
         tools: discoveredTools,
       };
-
     } catch (error) {
       console.error(`❌ Failed to discover tools from ${server.name}:`, error);
       return {
@@ -180,7 +187,7 @@ export class ToolDiscoveryService {
         serverName: server.name,
         success: false,
         tools: [],
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       };
     }
   }
@@ -194,8 +201,8 @@ export class ToolDiscoveryService {
     const results: DiscoveryResult[] = [];
 
     // Separate servers by type
-    const httpServers = servers.filter(server => server.type === "http");
-    const stdioServers = servers.filter(server => server.type === "stdio");
+    const httpServers = servers.filter((server) => server.type === 'http');
+    const stdioServers = servers.filter((server) => server.type === 'stdio');
 
     console.log(`📊 Found ${httpServers.length} HTTP and ${stdioServers.length} stdio servers`);
 
@@ -212,7 +219,7 @@ export class ToolDiscoveryService {
     }
 
     const totalTools = results.reduce((sum, result) => sum + result.tools.length, 0);
-    const successfulServers = results.filter(result => result.success).length;
+    const successfulServers = results.filter((result) => result.success).length;
 
     console.log(`🎯 Discovery complete: ${totalTools} total tools from ${successfulServers}/${results.length} servers`);
 
@@ -256,7 +263,7 @@ export class ToolDiscoveryService {
       `🔍 Tool Discovery Summary`,
       `📊 Total: ${totalTools} tools from ${successfulConnections}/${results.length} servers`,
       '',
-      ...lines
+      ...lines,
     ];
 
     return summary.join('\n');

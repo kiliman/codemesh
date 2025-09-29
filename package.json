@@ -7,13 +7,18 @@
     "build": "pnpm -r build",
     "dev:client": "pnpm --filter client dev",
     "dev:example-server": "pnpm --filter example-server dev",
+    "dev:weather-server": "pnpm --filter weather-server dev",
+    "dev:geocode-server": "pnpm --filter geocode-server dev",
     "dev:codemode-server": "pnpm --filter codemode-server dev",
     "dev:codemode-server:watch": "pnpm --filter codemode-server dev:watch",
     "start:client": "pnpm --filter client start",
     "start:example-server": "pnpm --filter example-server start",
+    "start:weather-server": "pnpm --filter weather-server start",
+    "start:geocode-server": "pnpm --filter geocode-server start",
     "start:codemode-server": "pnpm --filter codemode-server start",
     "client": "pnpm --filter client cli",
     "client:help": "pnpm --filter client run help",
+    "format": "prettier --write .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -22,5 +27,8 @@
   "packageManager": "pnpm@10.15.1",
   "dependencies": {
     "@modelcontextprotocol/server-filesystem": "^2025.8.21"
+  },
+  "devDependencies": {
+    "prettier": "^3.6.2"
   }
 }

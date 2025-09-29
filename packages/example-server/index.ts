@@ -1,224 +1,219 @@
-import express, { type Request, type Response } from "express";
-import { randomUUID } from "node:crypto";
-import { z } from "zod";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
+import express, { type Request, type Response } from 'express';
+import { randomUUID } from 'node:crypto';
+import { z } from 'zod';
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import {
   getOAuthProtectedResourceMetadataUrl,
   mcpAuthMetadataRouter,
-} from "@modelcontextprotocol/sdk/server/auth/router.js";
-import { requireBearerAuth } from "@modelcontextprotocol/sdk/server/auth/middleware/bearerAuth.js";
+} from '@modelcontextprotocol/sdk/server/auth/router.js';
+import { requireBearerAuth } from '@modelcontextprotocol/sdk/server/auth/middleware/bearerAuth.js';
 import type {
   CallToolResult,
   GetPromptResult,
   PrimitiveSchemaDefinition,
   ReadResourceResult,
   ResourceLink,
-} from "@modelcontextprotocol/sdk/types.js";
-import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
-import { InMemoryEventStore } from "@modelcontextprotocol/sdk/examples/shared/inMemoryEventStore.js";
-import { setupAuthServer } from "@modelcontextprotocol/sdk/examples/server/demoInMemoryOAuthProvider.js";
-import type { OAuthMetadata } from "@modelcontextprotocol/sdk/shared/auth.js";
-import { checkResourceAllowed } from "@modelcontextprotocol/sdk/shared/auth-utils.js";
+} from '@modelcontextprotocol/sdk/types.js';
+import { isInitializeRequest } from '@modelcontextprotocol/sdk/types.js';
+import { InMemoryEventStore } from '@modelcontextprotocol/sdk/examples/shared/inMemoryEventStore.js';
+import { setupAuthServer } from '@modelcontextprotocol/sdk/examples/server/demoInMemoryOAuthProvider.js';
+import type { OAuthMetadata } from '@modelcontextprotocol/sdk/shared/auth.js';
+import { checkResourceAllowed } from '@modelcontextprotocol/sdk/shared/auth-utils.js';
 
-import cors from "cors";
+import cors from 'cors';
 
 // Check for OAuth flag
-const useOAuth = process.argv.includes("--oauth");
-const strictOAuth = process.argv.includes("--oauth-strict");
+const useOAuth = process.argv.includes('--oauth');
+const strictOAuth = process.argv.includes('--oauth-strict');
 
 // Create an MCP server with implementation details
 const getServer = () => {
   const server = new McpServer(
     {
-      name: "simple-streamable-http-server",
-      version: "1.0.0",
-      icons: [
-        { src: "./mcp.svg", sizes: "512x512", mimeType: "image/svg+xml" },
-      ],
-      websiteUrl: "https://github.com/modelcontextprotocol/typescript-sdk",
+      name: 'simple-streamable-http-server',
+      version: '1.0.0',
+      icons: [{ src: './mcp.svg', sizes: '512x512', mimeType: 'image/svg+xml' }],
+      websiteUrl: 'https://github.com/modelcontextprotocol/typescript-sdk',
     },
-    { capabilities: { logging: {} } }
+    { capabilities: { logging: {} } },
   );
 
   // Register a simple tool that returns a greeting
   server.registerTool(
-    "greet",
+    'greet',
     {
-      title: "Greeting Tool", // Display name for UI
-      description: "A simple greeting tool",
+      title: 'Greeting Tool', // Display name for UI
+      description: 'A simple greeting tool with customizable greeting',
       inputSchema: {
-        name: z.string().describe("Name to greet"),
+        name: z.string().describe('Name to greet'),
+        greeting: z.string().optional().describe("Custom greeting (defaults to 'Hello')"),
       },
     },
-    async ({ name }): Promise<CallToolResult> => {
-      const greeting = name.toLowerCase() === "claudia"
-        ? "Hello, Claudia, my love 🥰"
-        : `Hello, ${name}!`;
+    async ({ name, greeting = 'Hello' }): Promise<CallToolResult> => {
+      const customGreeting =
+        name.toLowerCase() === 'claudia' ? `${greeting}, Claudia, my love 🥰` : `${greeting}, ${name}!`;
 
       return {
         content: [
           {
-            type: "text",
-            text: greeting,
+            type: 'text',
+            text: customGreeting,
           },
         ],
       };
-    }
+    },
   );
 
   // Register a tool that sends multiple greetings with notifications (with annotations)
   server.tool(
-    "multi-greet",
-    "A tool that sends different greetings with delays between them",
+    'multi-greet',
+    'A tool that sends different greetings with delays between them',
     {
-      name: z.string().describe("Name to greet"),
+      name: z.string().describe('Name to greet'),
     },
     {
-      title: "Multiple Greeting Tool",
+      title: 'Multiple Greeting Tool',
       readOnlyHint: true,
       openWorldHint: false,
     },
     async ({ name }, extra): Promise<CallToolResult> => {
-      const sleep = (ms: number) =>
-        new Promise((resolve) => setTimeout(resolve, ms));
+      const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
       await server.sendLoggingMessage(
         {
-          level: "debug",
+          level: 'debug',
           data: `Starting multi-greet for ${name}`,
         },
-        extra.sessionId
+        extra.sessionId,
       );
 
       await sleep(1000); // Wait 1 second before first greeting
 
       await server.sendLoggingMessage(
         {
-          level: "info",
+          level: 'info',
           data: `Sending first greeting to ${name}`,
         },
-        extra.sessionId
+        extra.sessionId,
       );
 
       await sleep(1000); // Wait another second before second greeting
 
       await server.sendLoggingMessage(
         {
-          level: "info",
+          level: 'info',
           data: `Sending second greeting to ${name}`,
         },
-        extra.sessionId
+        extra.sessionId,
       );
 
       return {
         content: [
           {
-            type: "text",
+            type: 'text',
             text: `Good morning, ${name}!`,
           },
         ],
       };
-    }
+    },
   );
   // Register a tool that demonstrates elicitation (user input collection)
   // This creates a closure that captures the server instance
   server.tool(
-    "collect-user-info",
-    "A tool that collects user information through elicitation",
+    'collect-user-info',
+    'A tool that collects user information through elicitation',
     {
-      infoType: z
-        .enum(["contact", "preferences", "feedback"])
-        .describe("Type of information to collect"),
+      infoType: z.enum(['contact', 'preferences', 'feedback']).describe('Type of information to collect'),
     },
     async ({ infoType }): Promise<CallToolResult> => {
       let message: string;
       let requestedSchema: {
-        type: "object";
+        type: 'object';
         properties: Record<string, PrimitiveSchemaDefinition>;
         required?: string[];
       };
 
       switch (infoType) {
-        case "contact":
-          message = "Please provide your contact information";
+        case 'contact':
+          message = 'Please provide your contact information';
           requestedSchema = {
-            type: "object",
+            type: 'object',
             properties: {
               name: {
-                type: "string",
-                title: "Full Name",
-                description: "Your full name",
+                type: 'string',
+                title: 'Full Name',
+                description: 'Your full name',
               },
               email: {
-                type: "string",
-                title: "Email Address",
-                description: "Your email address",
-                format: "email",
+                type: 'string',
+                title: 'Email Address',
+                description: 'Your email address',
+                format: 'email',
               },
               phone: {
-                type: "string",
-                title: "Phone Number",
-                description: "Your phone number (optional)",
+                type: 'string',
+                title: 'Phone Number',
+                description: 'Your phone number (optional)',
               },
             },
-            required: ["name", "email"],
+            required: ['name', 'email'],
           };
           break;
-        case "preferences":
-          message = "Please set your preferences";
+        case 'preferences':
+          message = 'Please set your preferences';
           requestedSchema = {
-            type: "object",
+            type: 'object',
             properties: {
               theme: {
-                type: "string",
-                title: "Theme",
-                description: "Choose your preferred theme",
-                enum: ["light", "dark", "auto"],
-                enumNames: ["Light", "Dark", "Auto"],
+                type: 'string',
+                title: 'Theme',
+                description: 'Choose your preferred theme',
+                enum: ['light', 'dark', 'auto'],
+                enumNames: ['Light', 'Dark', 'Auto'],
               },
               notifications: {
-                type: "boolean",
-                title: "Enable Notifications",
-                description: "Would you like to receive notifications?",
+                type: 'boolean',
+                title: 'Enable Notifications',
+                description: 'Would you like to receive notifications?',
                 default: true,
               },
               frequency: {
-                type: "string",
-                title: "Notification Frequency",
-                description: "How often would you like notifications?",
-                enum: ["daily", "weekly", "monthly"],
-                enumNames: ["Daily", "Weekly", "Monthly"],
+                type: 'string',
+                title: 'Notification Frequency',
+                description: 'How often would you like notifications?',
+                enum: ['daily', 'weekly', 'monthly'],
+                enumNames: ['Daily', 'Weekly', 'Monthly'],
               },
             },
-            required: ["theme"],
+            required: ['theme'],
           };
           break;
-        case "feedback":
-          message = "Please provide your feedback";
+        case 'feedback':
+          message = 'Please provide your feedback';
           requestedSchema = {
-            type: "object",
+            type: 'object',
             properties: {
               rating: {
-                type: "integer",
-                title: "Rating",
-                description: "Rate your experience (1-5)",
+                type: 'integer',
+                title: 'Rating',
+                description: 'Rate your experience (1-5)',
                 minimum: 1,
                 maximum: 5,
               },
               comments: {
-                type: "string",
-                title: "Comments",
-                description: "Additional comments (optional)",
+                type: 'string',
+                title: 'Comments',
+                description: 'Additional comments (optional)',
                 maxLength: 500,
               },
               recommend: {
-                type: "boolean",
-                title: "Would you recommend this?",
-                description: "Would you recommend this to others?",
+                type: 'boolean',
+                title: 'Would you recommend this?',
+                description: 'Would you recommend this to others?',
               },
             },
-            required: ["rating", "recommend"],
+            required: ['rating', 'recommend'],
           };
           break;
         default:
@@ -232,24 +227,20 @@ const getServer = () => {
           requestedSchema,
         });
 
-        if (result.action === "accept") {
+        if (result.action === 'accept') {
           return {
             content: [
               {
-                type: "text",
-                text: `Thank you! Collected ${infoType} information: ${JSON.stringify(
-                  result.content,
-                  null,
-                  2
-                )}`,
+                type: 'text',
+                text: `Thank you! Collected ${infoType} information: ${JSON.stringify(result.content, null, 2)}`,
               },
             ],
           };
-        } else if (result.action === "decline") {
+        } else if (result.action === 'decline') {
           return {
             content: [
               {
-                type: "text",
+                type: 'text',
                 text: `No information was collected. User declined ${infoType} information request.`,
               },
             ],
@@ -258,7 +249,7 @@ const getServer = () => {
           return {
             content: [
               {
-                type: "text",
+                type: 'text',
                 text: `Information collection was cancelled by the user.`,
               },
             ],
@@ -268,57 +259,50 @@ const getServer = () => {
         return {
           content: [
             {
-              type: "text",
+              type: 'text',
               text: `Error collecting ${infoType} information: ${error}`,
             },
           ],
         };
       }
-    }
+    },
   );
 
   // Register a simple prompt with title
   server.registerPrompt(
-    "greeting-template",
+    'greeting-template',
     {
-      title: "Greeting Template", // Display name for UI
-      description: "A simple greeting prompt template",
+      title: 'Greeting Template', // Display name for UI
+      description: 'A simple greeting prompt template',
       argsSchema: {
-        name: z.string().describe("Name to include in greeting"),
+        name: z.string().describe('Name to include in greeting'),
       },
     },
     async ({ name }): Promise<GetPromptResult> => {
       return {
         messages: [
           {
-            role: "user",
+            role: 'user',
             content: {
-              type: "text",
+              type: 'text',
               text: `Please greet ${name} in a friendly manner.`,
             },
           },
         ],
       };
-    }
+    },
   );
 
   // Register a tool specifically for testing resumability
   server.tool(
-    "start-notification-stream",
-    "Starts sending periodic notifications for testing resumability",
+    'start-notification-stream',
+    'Starts sending periodic notifications for testing resumability',
     {
-      interval: z
-        .number()
-        .describe("Interval in milliseconds between notifications")
-        .default(100),
-      count: z
-        .number()
-        .describe("Number of notifications to send (0 for 100)")
-        .default(50),
+      interval: z.number().describe('Interval in milliseconds between notifications').default(100),
+      count: z.number().describe('Number of notifications to send (0 for 100)').default(50),
     },
     async ({ interval, count }, extra): Promise<CallToolResult> => {
-      const sleep = (ms: number) =>
-        new Promise((resolve) => setTimeout(resolve, ms));
+      const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
       let counter = 0;
 
       while (count === 0 || counter < count) {
@@ -326,13 +310,13 @@ const getServer = () => {
         try {
           await server.sendLoggingMessage(
             {
-              level: "info",
+              level: 'info',
               data: `Periodic notification #${counter} at ${new Date().toISOString()}`,
             },
-            extra.sessionId
+            extra.sessionId,
           );
         } catch (error) {
-          console.error("Error sending notification:", error);
+          console.error('Error sending notification:', error);
         }
         // Wait for the specified interval
         await sleep(interval);
@@ -341,117 +325,113 @@ const getServer = () => {
       return {
         content: [
           {
-            type: "text",
+            type: 'text',
             text: `Started sending periodic notifications every ${interval}ms`,
           },
         ],
       };
-    }
+    },
   );
 
   // Create a simple resource at a fixed URI
   server.registerResource(
-    "greeting-resource",
-    "https://example.com/greetings/default",
+    'greeting-resource',
+    'https://example.com/greetings/default',
     {
-      title: "Default Greeting", // Display name for UI
-      description: "A simple greeting resource",
-      mimeType: "text/plain",
+      title: 'Default Greeting', // Display name for UI
+      description: 'A simple greeting resource',
+      mimeType: 'text/plain',
     },
     async (): Promise<ReadResourceResult> => {
       return {
         contents: [
           {
-            uri: "https://example.com/greetings/default",
-            text: "Hello, world!",
+            uri: 'https://example.com/greetings/default',
+            text: 'Hello, world!',
           },
         ],
       };
-    }
+    },
   );
 
   // Create additional resources for ResourceLink demonstration
   server.registerResource(
-    "example-file-1",
-    "file:///example/file1.txt",
+    'example-file-1',
+    'file:///example/file1.txt',
     {
-      title: "Example File 1",
-      description: "First example file for ResourceLink demonstration",
-      mimeType: "text/plain",
+      title: 'Example File 1',
+      description: 'First example file for ResourceLink demonstration',
+      mimeType: 'text/plain',
     },
     async (): Promise<ReadResourceResult> => {
       return {
         contents: [
           {
-            uri: "file:///example/file1.txt",
-            text: "This is the content of file 1",
+            uri: 'file:///example/file1.txt',
+            text: 'This is the content of file 1',
           },
         ],
       };
-    }
+    },
   );
 
   server.registerResource(
-    "example-file-2",
-    "file:///example/file2.txt",
+    'example-file-2',
+    'file:///example/file2.txt',
     {
-      title: "Example File 2",
-      description: "Second example file for ResourceLink demonstration",
-      mimeType: "text/plain",
+      title: 'Example File 2',
+      description: 'Second example file for ResourceLink demonstration',
+      mimeType: 'text/plain',
     },
     async (): Promise<ReadResourceResult> => {
       return {
         contents: [
           {
-            uri: "file:///example/file2.txt",
-            text: "This is the content of file 2",
+            uri: 'file:///example/file2.txt',
+            text: 'This is the content of file 2',
           },
         ],
       };
-    }
+    },
   );
 
   // Register a tool that returns ResourceLinks
   server.registerTool(
-    "list-files",
+    'list-files',
     {
-      title: "List Files with ResourceLinks",
-      description:
-        "Returns a list of files as ResourceLinks without embedding their content",
+      title: 'List Files with ResourceLinks',
+      description: 'Returns a list of files as ResourceLinks without embedding their content',
       inputSchema: {
-        includeDescriptions: z
-          .boolean()
-          .optional()
-          .describe("Whether to include descriptions in the resource links"),
+        includeDescriptions: z.boolean().optional().describe('Whether to include descriptions in the resource links'),
       },
     },
     async ({ includeDescriptions = true }): Promise<CallToolResult> => {
       const resourceLinks: ResourceLink[] = [
         {
-          type: "resource_link",
-          uri: "https://example.com/greetings/default",
-          name: "Default Greeting",
-          mimeType: "text/plain",
+          type: 'resource_link',
+          uri: 'https://example.com/greetings/default',
+          name: 'Default Greeting',
+          mimeType: 'text/plain',
           ...(includeDescriptions && {
-            description: "A simple greeting resource",
+            description: 'A simple greeting resource',
           }),
         },
         {
-          type: "resource_link",
-          uri: "file:///example/file1.txt",
-          name: "Example File 1",
-          mimeType: "text/plain",
+          type: 'resource_link',
+          uri: 'file:///example/file1.txt',
+          name: 'Example File 1',
+          mimeType: 'text/plain',
           ...(includeDescriptions && {
-            description: "First example file for ResourceLink demonstration",
+            description: 'First example file for ResourceLink demonstration',
           }),
         },
         {
-          type: "resource_link",
-          uri: "file:///example/file2.txt",
-          name: "Example File 2",
-          mimeType: "text/plain",
+          type: 'resource_link',
+          uri: 'file:///example/file2.txt',
+          name: 'Example File 2',
+          mimeType: 'text/plain',
           ...(includeDescriptions && {
-            description: "Second example file for ResourceLink demonstration",
+            description: 'Second example file for ResourceLink demonstration',
           }),
         },
       ];
@@ -459,28 +439,24 @@ const getServer = () => {
       return {
         content: [
           {
-            type: "text",
-            text: "Here are the available files as resource links:",
+            type: 'text',
+            text: 'Here are the available files as resource links:',
           },
           ...resourceLinks,
           {
-            type: "text",
-            text: "\nYou can read any of these resources using their URI.",
+            type: 'text',
+            text: '\nYou can read any of these resources using their URI.',
           },
         ],
       };
-    }
+    },
   );
 
   return server;
 };
 
-const MCP_PORT = process.env.MCP_PORT
-  ? parseInt(process.env.MCP_PORT, 10)
-  : 3000;
-const AUTH_PORT = process.env.MCP_AUTH_PORT
-  ? parseInt(process.env.MCP_AUTH_PORT, 10)
-  : 3001;
+const MCP_PORT = process.env.MCP_PORT ? parseInt(process.env.MCP_PORT, 10) : 3000;
+const AUTH_PORT = process.env.MCP_AUTH_PORT ? parseInt(process.env.MCP_AUTH_PORT, 10) : 3001;
 
 const app = express();
 app.use(express.json());
@@ -488,9 +464,9 @@ app.use(express.json());
 // Allow CORS all domains, expose the Mcp-Session-Id header
 app.use(
   cors({
-    origin: "*", // Allow all origins
-    exposedHeaders: ["Mcp-Session-Id"],
-  })
+    origin: '*', // Allow all origins
+    exposedHeaders: ['Mcp-Session-Id'],
+  }),
 );
 
 // Set up OAuth if enabled
@@ -511,13 +487,13 @@ if (useOAuth) {
       const endpoint = oauthMetadata.introspection_endpoint;
 
       if (!endpoint) {
-        throw new Error("No token verification endpoint available in metadata");
+        throw new Error('No token verification endpoint available in metadata');
       }
 
       const response = await fetch(endpoint, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
+          'Content-Type': 'application/x-www-form-urlencoded',
         },
         body: new URLSearchParams({
           token: token,
@@ -540,9 +516,7 @@ if (useOAuth) {
             configuredResource: mcpServerUrl,
           })
         ) {
-          throw new Error(
-            `Expected resource indicator ${mcpServerUrl}, got: ${data.aud}`
-          );
+          throw new Error(`Expected resource indicator ${mcpServerUrl}, got: ${data.aud}`);
         }
       }
 
@@ -550,7 +524,7 @@ if (useOAuth) {
       return {
         token,
         clientId: data.client_id,
-        scopes: data.scope ? data.scope.split(" ") : [],
+        scopes: data.scope ? data.scope.split(' ') : [],
         expiresAt: data.exp,
       };
     },
@@ -560,9 +534,9 @@ if (useOAuth) {
     mcpAuthMetadataRouter({
       oauthMetadata,
       resourceServerUrl: mcpServerUrl,
-      scopesSupported: ["mcp:tools"],
-      resourceName: "MCP Demo Server",
-    })
+      scopesSupported: ['mcp:tools'],
+      resourceName: 'MCP Demo Server',
+    }),
   );
 
   authMiddleware = requireBearerAuth({
@@ -577,15 +551,15 @@ const transports: { [sessionId: string]: StreamableHTTPServerTransport } = {};
 
 // MCP POST endpoint with optional auth
 const mcpPostHandler = async (req: Request, res: Response) => {
-  const sessionId = req.headers["mcp-session-id"] as string | undefined;
+  const sessionId = req.headers['mcp-session-id'] as string | undefined;
   if (sessionId) {
     console.log(`Received MCP request for session: ${sessionId}`);
   } else {
-    console.log("Request body:", req.body);
+    console.log('Request body:', req.body);
   }
 
   if (useOAuth && req.auth) {
-    console.log("Authenticated user:", req.auth);
+    console.log('Authenticated user:', req.auth);
   }
   try {
     let transport: StreamableHTTPServerTransport;
@@ -610,9 +584,7 @@ const mcpPostHandler = async (req: Request, res: Response) => {
       transport.onclose = () => {
         const sid = transport.sessionId;
         if (sid && transports[sid]) {
-          console.log(
-            `Transport closed for session ${sid}, removing from transports map`
-          );
+          console.log(`Transport closed for session ${sid}, removing from transports map`);
           delete transports[sid];
         }
       };
@@ -627,10 +599,10 @@ const mcpPostHandler = async (req: Request, res: Response) => {
     } else {
       // Invalid request - no session ID or not initialization request
       res.status(400).json({
-        jsonrpc: "2.0",
+        jsonrpc: '2.0',
         error: {
           code: -32000,
-          message: "Bad Request: No valid session ID provided",
+          message: 'Bad Request: No valid session ID provided',
         },
         id: null,
       });
@@ -641,13 +613,13 @@ const mcpPostHandler = async (req: Request, res: Response) => {
     // The existing transport is already connected to the server
     await transport.handleRequest(req, res, req.body);
   } catch (error) {
-    console.error("Error handling MCP request:", error);
+    console.error('Error handling MCP request:', error);
     if (!res.headersSent) {
       res.status(500).json({
-        jsonrpc: "2.0",
+        jsonrpc: '2.0',
         error: {
           code: -32603,
-          message: "Internal server error",
+          message: 'Internal server error',
         },
         id: null,
       });
@@ -657,25 +629,25 @@ const mcpPostHandler = async (req: Request, res: Response) => {
 
 // Set up routes with conditional auth middleware
 if (useOAuth && authMiddleware) {
-  app.post("/mcp", authMiddleware, mcpPostHandler);
+  app.post('/mcp', authMiddleware, mcpPostHandler);
 } else {
-  app.post("/mcp", mcpPostHandler);
+  app.post('/mcp', mcpPostHandler);
 }
 
 // Handle GET requests for SSE streams (using built-in support from StreamableHTTP)
 const mcpGetHandler = async (req: Request, res: Response) => {
-  const sessionId = req.headers["mcp-session-id"] as string | undefined;
+  const sessionId = req.headers['mcp-session-id'] as string | undefined;
   if (!sessionId || !transports[sessionId]) {
-    res.status(400).send("Invalid or missing session ID");
+    res.status(400).send('Invalid or missing session ID');
     return;
   }
 
   if (useOAuth && req.auth) {
-    console.log("Authenticated SSE connection from user:", req.auth);
+    console.log('Authenticated SSE connection from user:', req.auth);
   }
 
   // Check for Last-Event-ID header for resumability
-  const lastEventId = req.headers["last-event-id"] as string | undefined;
+  const lastEventId = req.headers['last-event-id'] as string | undefined;
   if (lastEventId) {
     console.log(`Client reconnecting with Last-Event-ID: ${lastEventId}`);
   } else {
@@ -688,16 +660,16 @@ const mcpGetHandler = async (req: Request, res: Response) => {
 
 // Set up GET route with conditional auth middleware
 if (useOAuth && authMiddleware) {
-  app.get("/mcp", authMiddleware, mcpGetHandler);
+  app.get('/mcp', authMiddleware, mcpGetHandler);
 } else {
-  app.get("/mcp", mcpGetHandler);
+  app.get('/mcp', mcpGetHandler);
 }
 
 // Handle DELETE requests for session termination (according to MCP spec)
 const mcpDeleteHandler = async (req: Request, res: Response) => {
-  const sessionId = req.headers["mcp-session-id"] as string | undefined;
+  const sessionId = req.headers['mcp-session-id'] as string | undefined;
   if (!sessionId || !transports[sessionId]) {
-    res.status(400).send("Invalid or missing session ID");
+    res.status(400).send('Invalid or missing session ID');
     return;
   }
 
@@ -707,31 +679,31 @@ const mcpDeleteHandler = async (req: Request, res: Response) => {
     const transport = transports[sessionId];
     await transport.handleRequest(req, res);
   } catch (error) {
-    console.error("Error handling session termination:", error);
+    console.error('Error handling session termination:', error);
     if (!res.headersSent) {
-      res.status(500).send("Error processing session termination");
+      res.status(500).send('Error processing session termination');
     }
   }
 };
 
 // Set up DELETE route with conditional auth middleware
 if (useOAuth && authMiddleware) {
-  app.delete("/mcp", authMiddleware, mcpDeleteHandler);
+  app.delete('/mcp', authMiddleware, mcpDeleteHandler);
 } else {
-  app.delete("/mcp", mcpDeleteHandler);
+  app.delete('/mcp', mcpDeleteHandler);
 }
 
 app.listen(MCP_PORT, (error) => {
   if (error) {
-    console.error("Failed to start server:", error);
+    console.error('Failed to start server:', error);
     process.exit(1);
   }
   console.log(`MCP Streamable HTTP Server listening on port ${MCP_PORT}`);
 });
 
 // Handle server shutdown
-process.on("SIGINT", async () => {
-  console.log("Shutting down server...");
+process.on('SIGINT', async () => {
+  console.log('Shutting down server...');
 
   // Close all active transports to properly clean up resources
   for (const sessionId in transports) {
@@ -743,6 +715,6 @@ process.on("SIGINT", async () => {
       console.error(`Error closing transport for session ${sessionId}:`, error);
     }
   }
-  console.log("Server shutdown complete");
+  console.log('Server shutdown complete');
   process.exit(0);
 });

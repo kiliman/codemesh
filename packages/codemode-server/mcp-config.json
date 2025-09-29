@@ -8,17 +8,24 @@
     },
     {
       "id": "weather-server",
-      "name": "Weather MCP Server",
+      "name": "Weather Server",
       "type": "stdio",
-      "command": ["npx", "tsx", "src/index.ts"],
-      "cwd": "/Users/michael/Projects/learn/mcp/codemode/packages/weather-server"
+      "command": ["node", "packages/weather-server/src/index.ts"],
+      "cwd": "/Users/michael/Projects/learn/mcp/codemode"
+    },
+    {
+      "id": "geocode-server",
+      "name": "Geocode Server",
+      "type": "stdio",
+      "command": ["node", "packages/geocode-server/src/index.ts"],
+      "cwd": "/Users/michael/Projects/learn/mcp/codemode"
     },
     {
       "id": "filesystem-server",
-      "name": "Filesystem MCP Server",
+      "name": "File System Server",
       "type": "stdio",
-      "command": ["npx", "-y", "@modelcontextprotocol/server-filesystem", "/Users/michael/Projects/learn/mcp/codemode", "/Users/michael/Projects"],
-      "cwd": "/Users/michael/Projects/learn/mcp/codemode"
+      "command": ["npx", "@modelcontextprotocol/server-filesystem", "/Users/michael/Projects/learn/mcp/codemode"],
+      "timeout": 30000
     }
   ]
 }

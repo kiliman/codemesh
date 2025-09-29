@@ -14,6 +14,7 @@ Instead of making individual tool calls, CodeMode allows you to write TypeScript
 ## Quick Start
 
 1. **Start the servers:**
+
    ```bash
    # Terminal 1: Start example HTTP server
    pnpm dev:example-server
@@ -23,6 +24,7 @@ Instead of making individual tool calls, CodeMode allows you to write TypeScript
    ```
 
 2. **Use the CodeMode workflow:**
+
    ```bash
    # Step 1: Discover available tools
    pnpm cli discover-tools
@@ -37,12 +39,15 @@ Instead of making individual tool calls, CodeMode allows you to write TypeScript
 ## The Three-Step CodeMode Workflow
 
 ### 1. **discover-tools** - See what's available
+
 Discovers all tools from configured MCP servers. Use this first to understand what tools you can work with.
 
 ### 2. **get-tool-apis** - Get TypeScript definitions
+
 Get type-safe TypeScript function signatures for the specific tools you want to use in your code.
 
 ### 3. **execute-code** - Run your code
+
 Execute TypeScript code that can call the tools and process results with custom logic.
 
 ## Example: Weather Severity Analysis
@@ -51,7 +56,7 @@ Instead of just calling `get_alerts`, you can write code to find and filter the 
 
 ```typescript
 // Get weather alerts for North Carolina
-const alerts = await get_alerts_weather_server({ state: "NC" });
+const alerts = await get_alerts_weather_server({ state: 'NC' });
 const alertsData = JSON.parse(alerts.content[0].text);
 
 // Define severity hierarchy and find highest present
@@ -59,9 +64,7 @@ const severityHierarchy = ['Extreme', 'Severe', 'Moderate', 'Minor'];
 let highestSeverityPresent = null;
 
 for (const severity of severityHierarchy) {
-  const hasThisSeverity = alertsData.features.some(alert =>
-    alert.properties.severity === severity
-  );
+  const hasThisSeverity = alertsData.features.some((alert) => alert.properties.severity === severity);
   if (hasThisSeverity) {
     highestSeverityPresent = severity;
     break;
@@ -69,15 +72,13 @@ for (const severity of severityHierarchy) {
 }
 
 // Filter to only show alerts at the highest severity level
-const mostSevereAlerts = alertsData.features.filter(alert =>
-  alert.properties.severity === highestSeverityPresent
-);
+const mostSevereAlerts = alertsData.features.filter((alert) => alert.properties.severity === highestSeverityPresent);
 
 return {
   totalAlerts: alertsData.features.length,
   highestSeverityLevel: highestSeverityPresent,
   mostSevereAlertsCount: mostSevereAlerts.length,
-  summary: `Filtered ${alertsData.features.length} alerts to show only ${mostSevereAlerts.length} at "${highestSeverityPresent}" severity`
+  summary: `Filtered ${alertsData.features.length} alerts to show only ${mostSevereAlerts.length} at "${highestSeverityPresent}" severity`,
 };
 ```
 
@@ -116,12 +117,14 @@ Edit `mcp-config.json` to add your MCP servers:
 ## Why CodeMode?
 
 **Traditional MCP approach:**
+
 - Agent calls individual tools one by one
 - Context pollution with all available tools
 - Difficult to implement complex logic
 - Hard to correlate data across multiple calls
 
 **CodeMode approach:**
+
 - Agent writes code that can call multiple tools
 - Only loads APIs for tools actually needed
 - Custom logic and data processing in TypeScript

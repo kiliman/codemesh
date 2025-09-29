@@ -26,7 +26,7 @@ export class CodeExecutor {
    */
   async executeCode(
     code: string,
-    tools: Record<string, (input: unknown) => Promise<ToolResult>>
+    tools: Record<string, (input: unknown) => Promise<ToolResult>>,
   ): Promise<ExecutionResult> {
     const logs: string[] = [];
 
@@ -45,16 +45,16 @@ export class CodeExecutor {
           // Add console.log capture
           console: {
             log: (...args: any[]) => {
-              const message = args.map(arg =>
-                typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
-              ).join(' ');
+              const message = args
+                .map((arg) => (typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)))
+                .join(' ');
               logs.push(message);
               console.log(`📝 Code output:`, message);
             },
             error: (...args: any[]) => {
-              const message = args.map(arg =>
-                typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
-              ).join(' ');
+              const message = args
+                .map((arg) => (typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)))
+                .join(' ');
               logs.push(`ERROR: ${message}`);
               console.error(`❌ Code error:`, message);
             },
@@ -84,7 +84,6 @@ export class CodeExecutor {
         result,
         logs,
       };
-
     } catch (error) {
       console.error(`❌ Code execution failed:`, error);
 
@@ -115,7 +114,6 @@ export class CodeExecutor {
 
       console.log(`✅ TypeScript compilation successful`);
       return result;
-
     } catch (error) {
       console.error(`❌ TypeScript compilation failed:`, error);
       throw new Error(`TypeScript compilation failed: ${error}`);
@@ -133,11 +131,7 @@ export class CodeExecutor {
     ];
 
     if (executionResult.logs && executionResult.logs.length > 0) {
-      sections.push(
-        ``,
-        `📝 Console Output:`,
-        ...executionResult.logs.map(log => `  ${log}`)
-      );
+      sections.push(``, `📝 Console Output:`, ...executionResult.logs.map((log) => `  ${log}`));
     }
 
     if (executionResult.success && executionResult.result !== undefined) {
@@ -146,18 +140,12 @@ export class CodeExecutor {
         `📤 Execution Result:`,
         `\`\`\`json`,
         JSON.stringify(executionResult.result, null, 2),
-        `\`\`\``
+        `\`\`\``,
       );
     }
 
     if (!executionResult.success && executionResult.error) {
-      sections.push(
-        ``,
-        `❌ Error:`,
-        `\`\`\``,
-        executionResult.error,
-        `\`\`\``
-      );
+      sections.push(``, `❌ Error:`, `\`\`\``, executionResult.error, `\`\`\``);
     }
 
     return sections.join('\n');
