@@ -1,0 +1,17 @@
+{
+  "servers": {
+    "weather-server": {
+      "command": "tsx",
+      "args": ["/Users/michael/Projects/learn/mcp/codemode/packages/weather-server/src/index.ts"]
+    },
+    "geocode-server": {
+      "command": "tsx",
+      "args": ["/Users/michael/Projects/learn/mcp/codemode/packages/geocode-server/src/index.ts"]
+    },
+    "filesystem-server": {
+      "command": "npx",
+      "args": ["@modelcontextprotocol/server-filesystem", "/Users/michael/Projects/learn/mcp/codemode"],
+      "timeout": 30000
+    }
+  }
+}

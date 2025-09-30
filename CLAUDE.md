@@ -64,6 +64,12 @@ packages/
    - ✅ **Multi-server coordination**: Executes code that calls tools from both HTTP and stdio servers
    - ✅ **Intelligent data processing**: CodeMesh enables advanced filtering, analysis, and transformation
 
+9. **Authentication Support** (`packages/codemesh-server/src/config.ts`)
+   - ✅ **Environment variables**: Full support for API keys and tokens via `env` field
+   - ✅ **Automatic passing**: Env vars automatically passed to stdio MCP servers
+   - ✅ **Copy-paste friendly**: Compatible with MCP server documentation format
+   - ✅ **Secure**: Environment variables passed only to spawned child processes
+
 ### 🎯 **BREAKTHROUGH ACHIEVED**
 
 ✅ **Full Multi-Server CodeMesh Implementation Complete!**
@@ -72,6 +78,7 @@ packages/
 - ✅ Live TypeScript execution with real tool calls across multiple server types
 - ✅ Intelligent data processing capabilities (severity filtering, etc.)
 - ✅ Context-efficient tiered discovery prevents tool pollution
+- ✅ **Authentication via environment variables**: Securely pass API keys to MCP servers
 - ✅ **Fresh Claude session testing SUCCESS** - CodeMesh workflow is intuitive!
 - ✅ Enhanced tool descriptions with explicit workflow guidance
 - ✅ **MCP Output Schemas** - JSON structure definition for better type generation
