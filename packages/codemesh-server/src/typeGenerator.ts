@@ -573,10 +573,12 @@ export type ServerObjectName = keyof typeof SERVER_METADATA;
     const serverMetadata = Array.from(serverGroups.entries())
       .map(([serverObjectName, serverTools]) => {
         const firstTool = serverTools[0];
+        // Use PascalCase server object name as the type (e.g., weatherServer → WeatherServer)
+        const typeName = serverObjectName.charAt(0).toUpperCase() + serverObjectName.slice(1);
         return `  "${serverObjectName}": {
     serverId: "${firstTool.serverId}",
     serverName: "${firstTool.serverName}",
-    namespacedServerName: "${firstTool.namespacedServerName}",
+    namespacedServerName: "${typeName}",
   }`;
       })
       .join(',\n');
