@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { readFileSync, existsSync } from 'node:fs';
+import { resolve, join } from 'node:path';
 
 // MCP Server Configuration Schema (compatible with VSCode's .vscode/mcp.json)
 const McpServerConfigSchema = z.object({
@@ -42,6 +42,29 @@ export class ConfigLoader {
   }
 
   /**
+   * Auto-discover and load MCP configuration from project root
+   * Looks for .codemesh/config.json in PWD (for stdio servers)
+   */
+  public loadConfigAuto(): McpConfig {
+    const pwd = process.env.PWD;
+
+    if (!pwd) {
+      throw new Error('PWD environment variable not set. Are you running as a stdio server?');
+    }
+
+    const configPath = join(pwd, '.codemesh', 'config.json');
+
+    if (!existsSync(configPath)) {
+      throw new Error(
+        `No .codemesh/config.json found in project root: ${pwd}\n` +
+        `Please create ${configPath} with your MCP server configuration.`
+      );
+    }
+
+    return this.loadConfig(configPath);
+  }
+
+  /**
    * Load MCP configuration from a JSON file
    */
   public loadConfig(configPath: string): McpConfig {
@@ -53,8 +76,8 @@ export class ConfigLoader {
       // Validate the configuration against our schema
       this.config = McpConfigSchema.parse(parsedConfig);
 
-      console.log(`📄 Loaded MCP configuration from ${configFile}`);
-      console.log(`📡 Found ${this.config.servers.length} MCP server(s) configured`);
+      console.error(`📄 Loaded MCP configuration from ${configFile}`);
+      console.error(`📡 Found ${this.config.servers.length} MCP server(s) configured`);
 
       return this.config;
     } catch (error) {

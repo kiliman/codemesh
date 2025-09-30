@@ -1,6 +1,6 @@
-# CodeMode MCP Implementation
+# CodeMesh MCP Implementation
 
-This project implements a "CodeMode" MCP server inspired by Cloudflare's approach - instead of many granular MCP tools, we provide a single tool that executes TypeScript code against discovered MCP tools.
+This project implements a "CodeMesh" MCP server inspired by Cloudflare's approach - instead of many granular MCP tools, we provide a single tool that executes TypeScript code against discovered MCP tools.
 
 ## Project Structure
 
@@ -8,14 +8,14 @@ This project implements a "CodeMode" MCP server inspired by Cloudflare's approac
 packages/
 ├── client/              # MCP client with CLI and interactive modes
 ├── example-server/      # Demo MCP server for testing
-└── codemode-server/     # Main CodeMode MCP server
+└── codemesh-server/     # Main CodeMesh MCP server
 ```
 
 ## Current Implementation Status
 
 ### ✅ Completed
 
-1. **MCP Configuration System** (`packages/codemode-server/src/config.ts`)
+1. **MCP Configuration System** (`packages/codemesh-server/src/config.ts`)
    - VSCode-compatible MCP configuration format
    - ✅ **Multi-server support**: HTTP, stdio, and websocket server types
    - Singleton ConfigLoader with Zod validation
@@ -26,31 +26,31 @@ packages/
    - ✅ Supports HEREDOC patterns for complex JSON/TypeScript
    - Can connect to MCP servers and call tools without bash escaping hell
 
-3. **Multi-Server Tool Discovery** (`packages/codemode-server/src/toolDiscovery.ts`)
+3. **Multi-Server Tool Discovery** (`packages/codemesh-server/src/toolDiscovery.ts`)
    - ✅ **HTTP servers**: Full StreamableHTTPClientTransport support
    - ✅ **Stdio servers**: Complete StdioClientTransport integration
    - ✅ Connects to and enumerates tools from multiple server types simultaneously
    - ✅ Extracts tool schemas, descriptions, and metadata from all configured servers
    - ✅ Proper connection management with error handling and cleanup
 
-4. **TypeScript Type Generation** (`packages/codemode-server/src/typeGenerator.ts`)
+4. **TypeScript Type Generation** (`packages/codemesh-server/src/typeGenerator.ts`)
    - ✅ Converts JSON schemas to TypeScript interfaces using json-schema-to-typescript
    - ✅ Generates type-safe function signatures for discovered tools
    - ✅ Creates comprehensive tool metadata for runtime resolution
 
-5. **Tiered Discovery Workflow** (`packages/codemode-server/src/index.ts`)
+5. **Tiered Discovery Workflow** (`packages/codemesh-server/src/index.ts`)
    - ✅ `discover-tools` - High-level tool overview (context-efficient)
    - ✅ `get-tool-apis` - Selective TypeScript API loading for specific tools
    - ✅ `generate-types` - File-based type generation for development/debugging
 
-6. **Multi-Server Runtime Wrapper** (`packages/codemode-server/src/runtimeWrapper.ts`)
+6. **Multi-Server Runtime Wrapper** (`packages/codemesh-server/src/runtimeWrapper.ts`)
    - ✅ **HTTP & Stdio support**: Works with both transport types seamlessly
    - ✅ Creates runtime that makes generated TypeScript functions callable
    - ✅ Proxies function calls to actual MCP tools with proper connection management
    - ✅ In-memory execution environment for agent code
    - ✅ Safe function name generation (tool_serverId pattern)
 
-7. **Complete Code Execution System** (`packages/codemode-server/src/codeExecutor.ts`)
+7. **Complete Code Execution System** (`packages/codemesh-server/src/codeExecutor.ts`)
    - ✅ **VM2 integration**: Sandboxed TypeScript execution with timeout
    - ✅ **Tool injection**: Runtime tools available as callable functions
    - ✅ **TypeScript compilation**: Compiles TypeScript to JavaScript before execution
@@ -62,17 +62,17 @@ packages/
    - ✅ Injects tool APIs into TypeScript execution context
    - ✅ **LIVE EXECUTION**: Full TypeScript code execution with real tool calls
    - ✅ **Multi-server coordination**: Executes code that calls tools from both HTTP and stdio servers
-   - ✅ **Intelligent data processing**: CodeMode enables advanced filtering, analysis, and transformation
+   - ✅ **Intelligent data processing**: CodeMesh enables advanced filtering, analysis, and transformation
 
 ### 🎯 **BREAKTHROUGH ACHIEVED**
 
-✅ **Full Multi-Server CodeMode Implementation Complete!**
+✅ **Full Multi-Server CodeMesh Implementation Complete!**
 
 - ✅ HTTP servers + Stdio servers + Third-party servers working together
 - ✅ Live TypeScript execution with real tool calls across multiple server types
 - ✅ Intelligent data processing capabilities (severity filtering, etc.)
 - ✅ Context-efficient tiered discovery prevents tool pollution
-- ✅ **Fresh Claude session testing SUCCESS** - CodeMode workflow is intuitive!
+- ✅ **Fresh Claude session testing SUCCESS** - CodeMesh workflow is intuitive!
 - ✅ Enhanced tool descriptions with explicit workflow guidance
 - ✅ **MCP Output Schemas** - JSON structure definition for better type generation
 - This is a "poor man's Code Mode" that rivals Cloudflare's approach!
@@ -80,9 +80,9 @@ packages/
 ## Key Files
 
 - `mcp-config.json` - MCP server configuration (VSCode format)
-- `packages/codemode-server/src/index.ts` - Main server with tools
-- `packages/codemode-server/src/config.ts` - Configuration loader
-- `packages/codemode-server/src/toolDiscovery.ts` - Tool discovery service
+- `packages/codemesh-server/src/index.ts` - Main server with tools
+- `packages/codemesh-server/src/config.ts` - Configuration loader
+- `packages/codemesh-server/src/toolDiscovery.ts` - Tool discovery service
 - `packages/client/index.ts` - CLI client for testing
 
 ## Development Commands
@@ -91,8 +91,8 @@ packages/
 # Start example server (for testing)
 pnpm dev:example-server
 
-# Start codemode server
-pnpm dev:codemode-server:watch
+# Start codemesh server
+pnpm dev:codemesh-server:watch
 
 # Test with CLI client - old way
 pnpm client -- --connect http://localhost:3002/mcp --call-tool discover-tools
@@ -105,7 +105,7 @@ npx tsx packages/client/index.ts --connect http://localhost:3002/mcp --call-tool
 {
   "code": "const result = await greet_example_server({ name: 'Claudia' }); return result;",
   "toolNames": ["greet"],
-  "configPath": "/Users/michael/Projects/learn/mcp/codemode/mcp-config.json"
+  "configPath": "/Users/michael/Projects/learn/mcp/codemesh/mcp-config.json"
 }
 EOF
 )"
@@ -143,27 +143,27 @@ This drastically reduces context usage while maintaining full functionality!
 
 ✅ **SUCCESSFULLY tested with a completely fresh Claude session!**
 
-**User Request**: _"Use the codemode mcp to return the 3 most severe weather alerts for North Carolina"_
+**User Request**: _"Use the codemesh mcp to return the 3 most severe weather alerts for North Carolina"_
 
 **Results**:
 
-- ✅ Fresh Claude **immediately understood** the 3-step CodeMode workflow
+- ✅ Fresh Claude **immediately understood** the 3-step CodeMesh workflow
 - ✅ Perfect execution: discover-tools → get-tool-apis → execute-code
 - ✅ Successfully wrote TypeScript code to filter weather alerts by severity
 - ✅ Delivered exactly what was requested after figuring out tool access patterns
 
 **Key Learnings**:
 
-- ✅ Enhanced tool descriptions with "CODEMODE STEP 1/2/3" work perfectly
+- ✅ Enhanced tool descriptions with "CODEMESH STEP 1/2/3" work perfectly
 - ✅ Tool access pattern hints eliminated most confusion
 - ✅ MCP output schemas provide critical structure information
-- ✅ CodeMode workflow is genuinely intuitive for fresh sessions
+- ✅ CodeMesh workflow is genuinely intuitive for fresh sessions
 
 ### Recent Enhancements
 
-**9. Enhanced Tool Descriptions** (`packages/codemode-server/src/index.ts`)
+**9. Enhanced Tool Descriptions** (`packages/codemesh-server/src/index.ts`)
 
-- ✅ **Explicit workflow guidance**: "CODEMODE STEP 1/2/3" in all descriptions
+- ✅ **Explicit workflow guidance**: "CODEMESH STEP 1/2/3" in all descriptions
 - ✅ **Tool access examples**: `await get_alerts_weather_server({ state: 'NC' })`
 - ✅ **Clear warnings**: "Do NOT use 'tools.' or 'mcpTools.' prefixes"
 - ✅ **Context hints**: When to use each tool in the workflow
@@ -179,11 +179,11 @@ This drastically reduces context usage while maintaining full functionality!
 
 - ✅ **Filesystem MCP Server**: Successfully integrated official @modelcontextprotocol/server-filesystem
 - ✅ **21 tools from 3 servers**: HTTP + Stdio + Third-party working seamlessly
-- ✅ **Universal compatibility**: Proves CodeMode works with any compliant MCP server
+- ✅ **Universal compatibility**: Proves CodeMesh works with any compliant MCP server
 
 ## Current Status
 
-✅ **Multi-Server CodeMode Complete + Battle-Tested** - Full implementation working:
+✅ **Multi-Server CodeMesh Complete + Battle-Tested** - Full implementation working:
 
 - Multi-server tool discovery (HTTP + Stdio + Third-party) ✅
 - Enhanced tool descriptions with workflow guidance ✅
@@ -228,7 +228,7 @@ console.log(`📡 Stdio Server (Weather): Found ${alertsData.features.length} we
 
 // 3. 🗂️ List project files using stdio filesystem server
 const projectFiles = await list_directory_filesystem_server({
-  path: '/Users/michael/Projects/learn/mcp/codemode',
+  path: '/Users/michael/Projects/learn/mcp/codemesh',
 });
 const fileList = projectFiles.content[0].text.split('\n').filter((line) => line.includes('[FILE]'));
 console.log(`🗂️ Stdio Server (Filesystem): Found ${fileList.length} files in project`);
@@ -246,7 +246,7 @@ const analysis = {
   projectSummary: {
     totalFiles: fileList.length,
     hasReadme: fileList.some((f) => f.includes('CLAUDE.md')),
-    projectName: 'Multi-Server CodeMode Implementation',
+    projectName: 'Multi-Server CodeMesh Implementation',
   },
 };
 
@@ -256,14 +256,14 @@ return {
   transportsUsed: ['HTTP', 'Stdio', 'Stdio'],
   toolsCalled: 4,
   dataProcessed: analysis,
-  message: '🚀 Ultimate Multi-Server CodeMode Demo Complete!',
+  message: '🚀 Ultimate Multi-Server CodeMesh Demo Complete!',
 };
 ```
 
 ### Example 3: Intelligent Data Processing
 
 ```typescript
-// CodeMode's superpower: intelligent filtering and analysis
+// CodeMesh's superpower: intelligent filtering and analysis
 const alerts = await get_alerts_weather_server({ state: 'NC' });
 const alertsData = JSON.parse(alerts.content[0].text);
 

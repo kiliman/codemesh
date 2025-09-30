@@ -1,0 +1,62 @@
+{
+  "name": "codemesh",
+  "version": "0.1.0",
+  "description": "Execute TypeScript code against multiple MCP servers, weaving them together into powerful workflows",
+  "type": "module",
+  "main": "dist/src/index.js",
+  "bin": {
+    "codemesh": "dist/src/index.js"
+  },
+  "files": [
+    "dist/**/*",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.ts",
+    "dev:watch": "tsx watch src/index.ts",
+    "start": "node dist/src/index.js",
+    "prepublishOnly": "pnpm build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "codemesh",
+    "typescript",
+    "tools",
+    "multi-server",
+    "orchestration",
+    "ai",
+    "agent",
+    "llm"
+  ],
+  "author": "Michael <michael@3votech.com>",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/codemesh.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/codemesh/issues"
+  },
+  "homepage": "https://github.com/yourusername/codemesh#readme",
+  "packageManager": "pnpm@10.15.1",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.18.2",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "json-schema-to-typescript": "^15.0.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2",
+    "vm2": "^3.9.19",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/node": "^24.5.2",
+    "tsx": "^4.16.5"
+  }
+}

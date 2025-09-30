@@ -1,49 +1,50 @@
 #!/usr/bin/env node
 
-import { Server } from '@modelcontextprotocol/sdk/server/index.js';
-import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
-import { z } from 'zod';
+import { Server } from '@modelcontextprotocol/sdk/server/index.js'
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
+import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js'
+import { z } from 'zod'
+import * as fs from 'node:fs'
 
 const GetAlertsArgsSchema = z.object({
   state: z.string().length(2).describe('Two-letter state code (e.g. CA, NY)'),
-});
+})
 
 const GetForecastArgsSchema = z.object({
   latitude: z.number().describe('Latitude coordinate'),
   longitude: z.number().describe('Longitude coordinate'),
-});
+})
 
 async function fetchWeatherAlerts(state: string) {
   try {
-    const response = await fetch(`https://api.weather.gov/alerts/active?area=${state}`);
+    const response = await fetch(`https://api.weather.gov/alerts/active?area=${state}`)
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      throw new Error(`HTTP error! status: ${response.status}`)
     }
-    const data = await response.json();
-    return data;
+    const data = await response.json()
+    return data
   } catch (error) {
-    throw new Error(`Failed to fetch weather alerts: ${error}`);
+    throw new Error(`Failed to fetch weather alerts: ${error}`)
   }
 }
 
 async function fetchWeatherForecast(latitude: number, longitude: number) {
   try {
-    const pointResponse = await fetch(`https://api.weather.gov/points/${latitude},${longitude}`);
+    const pointResponse = await fetch(`https://api.weather.gov/points/${latitude},${longitude}`)
     if (!pointResponse.ok) {
-      throw new Error(`HTTP error! status: ${pointResponse.status}`);
+      throw new Error(`HTTP error! status: ${pointResponse.status}`)
     }
-    const pointData = await pointResponse.json();
+    const pointData = await pointResponse.json()
 
-    const forecastUrl = pointData.properties.forecast;
-    const forecastResponse = await fetch(forecastUrl);
+    const forecastUrl = pointData.properties.forecast
+    const forecastResponse = await fetch(forecastUrl)
     if (!forecastResponse.ok) {
-      throw new Error(`HTTP error! status: ${forecastResponse.status}`);
+      throw new Error(`HTTP error! status: ${forecastResponse.status}`)
     }
-    const forecastData = await forecastResponse.json();
-    return forecastData;
+    const forecastData = await forecastResponse.json()
+    return forecastData
   } catch (error) {
-    throw new Error(`Failed to fetch weather forecast: ${error}`);
+    throw new Error(`Failed to fetch weather forecast: ${error}`)
   }
 }
 
@@ -57,7 +58,7 @@ const server = new Server(
       tools: {},
     },
   },
-);
+)
 
 server.setRequestHandler(ListToolsRequestSchema, async () => {
   return {
@@ -154,29 +155,29 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         },
       },
     ],
-  };
-});
+  }
+})
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
-  const { name, arguments: args } = request.params;
+  const { name, arguments: args } = request.params
 
   try {
     if (name === 'get_alerts') {
-      const { state } = GetAlertsArgsSchema.parse(args);
-      const alerts = await fetchWeatherAlerts(state.toUpperCase());
+      const { state } = GetAlertsArgsSchema.parse(args)
+      const alerts = await fetchWeatherAlerts(state.toUpperCase())
 
       return {
         structuredContent: alerts,
-      };
+      }
     } else if (name === 'get_forecast') {
-      const { latitude, longitude } = GetForecastArgsSchema.parse(args);
-      const forecast = await fetchWeatherForecast(latitude, longitude);
+      const { latitude, longitude } = GetForecastArgsSchema.parse(args)
+      const forecast = await fetchWeatherForecast(latitude, longitude)
 
       return {
         structuredContent: forecast,
-      };
+      }
     } else {
-      throw new Error(`Unknown tool: ${name}`);
+      throw new Error(`Unknown tool: ${name}`)
     }
   } catch (error) {
     return {
@@ -187,17 +188,24 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         },
       ],
       isError: true,
-    };
+    }
   }
-});
+})
 
 async function main() {
-  const transport = new StdioServerTransport();
-  await server.connect(transport);
-  console.error('Weather MCP server running on stdio');
+  const transport = new StdioServerTransport()
+
+  fs.writeFileSync(
+    '/Users/michael/Projects/learn/mcp/codemode/tmp/weather-server.log',
+    'Environment:\n' + JSON.stringify(process.env, null, 2) + '\n',
+    { flag: 'a' },
+  )
+
+  await server.connect(transport)
+  console.error('Weather MCP server running on stdio')
 }
 
 main().catch((error) => {
-  console.error('Fatal error in main():', error);
-  process.exit(1);
-});
+  console.error('Fatal error in main():', error)
+  process.exit(1)
+})

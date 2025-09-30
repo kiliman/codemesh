@@ -1,10 +1,10 @@
-# CodeMode MCP Implementation
+# CodeMesh MCP Implementation
 
 A "poor man's Code Mode" inspired by Cloudflare's approach - execute complex TypeScript code against multiple MCP tools for advanced data processing and analysis.
 
-## What is CodeMode?
+## What is CodeMesh?
 
-Instead of making individual tool calls, CodeMode allows you to write TypeScript code that can call multiple MCP tools and process their results intelligently. This is ideal for:
+Instead of making individual tool calls, CodeMesh allows you to write TypeScript code that can call multiple MCP tools and process their results intelligently. This is ideal for:
 
 - **Complex data analysis** (filtering, sorting, correlation)
 - **Multi-step workflows** requiring coordination between tools
@@ -19,11 +19,11 @@ Instead of making individual tool calls, CodeMode allows you to write TypeScript
    # Terminal 1: Start example HTTP server
    pnpm dev:example-server
 
-   # Terminal 2: Start CodeMode server
-   pnpm dev:codemode-server
+   # Terminal 2: Start CodeMesh server
+   pnpm dev:codemesh-server
    ```
 
-2. **Use the CodeMode workflow:**
+2. **Use the CodeMesh workflow:**
 
    ```bash
    # Step 1: Discover available tools
@@ -36,7 +36,7 @@ Instead of making individual tool calls, CodeMode allows you to write TypeScript
    pnpm cli execute-code --code-file tmp/your-code.ts
    ```
 
-## The Three-Step CodeMode Workflow
+## The Three-Step CodeMesh Workflow
 
 ### 1. **discover-tools** - See what's available
 
@@ -84,7 +84,7 @@ return {
 
 ## Multi-Server Support
 
-CodeMode works with multiple MCP servers simultaneously:
+CodeMesh works with multiple MCP servers simultaneously:
 
 - **HTTP servers** (like our example server)
 - **Stdio servers** (like weather-server, filesystem-server)
@@ -114,7 +114,7 @@ Edit `mcp-config.json` to add your MCP servers:
 }
 ```
 
-## Why CodeMode?
+## Why CodeMesh?
 
 **Traditional MCP approach:**
 
@@ -123,7 +123,7 @@ Edit `mcp-config.json` to add your MCP servers:
 - Difficult to implement complex logic
 - Hard to correlate data across multiple calls
 
-**CodeMode approach:**
+**CodeMesh approach:**
 
 - Agent writes code that can call multiple tools
 - Only loads APIs for tools actually needed

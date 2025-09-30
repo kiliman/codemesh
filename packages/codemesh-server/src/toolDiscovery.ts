@@ -56,7 +56,7 @@ export class ToolDiscoveryService {
       // Create MCP client
       const client = new Client(
         {
-          name: 'codemode-discovery-client',
+          name: 'codemesh-discovery-client',
           version: '1.0.0',
         },
         {
@@ -140,7 +140,7 @@ export class ToolDiscoveryService {
       // Create MCP client
       const client = new Client(
         {
-          name: 'codemode-discovery-client',
+          name: 'codemesh-discovery-client',
           version: '1.0.0',
         },
         {
@@ -241,16 +241,14 @@ export class ToolDiscoveryService {
         totalTools += result.tools.length;
 
         lines.push(`✅ ${result.serverName} (${result.serverId})`);
-        lines.push(`   📊 ${result.tools.length} tools discovered`);
+        lines.push(`   📊 ${result.tools.length} tools available`);
+        lines.push('');
 
-        // List the first few tools
-        const toolsToShow = result.tools.slice(0, 3);
-        for (const tool of toolsToShow) {
-          lines.push(`   🔧 ${tool.name}${tool.description ? ` - ${tool.description}` : ''}`);
-        }
-
-        if (result.tools.length > 3) {
-          lines.push(`   ... and ${result.tools.length - 3} more tools`);
+        // List ALL tools with their descriptions
+        for (const tool of result.tools) {
+          const description = tool.description || 'No description available';
+          lines.push(`   🔧 ${tool.name}`);
+          lines.push(`      ${description}`);
         }
       } else {
         lines.push(`❌ ${result.serverName} (${result.serverId})`);

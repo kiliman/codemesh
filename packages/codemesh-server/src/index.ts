@@ -1,24 +1,24 @@
+#!/usr/bin/env node
+
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
-import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js'
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js'
 import { z } from 'zod'
-import { randomUUID } from 'node:crypto'
-import express, { type Request, type Response } from 'express'
-import cors from 'cors'
+import * as fs from 'node:fs'
 import { ConfigLoader } from './config.js'
 import { ToolDiscoveryService } from './toolDiscovery.js'
 import { TypeGeneratorService } from './typeGenerator.js'
 import { RuntimeWrapper } from './runtimeWrapper.js'
 import { CodeExecutor } from './codeExecutor.js'
 
-// CodeMode MCP Server - executes TypeScript code against discovered MCP tools
-const getCodeModeServer = () => {
+// CodeMesh MCP Server - executes TypeScript code against discovered MCP tools
+const getCodeMeshServer = () => {
   const server = new McpServer(
     {
-      name: 'codemode-server',
+      name: 'codemesh-server',
       version: '1.0.0',
       description:
-        'CodeMode MCP Server: Execute complex TypeScript code against multiple MCP tools. Ideal for tasks requiring data analysis, filtering, or multi-tool coordination. Use discover-tools → get-tool-apis → execute-code workflow.',
+        'CodeMesh MCP Server: Execute complex TypeScript code against multiple MCP tools. Weave together multiple servers into powerful workflows. Ideal for tasks requiring data analysis, filtering, or multi-tool coordination. Use discover-tools → get-tool-apis → execute-code workflow.',
     },
     { capabilities: { logging: {} } },
   )
@@ -29,7 +29,7 @@ const getCodeModeServer = () => {
     {
       title: 'Execute TypeScript Code',
       description:
-        "CODEMODE STEP 3: Execute TypeScript code that can call multiple MCP tools and process their results. CRITICAL: Tools are available as server objects with methods. Use serverName.methodName() format (e.g., await weatherServer.getForecast({ latitude: 36.5, longitude: -76.2 }), await geocodeServer.geocode({ location: 'Moyock, NC' })). Do NOT use direct function calls like get_forecast() or geocode(). Do NOT use prefixes like 'tools.' or 'mcpTools.'. Always use the server object syntax shown in the Tool Mapping section.",
+        "CODEMESH STEP 3: Execute TypeScript code that can call multiple MCP tools and process their results. CRITICAL: Tools are available as server objects with methods. Use serverName.methodName() format (e.g., await weatherServer.getForecast({ latitude: 36.5, longitude: -76.2 }), await geocodeServer.geocode({ location: 'Moyock, NC' })). Do NOT use direct function calls like get_forecast() or geocode(). Do NOT use prefixes like 'tools.' or 'mcpTools.'. Always use the server object syntax shown in the Tool Mapping section.",
       inputSchema: {
         code: z.string().describe('TypeScript code to execute'),
         toolNames: z
@@ -45,7 +45,7 @@ const getCodeModeServer = () => {
     async ({ code, toolNames, serverId }): Promise<CallToolResult> => {
       try {
         const configLoader = ConfigLoader.getInstance()
-        const config = configLoader.loadConfig('./mcp-config.json')
+        const config = configLoader.loadConfigAuto()
 
         const serversToUse = serverId ? config.servers.filter((s) => s.id === serverId) : config.servers
 
@@ -138,7 +138,7 @@ const getCodeModeServer = () => {
     {
       title: 'Discover MCP Tools',
       description:
-        'CODEMODE STEP 1: Discover available tools from configured MCP servers. Use this first to see what tools are available before writing code. This is the preferred approach for complex tasks that require multiple tool calls or data processing across different MCP servers.',
+        'CODEMESH STEP 1: Discover available tools from configured MCP servers. Use this first to see what tools are available before writing code. This is the preferred approach for complex tasks that require multiple tool calls or data processing across different MCP servers.',
       inputSchema: {
         serverId: z.string().optional().describe('Specific server ID to discover (discovers all if not specified)'),
       },
@@ -146,7 +146,7 @@ const getCodeModeServer = () => {
     async ({ serverId }): Promise<CallToolResult> => {
       try {
         const configLoader = ConfigLoader.getInstance()
-        const config = configLoader.loadConfig('./mcp-config.json')
+        const config = configLoader.loadConfigAuto()
 
         const serversToDiscover = serverId ? config.servers.filter((s) => s.id === serverId) : config.servers
 
@@ -195,7 +195,7 @@ const getCodeModeServer = () => {
     {
       title: 'Generate TypeScript Types',
       description:
-        'CODEMODE OPTIONAL: Generate complete TypeScript type definitions for all discovered MCP tools. Prefer get-tool-apis for context efficiency unless you need all types.',
+        'CODEMESH OPTIONAL: Generate complete TypeScript type definitions for all discovered MCP tools. Prefer get-tool-apis for context efficiency unless you need all types.',
       inputSchema: {
         outputDir: z.string().optional().describe('Directory to save generated types (defaults to ./generated)'),
         serverId: z
@@ -207,7 +207,7 @@ const getCodeModeServer = () => {
     async ({ outputDir = './generated', serverId }): Promise<CallToolResult> => {
       try {
         const configLoader = ConfigLoader.getInstance()
-        const config = configLoader.loadConfig('./mcp-config.json')
+        const config = configLoader.loadConfigAuto()
 
         const serversToProcess = serverId ? config.servers.filter((s) => s.id === serverId) : config.servers
 
@@ -277,7 +277,7 @@ const getCodeModeServer = () => {
     {
       title: 'Get Tool APIs',
       description:
-        "CODEMODE STEP 2: Get TypeScript type definitions for specific tools you want to use in your code. This generates the server object interfaces you'll need. Use this after discover-tools to get only the APIs you need. IMPORTANT: Tools are available as server objects with methods, NOT as direct functions. Use the format: await serverName.methodName() (e.g., await weatherServer.getForecast(), await geocodeServer.geocode()). Do NOT use direct function calls like geocode() or get_forecast().",
+        "CODEMESH STEP 2: Get TypeScript type definitions for specific tools you want to use in your code. This generates the server object interfaces you'll need. Use this after discover-tools to get only the APIs you need. IMPORTANT: Tools are available as server objects with methods, NOT as direct functions. Use the format: await serverName.methodName() (e.g., await weatherServer.getForecast(), await geocodeServer.geocode()). Do NOT use direct function calls like geocode() or get_forecast().",
       inputSchema: {
         toolNames: z.array(z.string()).describe('Array of tool names to get TypeScript APIs for'),
         serverId: z
@@ -289,7 +289,7 @@ const getCodeModeServer = () => {
     async ({ toolNames, serverId }): Promise<CallToolResult> => {
       try {
         const configLoader = ConfigLoader.getInstance()
-        const config = configLoader.loadConfig('./mcp-config.json')
+        const config = configLoader.loadConfigAuto()
 
         const serversToSearch = serverId ? config.servers.filter((s) => s.id === serverId) : config.servers
 
@@ -391,101 +391,27 @@ const getCodeModeServer = () => {
   return server
 }
 
-const CODEMODE_PORT = process.env.CODEMODE_PORT ? parseInt(process.env.CODEMODE_PORT, 10) : 3002
+async function main() {
+  const transport = new StdioServerTransport()
 
-const app = express()
+  // Log the PWD environment variable to verify we can access project root
+  const logPath = '/Users/michael/Projects/learn/mcp/codemode/tmp/codemesh-server.log'
+  fs.writeFileSync(
+    logPath,
+    `CodeMesh Server Started\n` +
+      `Timestamp: ${new Date().toISOString()}\n` +
+      `PWD: ${process.env.PWD}\n` +
+      `CWD: ${process.cwd()}\n` +
+      `Environment Keys: ${Object.keys(process.env).sort().join(', ')}\n\n`,
+    { flag: 'a' },
+  )
 
-// Debug middleware to log all requests
-app.use((req, res, next) => {
-  console.log(`🚦 Request: ${req.method} ${req.url}`)
-  console.log(`🏷️ Content-Type: ${req.headers['content-type']}`)
-  next()
-})
-
-app.use(express.json())
-app.use(cors({ origin: '*' }))
-
-// Map to store transports by session ID
-const transports: { [sessionId: string]: StreamableHTTPServerTransport } = {}
-
-// MCP endpoint handlers (same pattern as the example server)
-const mcpHandler = async (req: Request, res: Response) => {
-  const sessionId = req.headers['mcp-session-id'] as string | undefined
-
-  console.log(`🔍 MCP request: ${req.method} ${req.url}`)
-  console.log(`📋 Headers:`, req.headers)
-  console.log(`📦 Body:`, req.body)
-  console.log(`🆔 Session ID:`, sessionId)
-
-  try {
-    let transport: StreamableHTTPServerTransport
-
-    if (sessionId && transports[sessionId]) {
-      transport = transports[sessionId]
-    } else if (!sessionId && req.body?.method === 'initialize') {
-      // New session
-      transport = new StreamableHTTPServerTransport({
-        sessionIdGenerator: () => randomUUID(),
-        onsessioninitialized: (sessionId) => {
-          console.log(`CodeMode session initialized: ${sessionId}`)
-          transports[sessionId] = transport
-        },
-      })
-
-      transport.onclose = () => {
-        const sid = transport.sessionId
-        if (sid && transports[sid]) {
-          console.log(`CodeMode session closed: ${sid}`)
-          delete transports[sid]
-        }
-      }
-
-      const server = getCodeModeServer()
-      await server.connect(transport)
-      await transport.handleRequest(req, res, req.body)
-      return
-    } else {
-      res.status(400).json({
-        jsonrpc: '2.0',
-        error: { code: -32000, message: 'Invalid session' },
-        id: null,
-      })
-      return
-    }
-
-    await transport.handleRequest(req, res, req.body)
-  } catch (error) {
-    console.error('CodeMode server error:', error)
-    if (!res.headersSent) {
-      res.status(500).json({
-        jsonrpc: '2.0',
-        error: { code: -32603, message: 'Internal server error' },
-        id: null,
-      })
-    }
-  }
+  const server = getCodeMeshServer()
+  await server.connect(transport)
+  console.error('CodeMesh MCP server running on stdio')
 }
 
-// Set up routes
-app.post('/mcp', mcpHandler)
-app.get('/mcp', mcpHandler)
-app.delete('/mcp', mcpHandler)
-
-app.listen(CODEMODE_PORT, () => {
-  console.log(`🚀 CodeMode MCP Server listening on port ${CODEMODE_PORT} [DEBUG ENABLED]`)
-  console.log(`📡 Connect with: http://localhost:${CODEMODE_PORT}/mcp`)
-})
-
-// Graceful shutdown
-process.on('SIGINT', async () => {
-  console.log('Shutting down CodeMode server...')
-  for (const sessionId in transports) {
-    try {
-      await transports[sessionId].close()
-      delete transports[sessionId]
-    } catch (error) {
-      console.error(`Error closing session ${sessionId}:`, error)
-    }
-  }
-  process.exit(0)
+main().catch((error) => {
+  console.error('Fatal error in main():', error)
+  process.exit(1)
 })
