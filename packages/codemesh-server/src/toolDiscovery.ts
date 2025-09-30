@@ -3,6 +3,7 @@ import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js'
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import type { Tool } from '@modelcontextprotocol/sdk/types.js';
 import type { McpServerConfig } from './config.js';
+import { createServerObjectName, convertToolName } from './utils.js';
 
 export interface DiscoveredTool {
   name: string;
@@ -240,14 +241,20 @@ export class ToolDiscoveryService {
         successfulConnections++;
         totalTools += result.tools.length;
 
-        lines.push(`✅ ${result.serverName} (${result.serverId})`);
+        // Generate server object name for display (e.g., "weatherServer")
+        const serverObjectName = createServerObjectName(result.serverId);
+
+        lines.push(`✅ ${result.serverName} (${serverObjectName})`);
         lines.push(`   📊 ${result.tools.length} tools available`);
         lines.push('');
 
-        // List ALL tools with their descriptions
+        // List ALL tools with scoped names (e.g., weatherServer.getAlerts)
         for (const tool of result.tools) {
           const description = tool.description || 'No description available';
-          lines.push(`   🔧 ${tool.name}`);
+          const toolMethodName = convertToolName(tool.name);
+          const scopedToolName = `${serverObjectName}.${toolMethodName}`;
+
+          lines.push(`   🔧 ${scopedToolName}`);
           lines.push(`      ${description}`);
         }
       } else {

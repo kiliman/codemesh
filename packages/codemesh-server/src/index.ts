@@ -10,6 +10,7 @@ import { ToolDiscoveryService } from './toolDiscovery.js'
 import { TypeGeneratorService } from './typeGenerator.js'
 import { RuntimeWrapper } from './runtimeWrapper.js'
 import { CodeExecutor } from './codeExecutor.js'
+import { createServerObjectName, convertToolName } from './utils.js'
 
 // CodeMesh MCP Server - executes TypeScript code against discovered MCP tools
 const getCodeMeshServer = () => {
@@ -279,7 +280,11 @@ const getCodeMeshServer = () => {
       description:
         "CODEMESH STEP 2: Get TypeScript type definitions for specific tools you want to use in your code. This generates the server object interfaces you'll need. Use this after discover-tools to get only the APIs you need. IMPORTANT: Tools are available as server objects with methods, NOT as direct functions. Use the format: await serverName.methodName() (e.g., await weatherServer.getForecast(), await geocodeServer.geocode()). Do NOT use direct function calls like geocode() or get_forecast().",
       inputSchema: {
-        toolNames: z.array(z.string()).describe('Array of tool names to get TypeScript APIs for'),
+        toolNames: z
+          .array(z.string())
+          .describe(
+            'Array of tool names to get TypeScript APIs for. Use scoped names from discover-tools (e.g., ["weatherServer.getAlerts", "geocodeServer.geocode"]) or unscoped names for backwards compatibility.',
+          ),
         serverId: z
           .string()
           .optional()
@@ -310,15 +315,50 @@ const getCodeMeshServer = () => {
         const discoveryService = ToolDiscoveryService.getInstance()
         const discoveryResults = await discoveryService.discoverAllTools(serversToSearch)
 
+        // Parse scoped tool names (e.g., "weatherServer.getAlerts" → server: "weatherServer", method: "getAlerts")
+        // Also support old format (just "get_alerts")
+        const parsedToolRequests = toolNames.map((name) => {
+          const scopedMatch = name.match(/^([a-zA-Z0-9_]+)\.([a-zA-Z0-9_]+)$/)
+          if (scopedMatch) {
+            return { scopedName: name, serverObject: scopedMatch[1], methodName: scopedMatch[2] }
+          }
+          return { scopedName: name, serverObject: null, methodName: name }
+        })
+
         // Filter discovered tools to only the requested ones
         const requestedTools: any[] = []
-        for (const result of discoveryResults) {
-          if (result.success) {
-            for (const tool of result.tools) {
-              if (toolNames.includes(tool.name)) {
-                requestedTools.push(tool)
+        const notFoundTools: string[] = []
+
+        for (const request of parsedToolRequests) {
+          let found = false
+
+          for (const result of discoveryResults) {
+            if (result.success) {
+              for (const tool of result.tools) {
+                // Generate server object name to compare
+                const serverObjectName = createServerObjectName(tool.serverId)
+                const toolMethodName = convertToolName(tool.name)
+
+                // Check if this tool matches the request
+                const matchesScoped =
+                  request.serverObject &&
+                  serverObjectName === request.serverObject &&
+                  toolMethodName === request.methodName
+
+                const matchesUnscoped = !request.serverObject && tool.name === request.methodName
+
+                if (matchesScoped || matchesUnscoped) {
+                  requestedTools.push(tool)
+                  found = true
+                  break
+                }
               }
+              if (found) break
             }
+          }
+
+          if (!found) {
+            notFoundTools.push(request.scopedName)
           }
         }
 
@@ -350,8 +390,17 @@ const getCodeMeshServer = () => {
 
         // Return the TypeScript definitions as text
         const response = [
-          `🔧 TypeScript APIs for requested tools: ${toolNames.join(', ')}`,
+          `🔧 TypeScript APIs for requested tools`,
           `📊 Found ${requestedTools.length} of ${toolNames.length} requested tools`,
+        ]
+
+        // Add warning about not-found tools if any
+        if (notFoundTools.length > 0) {
+          response.push('')
+          response.push(`⚠️ Not found: ${notFoundTools.join(', ')}`)
+        }
+
+        response.push(
           '',
           'TypeScript Type Definitions:',
           '```typescript',
@@ -360,12 +409,13 @@ const getCodeMeshServer = () => {
           generatedTypes.toolsNamespace,
           '```',
           '',
-          'Tool Mapping:',
-          ...requestedTools.map(
-            (tool) =>
-              `🔧 ${tool.name} → ${typeGenerator.createServerObjectName(tool.serverId)}.${typeGenerator.convertToolName(tool.name)}()`,
-          ),
-        ]
+          'Tool Mapping (use these scoped names in your code):',
+          ...requestedTools.map((tool) => {
+            const serverObjectName = createServerObjectName(tool.serverId)
+            const methodName = convertToolName(tool.name)
+            return `🔧 ${serverObjectName}.${methodName}() [from ${tool.serverName}]`
+          }),
+        )
 
         return {
           content: [

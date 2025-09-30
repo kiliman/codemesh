@@ -1,5 +1,13 @@
 import { compile } from 'json-schema-to-typescript';
 import type { DiscoveredTool, DiscoveryResult } from './toolDiscovery.js';
+import {
+  toCamelCase,
+  toPascalCase,
+  createServerObjectName,
+  convertToolName,
+  convertServerName,
+  createSafeFunctionName,
+} from './utils.js';
 
 export interface GeneratedToolType {
   toolName: string;
@@ -146,13 +154,13 @@ export class TypeGeneratorService {
     );
 
     // Generate namespaced properties
-    const namespacedServerName = this.convertServerName(tool.serverId);
+    const namespacedServerName = convertServerName(tool.serverId);
     const namespacedInputTypeName = this.createNamespacedTypeName(tool.name, 'Input');
     const namespacedOutputTypeName = outputTypeDefinition
       ? this.createNamespacedTypeName(tool.name, 'Output')
       : undefined;
-    const camelCaseMethodName = this.convertToolName(tool.name);
-    const serverObjectName = this.createServerObjectName(tool.serverId);
+    const camelCaseMethodName = convertToolName(tool.name);
+    const serverObjectName = createServerObjectName(tool.serverId);
 
     return {
       toolName: tool.name,
@@ -201,7 +209,7 @@ export class TypeGeneratorService {
    */
   private createNamespacedTypeName(toolName: string, suffix: string): string {
     // Simple PascalCase name for use within namespace
-    const safeName = this.toPascalCase(toolName);
+    const safeName = toPascalCase(toolName);
     return `${safeName}${suffix}`;
   }
 
@@ -217,7 +225,7 @@ export class TypeGeneratorService {
     const returnType = outputTypeName ? `Promise<ToolResultWithOutput<${outputTypeName}>>` : 'Promise<ToolResult>';
 
     return `${description}
-  ${this.createSafeFunctionName(tool.name, tool.serverId)}(input: ${inputTypeName}): ${returnType};`;
+  ${createSafeFunctionName(tool.name, tool.serverId)}(input: ${inputTypeName}): ${returnType};`;
   }
 
   /**
@@ -275,60 +283,6 @@ export class TypeGeneratorService {
     lines.push('   */');
 
     return lines.join('\n');
-  }
-
-  /**
-   * Convert string to camelCase
-   */
-  private toCamelCase(str: string): string {
-    return str.replace(/[-_](.)/g, (_, char) => char.toUpperCase());
-  }
-
-  /**
-   * Convert string to PascalCase
-   */
-  private toPascalCase(str: string): string {
-    const camelCase = this.toCamelCase(str);
-    return camelCase.charAt(0).toUpperCase() + camelCase.slice(1);
-  }
-
-  /**
-   * Convert server ID to proper server name
-   */
-  private convertServerName(serverId: string): string {
-    // "weather-server" → "WeatherServer"
-    // "geocode-server" → "GeocodeServer"
-    // "example-server" → "ExampleServer"
-    return this.toPascalCase(serverId.replace(/-server$/, ''));
-  }
-
-  /**
-   * Convert tool name to camelCase method name
-   */
-  public convertToolName(toolName: string): string {
-    // "get_forecast" → "getForecast"
-    // "geocode" → "geocode"
-    return this.toCamelCase(toolName);
-  }
-
-  /**
-   * Create a safe function name from tool name and server ID
-   */
-  public createSafeFunctionName(toolName: string, serverId: string): string {
-    // For backwards compatibility - still used in runtime wrapper
-    const safeName = toolName.replace(/[^a-zA-Z0-9]/g, '_');
-    const safeServerId = serverId.replace(/[^a-zA-Z0-9]/g, '_');
-
-    return `${safeName}_${safeServerId}`;
-  }
-
-  /**
-   * Create server object name for namespaced API
-   */
-  public createServerObjectName(serverId: string): string {
-    // "weather-server" → "weatherServer"
-    const baseServerId = serverId.replace(/-server$/, '');
-    return this.toCamelCase(baseServerId) + 'Server';
   }
 
   /**
@@ -523,7 +477,7 @@ export interface McpTools {`;
 export const TOOL_METADATA = {
 ${tools
   .map(
-    (tool) => `  "${this.createSafeFunctionName(tool.toolName, tool.serverId)}": {
+    (tool) => `  "${createSafeFunctionName(tool.toolName, tool.serverId)}": {
     originalName: "${tool.toolName}",
     serverId: "${tool.serverId}",
     serverName: "${tool.serverName}",
@@ -582,7 +536,7 @@ export type ServerObjectName = keyof typeof SERVER_METADATA;
         serverId: tool.serverId,
         serverName: tool.serverName,
         inputTypeName: tool.inputTypeName,
-        functionName: this.createSafeFunctionName(tool.toolName, tool.serverId),
+        functionName: createSafeFunctionName(tool.toolName, tool.serverId),
       })),
     };
     await fs.writeFile(metadataPath, JSON.stringify(metadata, null, 2), 'utf-8');

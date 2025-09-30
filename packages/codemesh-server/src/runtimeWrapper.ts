@@ -4,7 +4,7 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import type { McpServerConfig } from './config.js';
 import type { DiscoveredTool } from './toolDiscovery.js';
-import { TypeGeneratorService } from './typeGenerator.js';
+import { createServerObjectName, convertToolName, createSafeFunctionName } from './utils.js';
 
 // Re-export CallToolResult from MCP SDK as our ToolResult
 export type ToolResult = CallToolResult;
@@ -44,7 +44,7 @@ export class RuntimeWrapper {
         continue;
       }
 
-      const functionName = this.createSafeFunctionName(tool.name, tool.serverId);
+      const functionName = createSafeFunctionName(tool.name, tool.serverId);
 
       this.tools.set(functionName, {
         name: functionName,
@@ -58,15 +58,6 @@ export class RuntimeWrapper {
     }
 
     console.log(`🎯 Runtime wrapper ready with ${this.tools.size} tools`);
-  }
-
-  /**
-   * Create a safe function name from tool name and server ID
-   */
-  private createSafeFunctionName(toolName: string, serverId: string): string {
-    const safeName = toolName.replace(/[^a-zA-Z0-9]/g, '_');
-    const safeServerId = serverId.replace(/[^a-zA-Z0-9]/g, '_');
-    return `${safeName}_${safeServerId}`;
   }
 
   /**
@@ -200,13 +191,12 @@ export class RuntimeWrapper {
    * Create server objects with namespaced methods (new API)
    */
   createServerObjects(): Record<string, Record<string, (input: unknown) => Promise<ToolResult>>> {
-    const typeGenerator = TypeGeneratorService.getInstance();
     const serverObjects: Record<string, Record<string, (input: unknown) => Promise<ToolResult>>> = {};
 
     // Group tools by server
     const serverGroups = new Map<string, RuntimeTool[]>();
     for (const [functionName, runtimeTool] of this.tools) {
-      const serverObjectName = typeGenerator.createServerObjectName(runtimeTool.serverId);
+      const serverObjectName = createServerObjectName(runtimeTool.serverId);
       if (!serverGroups.has(serverObjectName)) {
         serverGroups.set(serverObjectName, []);
       }
@@ -218,7 +208,7 @@ export class RuntimeWrapper {
       const serverObject: Record<string, (input: unknown) => Promise<ToolResult>> = {};
 
       for (const runtimeTool of serverTools) {
-        const methodName = this.convertToolNameToCamelCase(runtimeTool.originalName);
+        const methodName = convertToolName(runtimeTool.originalName);
         const functionName = runtimeTool.name; // This is the flat function name
 
         serverObject[methodName] = async (input: unknown) => {
@@ -239,12 +229,6 @@ export class RuntimeWrapper {
     return this.createServerObjects();
   }
 
-  /**
-   * Convert tool name to camelCase for method names
-   */
-  private convertToolNameToCamelCase(toolName: string): string {
-    return toolName.replace(/[-_](.)/g, (_, char) => char.toUpperCase());
-  }
 
   /**
    * Get registered tool names
