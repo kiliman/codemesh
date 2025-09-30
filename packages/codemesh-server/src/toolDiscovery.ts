@@ -4,6 +4,7 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import type { Tool } from '@modelcontextprotocol/sdk/types.js';
 import type { McpServerConfig } from './config.js';
 import { createServerObjectName, convertToolName, sanitizeToolDescription } from './utils.js';
+import { logger } from './logger.js';
 
 export interface DiscoveredTool {
   name: string;
@@ -48,7 +49,7 @@ export class ToolDiscoveryService {
       };
     }
 
-    console.log(`🔍 Discovering tools from ${server.name} at ${server.url}...`);
+    logger.log(`🔍 Discovering tools from ${server.name} at ${server.url}...`);
 
     try {
       // Create HTTP transport for the MCP server
@@ -69,11 +70,11 @@ export class ToolDiscoveryService {
 
       // Connect to the server
       await client.connect(transport);
-      console.log(`✅ Connected to ${server.name}`);
+      logger.log(`✅ Connected to ${server.name}`);
 
       // List available tools
       const toolsResponse = await client.listTools();
-      console.log(`📋 Found ${toolsResponse.tools.length} tool(s) in ${server.name}`);
+      logger.log(`📋 Found ${toolsResponse.tools.length} tool(s) in ${server.name}`);
 
       // Get all tool names for sanitization
       const allToolNames = toolsResponse.tools.map((t: Tool) => t.name);
@@ -93,7 +94,7 @@ export class ToolDiscoveryService {
 
       // Close the connection
       await transport.close();
-      console.log(`🔌 Disconnected from ${server.name}`);
+      logger.log(`🔌 Disconnected from ${server.name}`);
 
       return {
         serverId: server.id,
@@ -102,7 +103,7 @@ export class ToolDiscoveryService {
         tools: discoveredTools,
       };
     } catch (error) {
-      console.error(`❌ Failed to discover tools from ${server.name}:`, error);
+      logger.error(`❌ Failed to discover tools from ${server.name}:`, error);
       return {
         serverId: server.id,
         serverName: server.name,
@@ -127,7 +128,7 @@ export class ToolDiscoveryService {
       };
     }
 
-    console.log(`🔍 Discovering tools from ${server.name} via stdio...`);
+    logger.log(`🔍 Discovering tools from ${server.name} via stdio...`);
 
     try {
       // Create stdio transport and let SDK handle the process spawning
@@ -159,13 +160,13 @@ export class ToolDiscoveryService {
 
       // Connect to the server
       await client.connect(transport);
-      console.log(`✅ Connected to ${server.name}`);
+      logger.log(`✅ Connected to ${server.name}`);
 
       // List available tools
       const toolsResponse = await client.listTools({});
       const tools: Tool[] = toolsResponse.tools || [];
 
-      console.log(`📋 Found ${tools.length} tool(s) in ${server.name}`);
+      logger.log(`📋 Found ${tools.length} tool(s) in ${server.name}`);
 
       // Get all tool names for sanitization
       const allToolNames = tools.map((t) => t.name);
@@ -185,7 +186,7 @@ export class ToolDiscoveryService {
 
       // Disconnect from the server
       await transport.close();
-      console.log(`🔌 Disconnected from ${server.name}`);
+      logger.log(`🔌 Disconnected from ${server.name}`);
 
       return {
         serverId: server.id,
@@ -194,7 +195,7 @@ export class ToolDiscoveryService {
         tools: discoveredTools,
       };
     } catch (error) {
-      console.error(`❌ Failed to discover tools from ${server.name}:`, error);
+      logger.error(`❌ Failed to discover tools from ${server.name}:`, error);
       return {
         serverId: server.id,
         serverName: server.name,
@@ -209,7 +210,7 @@ export class ToolDiscoveryService {
    * Discover tools from all configured MCP servers
    */
   async discoverAllTools(servers: McpServerConfig[]): Promise<DiscoveryResult[]> {
-    console.log(`🚀 Starting tool discovery for ${servers.length} server(s)...`);
+    logger.log(`🚀 Starting tool discovery for ${servers.length} server(s)...`);
 
     const results: DiscoveryResult[] = [];
 
@@ -217,7 +218,7 @@ export class ToolDiscoveryService {
     const httpServers = servers.filter((server) => server.type === 'http');
     const stdioServers = servers.filter((server) => server.type === 'stdio');
 
-    console.log(`📊 Found ${httpServers.length} HTTP and ${stdioServers.length} stdio servers`);
+    logger.log(`📊 Found ${httpServers.length} HTTP and ${stdioServers.length} stdio servers`);
 
     // Discover tools from each server sequentially
     // TODO: Could parallelize this for better performance
@@ -234,7 +235,7 @@ export class ToolDiscoveryService {
     const totalTools = results.reduce((sum, result) => sum + result.tools.length, 0);
     const successfulServers = results.filter((result) => result.success).length;
 
-    console.log(`🎯 Discovery complete: ${totalTools} total tools from ${successfulServers}/${results.length} servers`);
+    logger.log(`🎯 Discovery complete: ${totalTools} total tools from ${successfulServers}/${results.length} servers`);
 
     return results;
   }

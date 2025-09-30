@@ -1,6 +1,7 @@
 import { VM } from 'vm2';
 import * as ts from 'typescript';
 import type { ToolResult } from './runtimeWrapper.js';
+import { logger } from './logger.js';
 
 export interface ExecutionResult {
   success: boolean;
@@ -31,7 +32,7 @@ export class CodeExecutor {
     const logs: string[] = [];
 
     try {
-      console.log(`🚀 Executing TypeScript code...`);
+      logger.log(`🚀 Executing TypeScript code...`);
 
       // Compile TypeScript to JavaScript
       const compiledCode = this.compileTypeScript(code);
@@ -49,14 +50,14 @@ export class CodeExecutor {
                 .map((arg) => (typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)))
                 .join(' ');
               logs.push(message);
-              console.log(`📝 Code output:`, message);
+              logger.log(`📝 Code output:`, message);
             },
             error: (...args: any[]) => {
               const message = args
                 .map((arg) => (typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)))
                 .join(' ');
               logs.push(`ERROR: ${message}`);
-              console.error(`❌ Code error:`, message);
+              logger.error(`❌ Code error:`, message);
             },
           },
           // Add Promise support
@@ -68,7 +69,7 @@ export class CodeExecutor {
         wasm: false,
       });
 
-      console.log(`🔧 Available tools in sandbox:`, Object.keys(tools));
+      logger.log(`🔧 Available tools in sandbox:`, Object.keys(tools));
 
       // Execute the compiled code
       const result = await vm.run(`
@@ -77,7 +78,7 @@ export class CodeExecutor {
         })()
       `);
 
-      console.log(`✅ Code execution completed successfully`);
+      logger.log(`✅ Code execution completed successfully`);
 
       return {
         success: true,
@@ -85,7 +86,7 @@ export class CodeExecutor {
         logs,
       };
     } catch (error) {
-      console.error(`❌ Code execution failed:`, error);
+      logger.error(`❌ Code execution failed:`, error);
 
       return {
         success: false,
@@ -100,7 +101,7 @@ export class CodeExecutor {
    */
   private compileTypeScript(code: string): string {
     try {
-      console.log(`🔧 Compiling TypeScript code...`);
+      logger.log(`🔧 Compiling TypeScript code...`);
 
       const result = ts.transpile(code, {
         target: ts.ScriptTarget.ES2020,
@@ -112,10 +113,10 @@ export class CodeExecutor {
         skipLibCheck: true,
       });
 
-      console.log(`✅ TypeScript compilation successful`);
+      logger.log(`✅ TypeScript compilation successful`);
       return result;
     } catch (error) {
-      console.error(`❌ TypeScript compilation failed:`, error);
+      logger.error(`❌ TypeScript compilation failed:`, error);
       throw new Error(`TypeScript compilation failed: ${error}`);
     }
   }

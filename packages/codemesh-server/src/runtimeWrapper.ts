@@ -5,6 +5,7 @@ import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import type { McpServerConfig } from './config.js';
 import type { DiscoveredTool } from './toolDiscovery.js';
 import { createServerObjectName, convertToolName, createSafeFunctionName } from './utils.js';
+import { logger } from './logger.js';
 
 // Re-export CallToolResult from MCP SDK as our ToolResult
 export type ToolResult = CallToolResult;
@@ -29,7 +30,7 @@ export class RuntimeWrapper {
    * Register tools for runtime execution
    */
   async registerTools(tools: DiscoveredTool[], serverConfigs: McpServerConfig[]): Promise<void> {
-    console.log(`🔧 Registering ${tools.length} tools for runtime execution...`);
+    logger.log(`🔧 Registering ${tools.length} tools for runtime execution...`);
 
     // Store server configurations
     for (const config of serverConfigs) {
@@ -40,7 +41,7 @@ export class RuntimeWrapper {
     for (const tool of tools) {
       const serverConfig = this.serverConfigs.get(tool.serverId);
       if (!serverConfig) {
-        console.warn(`⚠️ Server config not found for tool ${tool.name} (server: ${tool.serverId})`);
+        logger.warn(`⚠️ Server config not found for tool ${tool.name} (server: ${tool.serverId})`);
         continue;
       }
 
@@ -54,10 +55,10 @@ export class RuntimeWrapper {
         tool,
       });
 
-      console.log(`✅ Registered ${tool.name} → ${functionName}()`);
+      logger.log(`✅ Registered ${tool.name} → ${functionName}()`);
     }
 
-    console.log(`🎯 Runtime wrapper ready with ${this.tools.size} tools`);
+    logger.log(`🎯 Runtime wrapper ready with ${this.tools.size} tools`);
   }
 
   /**
@@ -73,7 +74,7 @@ export class RuntimeWrapper {
       throw new Error(`Server configuration not found for ${serverId}`);
     }
 
-    console.log(`🔌 Connecting to ${serverConfig.name} (${serverConfig.type})...`);
+    logger.log(`🔌 Connecting to ${serverConfig.name} (${serverConfig.type})...`);
 
     let transport: StreamableHTTPClientTransport | StdioClientTransport;
 
@@ -81,14 +82,14 @@ export class RuntimeWrapper {
       if (!serverConfig.url) {
         throw new Error(`HTTP server ${serverId} missing URL`);
       }
-      console.log(`📡 HTTP connection to ${serverConfig.url}`);
+      logger.log(`📡 HTTP connection to ${serverConfig.url}`);
       transport = new StreamableHTTPClientTransport(new URL(serverConfig.url));
     } else if (serverConfig.type === 'stdio') {
       if (!serverConfig.command || serverConfig.command.length === 0) {
         throw new Error(`Stdio server ${serverId} missing command`);
       }
 
-      console.log(`🖥️ Spawning process: ${serverConfig.command.join(' ')}`);
+      logger.log(`🖥️ Spawning process: ${serverConfig.command.join(' ')}`);
       transport = new StdioClientTransport({
         command: serverConfig.command[0],
         args: serverConfig.command.slice(1),
@@ -125,7 +126,7 @@ export class RuntimeWrapper {
     this.connections.set(serverId, client);
     this.transports.set(serverId, transport);
 
-    console.log(`✅ Connected to ${serverConfig.name}`);
+    logger.log(`✅ Connected to ${serverConfig.name}`);
 
     return client;
   }
@@ -141,7 +142,7 @@ export class RuntimeWrapper {
       );
     }
 
-    console.log(`🔧 Executing ${functionName} (${runtimeTool.originalName} on ${runtimeTool.tool.serverName})`);
+    logger.log(`🔧 Executing ${functionName} (${runtimeTool.originalName} on ${runtimeTool.tool.serverName})`);
 
     try {
       // Get connection to the appropriate server
@@ -153,12 +154,12 @@ export class RuntimeWrapper {
         arguments: (input || {}) as { [key: string]: unknown },
       });
 
-      console.log(`✅ ${functionName} executed successfully`);
+      logger.log(`✅ ${functionName} executed successfully`);
 
       // Return the CallToolResult directly (it is now our ToolResult type)
       return result as CallToolResult;
     } catch (error) {
-      console.error(`❌ Error executing ${functionName}:`, error);
+      logger.error(`❌ Error executing ${functionName}:`, error);
 
       return {
         content: [
@@ -248,15 +249,15 @@ export class RuntimeWrapper {
    * Close all connections
    */
   async cleanup(): Promise<void> {
-    console.log(`🧹 Cleaning up runtime wrapper...`);
+    logger.log(`🧹 Cleaning up runtime wrapper...`);
 
     // Close all transports
     for (const [serverId, transport] of this.transports) {
       try {
         await transport.close();
-        console.log(`🔌 Disconnected from ${serverId}`);
+        logger.log(`🔌 Disconnected from ${serverId}`);
       } catch (error) {
-        console.error(`❌ Error disconnecting from ${serverId}:`, error);
+        logger.error(`❌ Error disconnecting from ${serverId}:`, error);
       }
     }
 
@@ -266,7 +267,7 @@ export class RuntimeWrapper {
     this.tools.clear();
     this.serverConfigs.clear();
 
-    console.log(`✅ Runtime wrapper cleanup complete`);
+    logger.log(`✅ Runtime wrapper cleanup complete`);
   }
 
   /**

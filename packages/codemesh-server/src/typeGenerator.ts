@@ -8,6 +8,7 @@ import {
   convertServerName,
   createSafeFunctionName,
 } from './utils.js';
+import { logger } from './logger.js';
 
 export interface GeneratedToolType {
   toolName: string;
@@ -52,7 +53,7 @@ export class TypeGeneratorService {
    * Generate TypeScript types from discovered tools
    */
   async generateTypes(discoveryResults: DiscoveryResult[]): Promise<GeneratedTypes> {
-    console.log(`🔧 Generating TypeScript types for discovered tools...`);
+    logger.log(`🔧 Generating TypeScript types for discovered tools...`);
 
     const generatedTools: GeneratedToolType[] = [];
     const typeDefinitions: string[] = [];
@@ -61,11 +62,11 @@ export class TypeGeneratorService {
     // Process each successful discovery result
     for (const result of discoveryResults) {
       if (!result.success) {
-        console.log(`⚠️ Skipping ${result.serverName} due to discovery failure`);
+        logger.log(`⚠️ Skipping ${result.serverName} due to discovery failure`);
         continue;
       }
 
-      console.log(`📝 Processing ${result.tools.length} tools from ${result.serverName}...`);
+      logger.log(`📝 Processing ${result.tools.length} tools from ${result.serverName}...`);
 
       for (const tool of result.tools) {
         try {
@@ -77,9 +78,9 @@ export class TypeGeneratorService {
           }
           functionSignatures.push(generatedTool.functionSignature);
 
-          console.log(`✅ Generated types for ${tool.name}`);
+          logger.log(`✅ Generated types for ${tool.name}`);
         } catch (error) {
-          console.error(`❌ Failed to generate types for ${tool.name}:`, error);
+          logger.error(`❌ Failed to generate types for ${tool.name}:`, error);
         }
       }
     }
@@ -93,7 +94,7 @@ export class TypeGeneratorService {
     // Generate tools namespace with only namespaced server objects
     const toolsNamespace = this.generateNamespacedToolsNamespace(generatedTools);
 
-    console.log(`🎯 Generated TypeScript types for ${generatedTools.length} tools`);
+    logger.log(`🎯 Generated TypeScript types for ${generatedTools.length} tools`);
 
     return {
       tools: generatedTools,
@@ -125,7 +126,7 @@ export class TypeGeneratorService {
         inputTypeDefinition = `// Input type for ${tool.name} tool from ${tool.serverName}\nexport interface ${inputTypeName} {}\n`;
       }
     } catch (error) {
-      console.warn(`⚠️ Failed to generate input schema for ${tool.name}, using empty interface:`, error);
+      logger.warn(`⚠️ Failed to generate input schema for ${tool.name}, using empty interface:`, error);
       inputTypeDefinition = `// Input type for ${tool.name} tool from ${tool.serverName}\nexport interface ${inputTypeName} {}\n`;
     }
 
@@ -139,9 +140,9 @@ export class TypeGeneratorService {
             singleQuote: false,
           },
         });
-        console.log(`✨ Generated output type for ${tool.name}`);
+        logger.log(`✨ Generated output type for ${tool.name}`);
       } catch (error) {
-        console.warn(`⚠️ Failed to generate output schema for ${tool.name}:`, error);
+        logger.warn(`⚠️ Failed to generate output schema for ${tool.name}:`, error);
         outputTypeDefinition = undefined;
       }
     }
@@ -522,12 +523,12 @@ export type ServerObjectName = keyof typeof SERVER_METADATA;
     // Save combined types
     const typesPath = path.join(outputDir, 'types.ts');
     await fs.writeFile(typesPath, generatedTypes.combinedTypes, 'utf-8');
-    console.log(`📁 Saved types to ${typesPath}`);
+    logger.log(`📁 Saved types to ${typesPath}`);
 
     // Save tools namespace
     const toolsPath = path.join(outputDir, 'tools.ts');
     await fs.writeFile(toolsPath, generatedTypes.toolsNamespace, 'utf-8');
-    console.log(`📁 Saved tools namespace to ${toolsPath}`);
+    logger.log(`📁 Saved tools namespace to ${toolsPath}`);
 
     // Save metadata as JSON for runtime use
     const metadataPath = path.join(outputDir, 'metadata.json');
@@ -542,7 +543,7 @@ export type ServerObjectName = keyof typeof SERVER_METADATA;
       })),
     };
     await fs.writeFile(metadataPath, JSON.stringify(metadata, null, 2), 'utf-8');
-    console.log(`📁 Saved metadata to ${metadataPath}`);
+    logger.log(`📁 Saved metadata to ${metadataPath}`);
   }
 
   /**

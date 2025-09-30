@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { readFileSync, existsSync } from 'node:fs';
 import { resolve, join } from 'node:path';
+import { logger } from './logger.js';
 
 // MCP Server Configuration Schema (compatible with VSCode's .vscode/mcp.json)
 const McpServerConfigSchema = z.object({
@@ -73,15 +74,15 @@ export class ConfigLoader {
       // Validate the configuration against our schema
       this.config = McpConfigSchema.parse(parsedConfig);
 
-      console.error(`📄 Loaded MCP configuration from ${configFile}`);
-      console.error(`📡 Found ${this.config.servers.length} MCP server(s) configured`);
+      logger.error(`📄 Loaded MCP configuration from ${configFile}`);
+      logger.error(`📡 Found ${this.config.servers.length} MCP server(s) configured`);
 
       return this.config;
     } catch (error) {
       if (error instanceof z.ZodError) {
-        console.error('❌ Invalid MCP configuration format:');
+        logger.error('❌ Invalid MCP configuration format:');
         error.errors.forEach((err) => {
-          console.error(`  - ${err.path.join('.')}: ${err.message}`);
+          logger.error(`  - ${err.path.join('.')}: ${err.message}`);
         });
         throw new Error('Invalid MCP configuration format');
       } else if (error instanceof SyntaxError) {
