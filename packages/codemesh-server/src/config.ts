@@ -43,6 +43,45 @@ export class ConfigLoader {
   }
 
   /**
+   * Expand environment variable references in a string value
+   * Supports: ${VAR} and ${VAR:-default}
+   */
+  private expandEnvVar(value: string): string {
+    // Match ${VAR} or ${VAR:-default}
+    return value.replace(/\$\{([^}:]+)(?::-([^}]*))?\}/g, (_, varName, defaultValue) => {
+      const envValue = process.env[varName];
+      if (envValue !== undefined) {
+        return envValue;
+      }
+      if (defaultValue !== undefined) {
+        return defaultValue;
+      }
+      logger.warn(`Environment variable ${varName} not found and no default provided`);
+      return '';
+    });
+  }
+
+  /**
+   * Recursively expand environment variables in config object
+   */
+  private expandEnvVars(obj: any): any {
+    if (typeof obj === 'string') {
+      return this.expandEnvVar(obj);
+    }
+    if (Array.isArray(obj)) {
+      return obj.map(item => this.expandEnvVars(item));
+    }
+    if (obj && typeof obj === 'object') {
+      const expanded: any = {};
+      for (const [key, value] of Object.entries(obj)) {
+        expanded[key] = this.expandEnvVars(value);
+      }
+      return expanded;
+    }
+    return obj;
+  }
+
+  /**
    * Auto-discover and load MCP configuration from project root
    * Looks for .codemesh/config.json in PWD (for stdio servers)
    */
@@ -71,8 +110,11 @@ export class ConfigLoader {
       const configData = readFileSync(configFile, 'utf-8');
       const parsedConfig = JSON.parse(configData);
 
+      // Expand environment variables before validation
+      const expandedConfig = this.expandEnvVars(parsedConfig);
+
       // Validate the configuration against our schema
-      this.config = McpConfigSchema.parse(parsedConfig);
+      this.config = McpConfigSchema.parse(expandedConfig);
 
       logger.error(`📄 Loaded MCP configuration from ${configFile}`);
       logger.error(`📡 Found ${this.config.servers.length} MCP server(s) configured`);

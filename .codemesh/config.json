@@ -1,17 +1,32 @@
 {
-  "servers": {
-    "weather-server": {
-      "command": "tsx",
-      "args": ["/Users/michael/Projects/learn/mcp/codemode/packages/weather-server/src/index.ts"]
+  "servers": [
+    {
+      "id": "weather-server",
+      "name": "Weather Server",
+      "type": "stdio",
+      "command": ["tsx", "/Users/michael/Projects/learn/mcp/codemode/packages/weather-server/src/index.ts"]
     },
-    "geocode-server": {
-      "command": "tsx",
-      "args": ["/Users/michael/Projects/learn/mcp/codemode/packages/geocode-server/src/index.ts"]
+    {
+      "id": "geocode-server",
+      "name": "Geocode Server",
+      "type": "stdio",
+      "command": ["tsx", "/Users/michael/Projects/learn/mcp/codemode/packages/geocode-server/src/index.ts"]
     },
-    "filesystem-server": {
-      "command": "npx",
-      "args": ["@modelcontextprotocol/server-filesystem", "/Users/michael/Projects/learn/mcp/codemode"],
+    {
+      "id": "filesystem-server",
+      "name": "File System Server",
+      "type": "stdio",
+      "command": ["npx", "@modelcontextprotocol/server-filesystem", "/Users/michael/Projects/learn/mcp/codemode"],
       "timeout": 30000
+    },
+    {
+      "id": "brave-search",
+      "name": "Brave Search",
+      "type": "stdio",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-brave-search"],
+      "env": {
+        "BRAVE_API_KEY": "${BRAVE_API_KEY:-BSAkZjn8-iUTfFehaeJT5ToUwwcKwwC}"
+      }
     }
-  }
+  ]
 }

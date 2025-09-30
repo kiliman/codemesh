@@ -64,7 +64,11 @@ For MCP servers accessible via HTTP/SSE:
 
 ### Authentication
 
-CodeMesh supports authentication through environment variables in the `env` field:
+CodeMesh supports authentication through environment variables in the `env` field.
+
+#### Option 1: Environment Variable Substitution (Recommended ✅)
+
+Use `${VAR}` syntax to reference environment variables. This keeps secrets out of your config files:
 
 ```json
 {
@@ -73,12 +77,49 @@ CodeMesh supports authentication through environment variables in the `env` fiel
   "type": "stdio",
   "command": ["npx", "@modelcontextprotocol/server-github"],
   "env": {
+    "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
+  }
+}
+```
+
+With default values if the variable is not set:
+
+```json
+{
+  "env": {
+    "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN:-your-default-token}",
+    "DEBUG": "${DEBUG:-false}"
+  }
+}
+```
+
+**Benefits:**
+- ✅ Safe to commit to version control
+- ✅ Works with Doppler, 1Password, or any environment variable manager
+- ✅ Different values per environment (dev/staging/prod)
+
+**Example with Doppler:**
+```bash
+# Set your environment variables via Doppler
+doppler secrets set BRAVE_API_KEY=your-key-here
+
+# Run codemesh server with Doppler
+doppler run -- npx codemesh-server
+```
+
+#### Option 2: Direct Values (Not Recommended ⚠️)
+
+You can also hardcode values directly, but this is **not recommended** for production:
+
+```json
+{
+  "env": {
     "GITHUB_PERSONAL_ACCESS_TOKEN": "ghp_your_token_here"
   }
 }
 ```
 
-Environment variables are passed to stdio servers when they're spawned, allowing them to authenticate with external APIs.
+⚠️ **Warning:** Never commit API keys or secrets directly in config files!
 
 ## Example Configuration
 

@@ -2,3 +2,7 @@ node_modules/
 dist/
 .claude-trace/
 tmp/
+
+# Config files with secrets (use config.example.json as template)
+.codemesh/config.json
+packages/client/.codemesh/config.json
