@@ -1,5 +1,6 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
+import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 import { createInterface } from 'node:readline';
 import type {
   ListToolsRequest,
@@ -35,13 +36,17 @@ let notificationCount = 0;
 
 // Global client and transport for interactive commands
 let client: Client | null = null;
-let transport: StreamableHTTPClientTransport | null = null;
+let transport: StreamableHTTPClientTransport | StdioClientTransport | null = null;
 let serverUrl = 'http://localhost:3000/mcp';
+let connectionType: 'http' | 'stdio' = 'http';
+let stdioCommand: string[] | null = null;
 let notificationsToolLastEventId: string | undefined = undefined;
 let sessionId: string | undefined = undefined;
 
 interface CliOptions {
   connect?: string;
+  stdio?: boolean;
+  command?: string[];
   listTools?: boolean;
   callTool?: string;
   toolArgs?: string;
@@ -66,6 +71,19 @@ function parseCliArgs(): CliOptions {
     switch (arg) {
       case '--connect':
         options.connect = args[++i];
+        break;
+      case '--stdio':
+        options.stdio = true;
+        // Collect args until we hit another --option
+        const commandArgs = [];
+        for (let j = i + 1; j < args.length; j++) {
+          if (args[j].startsWith('--')) {
+            break;
+          }
+          commandArgs.push(args[j]);
+        }
+        options.command = commandArgs;
+        i += commandArgs.length;
         break;
       case '--list-tools':
         options.listTools = true;
@@ -119,7 +137,8 @@ function printCliHelp(): void {
   console.log('  node dist/index.js [options]');
   console.log('');
   console.log('Options:');
-  console.log('  --connect <url>              Connect to MCP server');
+  console.log('  --connect <url>              Connect to HTTP MCP server');
+  console.log('  --stdio <command...>         Connect to stdio MCP server (provide command + args)');
   console.log('  --list-tools                 List available tools');
   console.log('  --call-tool <name>           Call a tool');
   console.log('  --tool-args <json>           JSON arguments for tool call');
@@ -134,12 +153,15 @@ function printCliHelp(): void {
   console.log('  --help, -h                   Show this help');
   console.log('');
   console.log('Examples:');
-  console.log('  # Connect to codemode server and list tools');
+  console.log('  # Connect to HTTP server and list tools');
   console.log('  node dist/index.js --connect http://localhost:3002/mcp --list-tools');
   console.log('');
-  console.log('  # Call a tool with arguments');
+  console.log('  # Connect to stdio server and list tools');
+  console.log('  node dist/index.js --stdio npx codemesh --list-tools');
+  console.log('');
+  console.log('  # Call a tool via stdio with arguments');
   console.log(
-    '  node dist/index.js --connect http://localhost:3002/mcp --call-tool discover-tools --tool-args \'{"configPath": "./mcp-config.json"}\'',
+    '  node dist/index.js --stdio tsx packages/codemesh-server/src/index.ts --call-tool discover-tools',
   );
   console.log('');
   console.log('  # Interactive mode (default when no commands given)');
@@ -149,9 +171,14 @@ function printCliHelp(): void {
 async function runCliMode(options: CliOptions): Promise<void> {
   try {
     // Connect to server
-    const serverUrl = options.connect || 'http://localhost:3000/mcp';
-    console.log(`Connecting to ${serverUrl}...`);
-    await connect(serverUrl);
+    if (options.stdio && options.command && options.command.length > 0) {
+      console.log(`Connecting to stdio server: ${options.command.join(' ')}...`);
+      await connectStdio(options.command);
+    } else {
+      const serverUrl = options.connect || 'http://localhost:3000/mcp';
+      console.log(`Connecting to ${serverUrl}...`);
+      await connect(serverUrl);
+    }
 
     // Execute commands in sequence
     if (options.listTools) {
@@ -287,7 +314,7 @@ async function main(): Promise<void> {
     options.listResources ||
     options.readResource;
 
-  if (hasCommands || options.connect) {
+  if (hasCommands || options.connect || options.stdio) {
     // CLI mode - execute commands and exit
     isCliMode = true;
     await runCliMode(options);
@@ -300,7 +327,8 @@ async function main(): Promise<void> {
 
 function printHelp(): void {
   console.log('\nAvailable commands:');
-  console.log('  connect [url]              - Connect to MCP server (default: http://localhost:3000/mcp)');
+  console.log('  connect [url]              - Connect to HTTP MCP server (default: http://localhost:3000/mcp)');
+  console.log('  connect-stdio <cmd...>     - Connect to stdio MCP server');
   console.log('  disconnect                 - Disconnect from server');
   console.log('  terminate-session          - Terminate the current session');
   console.log('  reconnect                  - Reconnect to the server');
@@ -332,6 +360,14 @@ function commandLoop(): void {
       switch (command) {
         case 'connect':
           await connect(args[1]);
+          break;
+
+        case 'connect-stdio':
+          if (args.length < 2) {
+            console.log('Usage: connect-stdio <command> [args...]');
+          } else {
+            await connectStdio(args.slice(1));
+          }
           break;
 
         case 'disconnect':
@@ -718,6 +754,77 @@ async function connect(url?: string): Promise<void> {
   }
 }
 
+async function connectStdio(command: string[]): Promise<void> {
+  if (client) {
+    console.log('Already connected. Disconnect first.');
+    return;
+  }
+
+  try {
+    // Create a new client with elicitation capability
+    client = new Client(
+      {
+        name: 'example-client',
+        version: '1.0.0',
+      },
+      {
+        capabilities: {
+          elicitation: {},
+        },
+      },
+    );
+    client.onerror = (error) => {
+      console.error('\x1b[31mClient error:', error, '\x1b[0m');
+    };
+
+    // Set up the same notification handlers as HTTP
+    client.setNotificationHandler(LoggingMessageNotificationSchema, (notification) => {
+      notificationCount++;
+      console.log(`\nNotification #${notificationCount}: ${notification.params.level} - ${notification.params.data}`);
+      // Re-display the prompt
+      process.stdout.write('> ');
+    });
+
+    client.setNotificationHandler(ResourceListChangedNotificationSchema, async (_) => {
+      console.log(`\nResource list changed notification received!`);
+      try {
+        if (!client) {
+          console.log('Client disconnected, cannot fetch resources');
+          return;
+        }
+        const resourcesResult = await client.request(
+          {
+            method: 'resources/list',
+            params: {},
+          },
+          ListResourcesResultSchema,
+        );
+        console.log('Available resources count:', resourcesResult.resources.length);
+      } catch {
+        console.log('Failed to list resources after change notification');
+      }
+      // Re-display the prompt
+      process.stdout.write('> ');
+    });
+
+    // Create stdio transport
+    connectionType = 'stdio';
+    stdioCommand = command;
+    transport = new StdioClientTransport({
+      command: command[0],
+      args: command.slice(1),
+    });
+
+    // Connect the client
+    await client.connect(transport);
+    console.log('Connected to MCP server via stdio');
+  } catch (error) {
+    console.error('Failed to connect:', error);
+    client = null;
+    transport = null;
+  }
+}
+
 async function disconnect(): Promise<void> {
   if (!client || !transport) {
     console.log('Not connected.');
@@ -729,6 +836,8 @@ async function disconnect(): Promise<void> {
     console.log('Disconnected from MCP server');
     client = null;
     transport = null;
+    connectionType = 'http';
+    stdioCommand = null;
   } catch (error) {
     console.error('Error disconnecting:', error);
   }
@@ -740,13 +849,20 @@ async function terminateSession(): Promise<void> {
     return;
   }
 
+  // Session termination is only for HTTP transports
+  if (connectionType === 'stdio') {
+    console.log('Session termination not applicable for stdio connections');
+    return;
+  }
+
   try {
-    console.log('Terminating session with ID:', transport.sessionId);
-    await transport.terminateSession();
+    const httpTransport = transport as StreamableHTTPClientTransport;
+    console.log('Terminating session with ID:', httpTransport.sessionId);
+    await httpTransport.terminateSession();
     console.log('Session terminated successfully');
 
     // Check if sessionId was cleared after termination
-    if (!transport.sessionId) {
+    if (!httpTransport.sessionId) {
       console.log('Session ID has been cleared');
       sessionId = undefined;
 
@@ -757,7 +873,7 @@ async function terminateSession(): Promise<void> {
       transport = null;
     } else {
       console.log('Server responded with 405 Method Not Allowed (session termination not supported)');
-      console.log('Session ID is still active:', transport.sessionId);
+      console.log('Session ID is still active:', httpTransport.sessionId);
     }
   } catch (error) {
     console.error('Error terminating session:', error);
@@ -768,7 +884,11 @@ async function reconnect(): Promise<void> {
   if (client) {
     await disconnect();
   }
-  await connect();
+  if (connectionType === 'stdio' && stdioCommand) {
+    await connectStdio(stdioCommand);
+  } else {
+    await connect();
+  }
 }
 
 async function listTools(): Promise<void> {
@@ -1034,11 +1154,11 @@ async function readResource(uri: string): Promise<void> {
 async function cleanup(): Promise<void> {
   if (client && transport) {
     try {
-      // First try to terminate the session gracefully
-      if (transport.sessionId) {
+      // First try to terminate the session gracefully (HTTP only)
+      if (connectionType === 'http' && 'sessionId' in transport && transport.sessionId) {
         try {
           console.log('Terminating session before exit...');
-          await transport.terminateSession();
+          await (transport as StreamableHTTPClientTransport).terminateSession();
           console.log('Session terminated successfully');
         } catch (error) {
           console.error('Error terminating session:', error);

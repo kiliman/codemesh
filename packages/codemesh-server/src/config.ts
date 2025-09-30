@@ -46,11 +46,8 @@ export class ConfigLoader {
    * Looks for .codemesh/config.json in PWD (for stdio servers)
    */
   public loadConfigAuto(): McpConfig {
-    const pwd = process.env.PWD;
-
-    if (!pwd) {
-      throw new Error('PWD environment variable not set. Are you running as a stdio server?');
-    }
+    // Use PWD if available, otherwise fall back to process.cwd()
+    const pwd = process.env.PWD || process.cwd();
 
     const configPath = join(pwd, '.codemesh', 'config.json');
 
