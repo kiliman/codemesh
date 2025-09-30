@@ -94,13 +94,8 @@ export class RuntimeWrapper {
         command: serverConfig.command[0],
         args: serverConfig.command.slice(1),
         cwd: serverConfig.cwd || process.cwd(),
-        env: {
-          ...(Object.fromEntries(Object.entries(process.env).filter(([, value]) => value !== undefined)) as Record<
-            string,
-            string
-          >),
-          ...serverConfig.env,
-        },
+        // SDK handles safe env vars via getDefaultEnvironment() + our config
+        env: serverConfig.env,
       });
     } else {
       throw new Error(`Unsupported server type: ${serverConfig.type} (server: ${serverId})`);

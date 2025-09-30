@@ -136,13 +136,8 @@ export class ToolDiscoveryService {
         command: server.command[0],
         args: server.command.slice(1),
         cwd: server.cwd || process.cwd(),
-        env: {
-          ...(Object.fromEntries(Object.entries(process.env).filter(([, value]) => value !== undefined)) as Record<
-            string,
-            string
-          >),
-          ...server.env,
-        },
+        // SDK handles safe env vars via getDefaultEnvironment() + our config
+        env: server.env,
       });
 
       // Create MCP client
