@@ -37,8 +37,8 @@ let notificationCount = 0;
 // Global client and transport for interactive commands
 let client: Client | null = null;
 let transport: StreamableHTTPClientTransport | StdioClientTransport | null = null;
-let serverUrl = 'http://localhost:3000/mcp';
-let connectionType: 'http' | 'stdio' = 'http';
+let serverUrl: string | null = null;
+let connectionType: 'http' | 'stdio' | null = null;
 let stdioCommand: string[] | null = null;
 let notificationsToolLastEventId: string | undefined = undefined;
 let sessionId: string | undefined = undefined;
@@ -285,8 +285,14 @@ async function runInteractiveMode(): Promise<void> {
     });
   }
 
-  // Connect to server immediately with default settings
-  await connect();
+  // Connect to server if connection info was provided
+  if (connectionType === 'stdio' && stdioCommand) {
+    await connectStdio(stdioCommand);
+  } else if (connectionType === 'http' && serverUrl) {
+    await connect(serverUrl);
+  } else {
+    console.log('No server connection configured. Use "connect <url>" or "connect-stdio <command...>" to connect.');
+  }
 
   // Print help and start the command loop
   printHelp();
@@ -341,11 +347,11 @@ async function main(): Promise<void> {
 
 function printHelp(): void {
   console.log('\nAvailable commands:');
-  console.log('  connect [url]              - Connect to HTTP MCP server (default: http://localhost:3000/mcp)');
+  console.log('  connect <url>              - Connect to HTTP MCP server');
   console.log('  connect-stdio <cmd...>     - Connect to stdio MCP server');
   console.log('  disconnect                 - Disconnect from server');
   console.log('  terminate-session          - Terminate the current session');
-  console.log('  reconnect                  - Reconnect to the server');
+  console.log('  reconnect                  - Reconnect to the last server');
   console.log('  list-tools                 - List available tools');
   console.log('  call-tool <name> [args]    - Call a tool with optional JSON arguments');
   console.log('  greet [name]               - Call the greet tool');
@@ -508,6 +514,12 @@ async function connect(url?: string): Promise<void> {
 
   if (url) {
     serverUrl = url;
+    connectionType = 'http';
+  }
+
+  if (!serverUrl) {
+    console.log('Error: No server URL provided. Usage: connect <url>');
+    return;
   }
 
   console.log(`Connecting to ${serverUrl}...`);
@@ -774,6 +786,10 @@ async function connectStdio(command: string[]): Promise<void> {
     return;
   }
 
+  // Store connection info for reconnect
+  stdioCommand = command;
+  connectionType = 'stdio';
+
   try {
     // Create a new client with elicitation capability
     client = new Client(
@@ -822,8 +838,6 @@ async function connectStdio(command: string[]): Promise<void> {
     });
 
     // Create stdio transport
-    connectionType = 'stdio';
-    stdioCommand = command;
     transport = new StdioClientTransport({
       command: command[0],
       args: command.slice(1),
@@ -850,8 +864,7 @@ async function disconnect(): Promise<void> {
     console.log('Disconnected from MCP server');
     client = null;
     transport = null;
-    connectionType = 'http';
-    stdioCommand = null;
+    // Don't reset connectionType, serverUrl, or stdioCommand so reconnect works
   } catch (error) {
     console.error('Error disconnecting:', error);
   }
