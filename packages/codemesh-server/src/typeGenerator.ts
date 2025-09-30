@@ -232,7 +232,11 @@ export class TypeGeneratorService {
   /**
    * Generate detailed JSDoc comment for a tool method
    */
-  private generateDetailedJSDoc(tool: DiscoveredTool): string {
+  private generateDetailedJSDoc(
+    tool: DiscoveredTool,
+    namespacedInputType?: string,
+    namespacedOutputType?: string,
+  ): string {
     const lines: string[] = ['  /**'];
 
     // Add main description
@@ -258,23 +262,15 @@ export class TypeGeneratorService {
       }
     }
 
-    // Add output schema details
-    if (tool.outputSchema && typeof tool.outputSchema === 'object') {
+    // Add output schema details - reference the type name instead of enumerating properties
+    if (namespacedOutputType) {
+      lines.push(`   * @returns Tool result with structured output: {${namespacedOutputType}}`);
+      lines.push('   *');
+    } else if (tool.outputSchema && typeof tool.outputSchema === 'object') {
       const schema = tool.outputSchema as any;
-      lines.push('   * @returns Tool result with structured output:');
-
-      if (schema.properties) {
-        for (const [propName, propSchema] of Object.entries(schema.properties)) {
-          const prop = propSchema as any;
-          const typeInfo = prop.type ? `{${prop.type}}` : '';
-          const description = prop.description || '';
-          lines.push(`   *   - ${propName} ${typeInfo} ${description}`.trim());
-        }
-      } else if (schema.type) {
-        lines.push(`   *   Type: ${schema.type}`);
-        if (schema.description) {
-          lines.push(`   *   ${schema.description}`);
-        }
+      lines.push('   * @returns Tool result with structured output');
+      if (schema.description) {
+        lines.push(`   *   ${schema.description}`);
       }
       lines.push('   *');
     }
@@ -383,14 +379,21 @@ export interface ToolResultWithOutput<T> extends ToolResult {
           : 'Promise<ToolResult>';
 
         // Generate detailed JSDoc with full schema information
-        const detailedJSDoc = this.generateDetailedJSDoc({
-          name: tool.toolName,
-          description: tool.description,
-          inputSchema: tool.inputSchema,
-          outputSchema: tool.outputSchema,
-          serverId: tool.serverId,
-          serverName: tool.serverName,
-        } as DiscoveredTool);
+        const namespacedOutputType = tool.namespacedOutputTypeName
+          ? `${typeName}.${tool.namespacedOutputTypeName}`
+          : undefined;
+        const detailedJSDoc = this.generateDetailedJSDoc(
+          {
+            name: tool.toolName,
+            description: tool.description,
+            inputSchema: tool.inputSchema,
+            outputSchema: tool.outputSchema,
+            serverId: tool.serverId,
+            serverName: tool.serverName,
+          } as DiscoveredTool,
+          inputType,
+          namespacedOutputType,
+        );
 
         namespacedTypes += detailedJSDoc + '\n';
         namespacedTypes += `  ${tool.camelCaseMethodName}(input: ${inputType}): ${returnType};\n\n`;
