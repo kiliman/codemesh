@@ -314,7 +314,21 @@ async function main(): Promise<void> {
     options.listResources ||
     options.readResource;
 
-  if (hasCommands || options.connect || options.stdio) {
+  // If --interactive is explicitly set, always use interactive mode
+  if (options.interactive) {
+    isCliMode = false;
+
+    // If connection options were provided, set them up for auto-connect
+    if (options.stdio && options.command && options.command.length > 0) {
+      stdioCommand = options.command;
+      connectionType = 'stdio';
+    } else if (options.connect) {
+      serverUrl = options.connect;
+      connectionType = 'http';
+    }
+
+    await runInteractiveMode();
+  } else if (hasCommands || options.connect || options.stdio) {
     // CLI mode - execute commands and exit
     isCliMode = true;
     await runCliMode(options);

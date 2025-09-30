@@ -3,7 +3,7 @@ import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js'
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import type { Tool } from '@modelcontextprotocol/sdk/types.js';
 import type { McpServerConfig } from './config.js';
-import { createServerObjectName, convertToolName } from './utils.js';
+import { createServerObjectName, convertToolName, sanitizeToolDescription } from './utils.js';
 
 export interface DiscoveredTool {
   name: string;
@@ -75,10 +75,16 @@ export class ToolDiscoveryService {
       const toolsResponse = await client.listTools();
       console.log(`📋 Found ${toolsResponse.tools.length} tool(s) in ${server.name}`);
 
+      // Get all tool names for sanitization
+      const allToolNames = toolsResponse.tools.map((t: Tool) => t.name);
+      const serverObjectName = createServerObjectName(server.id);
+
       // Transform the tools to our format
       const discoveredTools: DiscoveredTool[] = toolsResponse.tools.map((tool: Tool) => ({
         name: tool.name,
-        description: tool.description,
+        description: tool.description
+          ? sanitizeToolDescription(tool.description, allToolNames, serverObjectName)
+          : tool.description,
         inputSchema: tool.inputSchema,
         outputSchema: tool.outputSchema,
         serverId: server.id,
@@ -161,10 +167,16 @@ export class ToolDiscoveryService {
 
       console.log(`📋 Found ${tools.length} tool(s) in ${server.name}`);
 
+      // Get all tool names for sanitization
+      const allToolNames = tools.map((t) => t.name);
+      const serverObjectName = createServerObjectName(server.id);
+
       // Convert tools to our format
       const discoveredTools: DiscoveredTool[] = tools.map((tool) => ({
         name: tool.name,
-        description: tool.description,
+        description: tool.description
+          ? sanitizeToolDescription(tool.description, allToolNames, serverObjectName)
+          : tool.description,
         inputSchema: tool.inputSchema,
         outputSchema: tool.outputSchema,
         serverId: server.id,

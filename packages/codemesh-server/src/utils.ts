@@ -61,3 +61,31 @@ export function createSafeFunctionName(toolName: string, serverId: string): stri
   const safeServerId = serverId.replace(/[^a-zA-Z0-9]/g, '_');
   return `${safeName}_${safeServerId}`;
 }
+
+/**
+ * Update tool description to replace snake_case tool names with scoped camelCase versions
+ * @example sanitizeToolDescription("Use read_text_file instead", ["read_text_file"], "filesystem-server")
+ *          → "Use filesystemServer.readTextFile instead"
+ */
+export function sanitizeToolDescription(
+  description: string,
+  allToolNames: string[],
+  serverObjectName: string,
+): string {
+  // Create regex pattern from actual tool names
+  // Sort by length descending to match longer names first (e.g., read_text_file before read_file)
+  const sortedToolNames = [...allToolNames].sort((a, b) => b.length - a.length);
+
+  if (sortedToolNames.length === 0) {
+    return description;
+  }
+
+  // Escape special regex characters and create pattern
+  const escapedNames = sortedToolNames.map((name) => name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  const pattern = new RegExp(`\\b(${escapedNames.join('|')})\\b`, 'g');
+
+  return description.replace(pattern, (match) => {
+    const camelCaseName = toCamelCase(match);
+    return `${serverObjectName}.${camelCaseName}`;
+  });
+}
