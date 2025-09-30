@@ -289,12 +289,19 @@ const getCodeMeshServer = () => {
           .string()
           .optional()
           .describe('Specific server ID to get tools from (searches all if not specified)'),
+        codemeshDir: z
+          .string()
+          .optional()
+          .describe('Path to .codemesh directory containing tool augmentation markdown files'),
       },
     },
-    async ({ toolNames, serverId }): Promise<CallToolResult> => {
+    async ({ toolNames, serverId, codemeshDir }): Promise<CallToolResult> => {
       try {
         const configLoader = ConfigLoader.getInstance()
         const config = configLoader.loadConfigAuto()
+
+        // Determine .codemesh directory location (defaults to project root)
+        const augmentationDir = codemeshDir || `${process.env.PWD || process.cwd()}/.codemesh`
 
         const serversToSearch = serverId ? config.servers.filter((s) => s.id === serverId) : config.servers
 
@@ -380,7 +387,7 @@ const getCodeMeshServer = () => {
           },
         ]
 
-        const generatedTypes = await typeGenerator.generateTypes(filteredResults)
+        const generatedTypes = await typeGenerator.generateTypes(filteredResults, augmentationDir)
 
         // Return the TypeScript definitions as text
         const response = [

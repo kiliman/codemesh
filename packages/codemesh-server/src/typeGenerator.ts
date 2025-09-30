@@ -9,6 +9,7 @@ import {
   createSafeFunctionName,
 } from './utils.js';
 import { logger } from './logger.js';
+import { loadAugmentations, getAugmentation, type ToolAugmentation } from './augmentation.js';
 
 export interface GeneratedToolType {
   toolName: string;
@@ -52,8 +53,14 @@ export class TypeGeneratorService {
   /**
    * Generate TypeScript types from discovered tools
    */
-  async generateTypes(discoveryResults: DiscoveryResult[]): Promise<GeneratedTypes> {
+  async generateTypes(
+    discoveryResults: DiscoveryResult[],
+    codemeshDir?: string,
+  ): Promise<GeneratedTypes> {
     logger.log(`🔧 Generating TypeScript types for discovered tools...`);
+
+    // Load augmentations if directory is provided
+    const augmentations = codemeshDir ? loadAugmentations(codemeshDir) : new Map();
 
     const generatedTools: GeneratedToolType[] = [];
     const typeDefinitions: string[] = [];
@@ -86,7 +93,7 @@ export class TypeGeneratorService {
     }
 
     // Generate clean namespaced types and server interfaces
-    const namespacedTypes = this.generateNamespacedTypes(generatedTools);
+    const namespacedTypes = this.generateNamespacedTypes(generatedTools, augmentations);
 
     // Use only namespaced types
     const combinedTypes = namespacedTypes;
@@ -236,12 +243,27 @@ export class TypeGeneratorService {
     tool: DiscoveredTool,
     namespacedInputType?: string,
     namespacedOutputType?: string,
+    augmentation?: ToolAugmentation,
   ): string {
     const lines: string[] = ['  /**'];
 
     // Add main description
     if (tool.description) {
       lines.push(`   * ${tool.description}`);
+      lines.push('   *');
+    }
+
+    // Add augmentation documentation if available
+    if (augmentation) {
+      // Split markdown into lines and indent for JSDoc
+      const augLines = augmentation.documentation.split('\n');
+      for (const line of augLines) {
+        if (line.trim()) {
+          lines.push(`   * ${line}`);
+        } else {
+          lines.push('   *');
+        }
+      }
       lines.push('   *');
     }
 
@@ -315,7 +337,10 @@ ${typeDefinitions.join('\n')}
   /**
    * Generate namespaced types and server interfaces
    */
-  private generateNamespacedTypes(tools: GeneratedToolType[]): string {
+  private generateNamespacedTypes(
+    tools: GeneratedToolType[],
+    augmentations: Map<string, ToolAugmentation>,
+  ): string {
     // Group tools by server
     const serverGroups = new Map<string, GeneratedToolType[]>();
     for (const tool of tools) {
@@ -382,6 +407,10 @@ export interface ToolResultWithOutput<T> extends ToolResult {
         const namespacedOutputType = tool.namespacedOutputTypeName
           ? `${typeName}.${tool.namespacedOutputTypeName}`
           : undefined;
+
+        // Get augmentation for this tool if available
+        const augmentation = getAugmentation(augmentations, tool.serverObjectName, tool.camelCaseMethodName);
+
         const detailedJSDoc = this.generateDetailedJSDoc(
           {
             name: tool.toolName,
@@ -393,6 +422,7 @@ export interface ToolResultWithOutput<T> extends ToolResult {
           } as DiscoveredTool,
           inputType,
           namespacedOutputType,
+          augmentation,
         );
 
         namespacedTypes += detailedJSDoc + '\n';

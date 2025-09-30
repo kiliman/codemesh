@@ -28,8 +28,7 @@ export function toPascalCase(str: string): string {
  * @example "filesystem-server" → "filesystemServer"
  */
 export function createServerObjectName(serverId: string): string {
-  const baseServerId = serverId.replace(/-server$/, '');
-  return toCamelCase(baseServerId) + 'Server';
+  return toCamelCase(serverId);
 }
 
 /**
