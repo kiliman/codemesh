@@ -283,7 +283,7 @@ const getCodeMeshServer = () => {
         toolNames: z
           .array(z.string())
           .describe(
-            'Array of tool names to get TypeScript APIs for. Use scoped names from discover-tools (e.g., ["weatherServer.getAlerts", "geocodeServer.geocode"]) or unscoped names for backwards compatibility.',
+            'Array of scoped tool names from discover-tools output (e.g., ["weatherServer.getAlerts", "geocodeServer.geocode"]). Must use the serverName.toolName format.',
           ),
         serverId: z
           .string()
@@ -316,13 +316,14 @@ const getCodeMeshServer = () => {
         const discoveryResults = await discoveryService.discoverAllTools(serversToSearch)
 
         // Parse scoped tool names (e.g., "weatherServer.getAlerts" → server: "weatherServer", method: "getAlerts")
-        // Also support old format (just "get_alerts")
         const parsedToolRequests = toolNames.map((name) => {
           const scopedMatch = name.match(/^([a-zA-Z0-9_]+)\.([a-zA-Z0-9_]+)$/)
-          if (scopedMatch) {
-            return { scopedName: name, serverObject: scopedMatch[1], methodName: scopedMatch[2] }
+          if (!scopedMatch) {
+            throw new Error(
+              `Invalid tool name format: "${name}". Must use scoped format like "weatherServer.getAlerts"`,
+            )
           }
-          return { scopedName: name, serverObject: null, methodName: name }
+          return { scopedName: name, serverObject: scopedMatch[1], methodName: scopedMatch[2] }
         })
 
         // Filter discovered tools to only the requested ones
@@ -339,15 +340,8 @@ const getCodeMeshServer = () => {
                 const serverObjectName = createServerObjectName(tool.serverId)
                 const toolMethodName = convertToolName(tool.name)
 
-                // Check if this tool matches the request
-                const matchesScoped =
-                  request.serverObject &&
-                  serverObjectName === request.serverObject &&
-                  toolMethodName === request.methodName
-
-                const matchesUnscoped = !request.serverObject && tool.name === request.methodName
-
-                if (matchesScoped || matchesUnscoped) {
+                // Check if this tool matches the request (scoped format required)
+                if (serverObjectName === request.serverObject && toolMethodName === request.methodName) {
                   requestedTools.push(tool)
                   found = true
                   break
