@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 505.6 526.15">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: url(#linear-gradient-2);
+      }
+
+      .cls-2 {
+        fill: #08b8c4;
+      }
+
+      .cls-3 {
+        fill: url(#linear-gradient);
+      }
+
+      .cls-4 {
+        fill: #00273d;
+      }
+
+      .cls-5 {
+        fill: #c2ee00;
+      }
+
+      .cls-6 {
+        fill: #00b8cc;
+      }
+
+      .cls-7 {
+        fill: #086a81;
+      }
+
+      .cls-8 {
+        fill: #ee0c00;
+      }
+
+      .cls-9 {
+        fill: #003e54;
+      }
+    </style>
+    <linearGradient id="linear-gradient" x1="79.89" y1="224.9" x2="333.23" y2="663.69" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0ad7f9"/>
+      <stop offset=".83" stop-color="#07b9c6"/>
+    </linearGradient>
+    <linearGradient id="linear-gradient-2" x1="252.82" y1="260.12" x2="505.6" y2="260.12" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0ad3dd"/>
+      <stop offset="1" stop-color="#057d8e"/>
+    </linearGradient>
+  </defs>
+  <polygon class="cls-8" points=".7 420.72 .7 422.12 0 421.42 .7 420.72"/>
+  <polygon class="cls-3" points="253.31 377.04 153.58 476.78 104.2 526.15 78.65 500.6 .9 422.85 .9 .73 63.74 .73 64.43 1.42 78.09 15.08 253.02 190.01 206.09 236.94 78.09 108.94 78.09 401.29 106.65 429.85 206.38 330.11 253.31 377.04"/>
+  <rect class="cls-6" x="323.06" y="226.39" width=".4" height="66.09" transform="translate(-88.77 304.56) rotate(-45)"/>
+  <polygon class="cls-7" points="346.48 282.94 300.04 329.38 299.55 329.87 252.82 283.14 299.75 236.21 346.48 282.94"/>
+  <polygon class="cls-1" points="505.6 0 505.6 520.24 428.41 520.24 428.41 107.55 300.03 235.93 299.83 235.73 299.55 236.01 252.82 189.28 442.1 0 505.6 0"/>
+  <rect class="cls-5" x="299.59" y="235.83" width=".4" height=".28" transform="translate(-79.05 281.1) rotate(-45)"/>
+  <rect class="cls-9" x="220.13" y="296.68" width="65.68" height="66.09" transform="translate(-159.06 275.45) rotate(-45)"/>
+  <rect class="cls-2" x="173.3" y="249.71" width="65.68" height="66.37" transform="translate(-139.66 228.62) rotate(-45)"/>
+  <rect class="cls-4" x="219.64" y="203.03" width="66.37" height="66.37" transform="translate(-92.98 247.96) rotate(-45)"/>
+</svg>

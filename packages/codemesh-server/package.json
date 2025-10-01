@@ -32,16 +32,16 @@
     "agent",
     "llm"
   ],
-  "author": "Michael <michael@3votech.com>",
-  "license": "ISC",
+  "author": "Kiliman <kiliman@gmail.com>",
+  "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/codemesh.git"
+    "url": "https://github.com/kiliman/codemesh.git"
   },
   "bugs": {
-    "url": "https://github.com/yourusername/codemesh/issues"
+    "url": "https://github.com/kiliman/codemesh/issues"
   },
-  "homepage": "https://github.com/yourusername/codemesh#readme",
+  "homepage": "https://github.com/kiliman/codemesh#readme",
   "packageManager": "pnpm@10.15.1",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.18.2",

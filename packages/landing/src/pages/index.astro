@@ -1,0 +1,448 @@
+---
+import '../styles/global.css';
+---
+
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="generator" content={Astro.generator} />
+		<title>CodeMesh - The Self-Improving MCP Server</title>
+		<meta name="description" content="Agents write code. Orchestrate everything. CodeMesh lets agents automatically write TypeScript to coordinate multiple MCP servers. Context-efficient, self-improving, production-ready." />
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+	</head>
+	<body class="bg-gradient-to-br from-slate-950 via-cyan-950 to-slate-950 text-white min-h-screen" style="font-family: 'Inter', sans-serif;">
+		<!-- Hero Section -->
+		<div class="relative overflow-hidden">
+			<!-- Animated background gradient -->
+			<div class="absolute inset-0 bg-gradient-to-r from-cyan-500/10 via-teal-500/10 to-emerald-500/10 animate-pulse"></div>
+
+			<nav class="relative container mx-auto px-6 py-6 flex justify-between items-center">
+				<a href="/" class="flex items-center gap-3">
+					<img src="/codemesh-logo.svg" alt="CodeMesh" class="h-10 w-auto" />
+					<span class="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-teal-400 bg-clip-text text-transparent">CodeMesh</span>
+				</a>
+				<div class="flex gap-6">
+					<a href="https://github.com/kiliman/codemesh" class="text-slate-300 hover:text-white transition-colors">GitHub</a>
+					<a href="#how-it-works" class="text-slate-300 hover:text-white transition-colors">How It Works</a>
+					<a href="#get-started" class="text-slate-300 hover:text-white transition-colors">Get Started</a>
+				</div>
+			</nav>
+
+			<div class="relative container mx-auto px-6 py-20 lg:py-32">
+				<div class="grid lg:grid-cols-2 gap-12 items-center">
+					<div class="space-y-8">
+						<div class="inline-block px-4 py-2 bg-cyan-500/20 border border-cyan-500/30 rounded-full text-sm text-cyan-300">
+							🏆 Built for Anthropic MCP Hackathon
+						</div>
+
+						<h1 class="text-5xl lg:text-7xl font-black leading-tight">
+							<span class="bg-gradient-to-r from-cyan-400 via-teal-400 to-emerald-400 bg-clip-text text-transparent">
+								Agents Write Code.
+							</span>
+							<br />
+							<span class="text-white">Orchestrate Everything.</span>
+						</h1>
+
+						<p class="text-xl text-slate-300 leading-relaxed">
+							One prompt. One code block. Multiple MCP servers working together. CodeMesh lets agents write <span class="text-cyan-400 font-semibold">TypeScript code</span> to orchestrate <span class="text-teal-400 font-semibold">ANY MCP server</span> - automatically.
+						</p>
+
+						<p class="text-sm text-slate-400 italic">
+							Inspired by Cloudflare's Code Mode pattern, reimagined for the MCP ecosystem.
+						</p>
+
+						<div class="flex flex-wrap gap-4">
+							<a href="#get-started" class="px-8 py-4 bg-gradient-to-r from-cyan-500 to-teal-500 rounded-lg font-semibold hover:from-cyan-600 hover:to-teal-600 transition-all transform hover:scale-105 shadow-lg shadow-cyan-500/50">
+								Get Started →
+							</a>
+							<a href="https://github.com/kiliman/codemesh" class="px-8 py-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg font-semibold hover:bg-white/20 transition-all">
+								View on GitHub
+							</a>
+						</div>
+					</div>
+
+					<div class="relative">
+						<div class="absolute inset-0 bg-gradient-to-r from-cyan-500 to-teal-500 rounded-2xl blur-3xl opacity-30 animate-pulse"></div>
+						<img src="/built-with-sonnet-4_5.jpg" alt="Built with Claude Sonnet 4.5" class="relative rounded-2xl shadow-2xl border border-white/10" />
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Problem/Solution Section -->
+		<div class="container mx-auto px-6 py-20">
+			<div class="grid lg:grid-cols-2 gap-12">
+				<div class="bg-red-500/10 border border-red-500/30 rounded-2xl p-8">
+					<div class="text-4xl mb-4">❌</div>
+					<h3 class="text-2xl font-bold mb-4 text-red-400">The Problem</h3>
+					<ul class="list-disc list-inside space-y-3 text-slate-300 marker:text-red-400">
+						<li>Traditional MCP: Expose 50+ tools, flood agent context</li>
+						<li>Agents can't coordinate tools from different servers</li>
+						<li>Trial-and-error on unclear tool outputs wastes tokens</li>
+						<li>Every agent repeats the same mistakes</li>
+					</ul>
+				</div>
+
+				<div class="bg-green-500/10 border border-green-500/30 rounded-2xl p-8">
+					<div class="text-4xl mb-4">✨</div>
+					<h3 class="text-2xl font-bold mb-4 text-green-400">The CodeMesh Way</h3>
+					<ul class="list-disc list-inside space-y-3 text-slate-300 marker:text-green-400">
+						<li>Just 3 tools: discover, get APIs, execute code</li>
+						<li>Write TypeScript calling multiple servers at once</li>
+						<li>Auto-augmentation forces documentation of outputs</li>
+						<li>Knowledge compounds: Agent A helps Agent B</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+
+		<!-- Key Features -->
+		<div class="container mx-auto px-6 py-20">
+			<div class="text-center mb-16">
+				<h2 class="text-4xl lg:text-5xl font-bold mb-4">Why CodeMesh?</h2>
+				<p class="text-xl text-slate-400">The only MCP server that gets smarter with every use</p>
+			</div>
+
+			<div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+				<!-- Feature 1 -->
+				<div class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8 hover:bg-white/10 transition-all group">
+					<div class="text-4xl mb-4 group-hover:scale-110 transition-transform">🧠</div>
+					<h3 class="text-xl font-bold mb-3">Self-Improving</h3>
+					<p class="text-slate-400">Agents document unclear outputs. Future agents benefit. Proven: Agent B one-shots what Agent A struggled with!</p>
+				</div>
+
+				<!-- Feature 2 -->
+				<div class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8 hover:bg-white/10 transition-all group">
+					<div class="text-4xl mb-4 group-hover:scale-110 transition-transform">🔗</div>
+					<h3 class="text-xl font-bold mb-3">Multi-Server Orchestration</h3>
+					<p class="text-slate-400">Coordinate tools from different MCP servers in a single code block. HTTP, stdio, websocket all supported.</p>
+				</div>
+
+				<!-- Feature 3 -->
+				<div class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8 hover:bg-white/10 transition-all group">
+					<div class="text-4xl mb-4 group-hover:scale-110 transition-transform">🎯</div>
+					<h3 class="text-xl font-bold mb-3">Context Efficient</h3>
+					<p class="text-slate-400">Load only the tools you need. Tiered discovery prevents context pollution. 3 tools vs 50+.</p>
+				</div>
+
+				<!-- Feature 4 -->
+				<div class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8 hover:bg-white/10 transition-all group">
+					<div class="text-4xl mb-4 group-hover:scale-110 transition-transform">🚀</div>
+					<h3 class="text-xl font-bold mb-3">Zero Configuration</h3>
+					<p class="text-slate-400">Point to your MCP servers and go. No complex setup, no schema definitions, no boilerplate code.</p>
+				</div>
+
+				<!-- Feature 5 -->
+				<div class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8 hover:bg-white/10 transition-all group">
+					<div class="text-4xl mb-4 group-hover:scale-110 transition-transform">⚡</div>
+					<h3 class="text-xl font-bold mb-3">Production Ready</h3>
+					<p class="text-slate-400">Authentication, error handling, multi-transport support. Battle-tested and ready to deploy.</p>
+				</div>
+
+				<!-- Feature 6 -->
+				<div class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8 hover:bg-white/10 transition-all group">
+					<div class="text-4xl mb-4 group-hover:scale-110 transition-transform">🔒</div>
+					<h3 class="text-xl font-bold mb-3">Secure by Default</h3>
+					<p class="text-slate-400">Environment variable substitution. Principle of least privilege. Safe to commit configs.</p>
+				</div>
+			</div>
+		</div>
+
+		<!-- How It Works -->
+		<div id="how-it-works" class="container mx-auto px-6 py-20 bg-gradient-to-b from-transparent via-cyan-950/20 to-transparent">
+			<div class="text-center mb-16">
+				<h2 class="text-4xl lg:text-5xl font-bold mb-4">How It Works</h2>
+				<p class="text-xl text-slate-400">Three automatic steps from prompt to result</p>
+			</div>
+
+			<div class="max-w-4xl mx-auto mb-12">
+				<div class="bg-gradient-to-r from-cyan-500/20 to-teal-500/20 border border-cyan-500/30 rounded-2xl p-8 mb-8">
+					<h3 class="text-2xl font-bold mb-4 text-center">Example: Real-World Usage</h3>
+					<p class="text-lg text-slate-300 mb-2">You ask Claude:</p>
+					<div class="bg-black/50 rounded-lg p-4 border border-white/10">
+						<p class="text-cyan-300 italic">"Use CodeMesh to give me the top 3 weather alerts for San Francisco, CA"</p>
+					</div>
+				</div>
+
+				<p class="text-xl text-center text-slate-300 mb-8">Behind the scenes, CodeMesh <strong>automatically</strong>:</p>
+			</div>
+
+			<div class="max-w-4xl mx-auto space-y-6">
+				<!-- Step 1: Discover -->
+				<div class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
+					<div class="flex items-start gap-4 mb-4">
+						<div class="w-12 h-12 rounded-full bg-gradient-to-r from-cyan-500 to-cyan-600 flex items-center justify-center font-bold text-xl flex-shrink-0">1</div>
+						<div>
+							<h3 class="text-2xl font-bold mb-2">Discovers Tools</h3>
+							<p class="text-slate-400 mb-3">Context-efficient discovery - only tool names and descriptions</p>
+						</div>
+					</div>
+					<div class="bg-black/50 rounded-lg p-4 border border-white/10">
+						<div class="text-sm text-slate-400 mb-2">CodeMesh sees available tools:</div>
+						<ul class="text-sm text-slate-300 space-y-1 list-disc list-inside marker:text-cyan-400">
+							<li><code class="text-cyan-300">geocode</code> - Convert "San Francisco, CA" to coordinates</li>
+							<li><code class="text-cyan-300">getAlerts</code> - Fetch weather alerts by state</li>
+						</ul>
+					</div>
+				</div>
+
+				<!-- Step 2: Load APIs -->
+				<div class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
+					<div class="flex items-start gap-4 mb-4">
+						<div class="w-12 h-12 rounded-full bg-gradient-to-r from-teal-500 to-teal-600 flex items-center justify-center font-bold text-xl flex-shrink-0">2</div>
+						<div>
+							<h3 class="text-2xl font-bold mb-2">Loads Type-Safe APIs</h3>
+							<p class="text-slate-400 mb-3">Generates TypeScript functions with augmentation docs</p>
+						</div>
+					</div>
+					<div class="bg-black/50 rounded-lg p-4 border border-white/10">
+						<pre class="text-sm text-slate-300 overflow-x-auto"><code>// CodeMesh generates these APIs for the agent:
+geocodeServer.geocode(&#123; location: string &#125;)
+weatherServer.getAlerts(&#123; state: string &#125;)</code></pre>
+					</div>
+				</div>
+
+				<!-- Step 3: Write & Execute -->
+				<div class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
+					<div class="flex items-start gap-4 mb-4">
+						<div class="w-12 h-12 rounded-full bg-gradient-to-r from-emerald-500 to-emerald-600 flex items-center justify-center font-bold text-xl flex-shrink-0">3</div>
+						<div>
+							<h3 class="text-2xl font-bold mb-2">Writes & Executes Code</h3>
+							<p class="text-slate-400 mb-3">Agent writes TypeScript, CodeMesh executes in secure sandbox</p>
+						</div>
+					</div>
+					<div class="bg-black/50 rounded-lg p-4 border border-white/10">
+						<pre class="text-sm text-slate-300 overflow-x-auto"><code>// Agent writes this code automatically:
+const coords = await geocodeServer.geocode(&#123;
+  location: "San Francisco, CA"
+&#125;);
+
+const alerts = await weatherServer.getAlerts(&#123;
+  state: coords.state
+&#125;);
+
+const alertsData = JSON.parse(alerts.content[0].text);
+
+// Filter to top 3 by severity
+const top3 = alertsData.features
+  .sort((a, b) =&gt; severityRank(a) - severityRank(b))
+  .slice(0, 3);
+
+return top3;</code></pre>
+					</div>
+					<div class="mt-3 text-sm text-slate-400">
+						✓ Executes in VM2 sandbox with 30s timeout<br/>
+						✓ Returns formatted results to Claude
+					</div>
+				</div>
+			</div>
+
+			<div class="mt-12 text-center">
+				<p class="text-xl text-slate-300">
+					<span class="font-semibold text-cyan-400">You get intelligent results</span> - no manual tool calls, no trial-and-error, just results! 🎯
+				</p>
+			</div>
+		</div>
+
+		<!-- Auto-Augmentation Breakthrough -->
+		<div class="container mx-auto px-6 py-20">
+			<div class="bg-gradient-to-r from-cyan-500/20 to-teal-500/20 border border-cyan-500/30 rounded-3xl p-12">
+				<div class="text-center mb-12">
+					<div class="inline-block px-4 py-2 bg-cyan-500/30 border border-cyan-500/50 rounded-full text-sm text-cyan-300 mb-6">
+						🎉 The Innovation That Changes Everything
+					</div>
+					<h2 class="text-4xl lg:text-5xl font-bold mb-4">Auto-Augmentation</h2>
+					<p class="text-xl text-slate-300">The world's first self-improving MCP server</p>
+				</div>
+
+				<div class="mb-12 text-center max-w-3xl mx-auto">
+					<p class="text-slate-300 leading-relaxed">
+						When agents encounter unclear tool outputs, they're forced to document what they learned.
+						This knowledge becomes part of the system, helping all future agents succeed faster.
+					</p>
+				</div>
+
+				<!-- Step 1: Agent Explores -->
+				<div class="bg-black/30 rounded-xl p-6 border border-cyan-500/30 mb-6">
+					<h3 class="text-2xl font-bold text-cyan-400 mb-4">1. Agent Explores</h3>
+					<p class="text-slate-300 mb-4">Agent needs to get file size but isn't sure what format <code class="bg-white/10 px-2 py-1 rounded text-sm">getFileInfo</code> returns.</p>
+					<div class="bg-black/50 rounded-lg p-4 border border-white/10">
+						<div class="flex items-center gap-3 mb-3">
+							<div class="flex gap-2">
+								<div class="w-3 h-3 rounded-full bg-red-500"></div>
+								<div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+								<div class="w-3 h-3 rounded-full bg-green-500"></div>
+							</div>
+							<span class="text-sm text-slate-400">TypeScript</span>
+						</div>
+						<pre class="text-sm text-slate-300 overflow-x-auto"><code>// EXPLORING: What format does this return?
+const result = await filesystemServer.getFileInfo(&#123; path: 'package.json' &#125;);
+console.log(result.content[0].text);
+
+// Output (bespoke format!):
+// size: 38075
+// created: Tue Sep 30 2025 10:52:47 GMT-0400
+// modified: Tue Sep 30 2025 10:52:47 GMT-0400
+// isDirectory: false
+// isFile: true
+// permissions: 644</code></pre>
+					</div>
+				</div>
+
+				<!-- Step 2: Agent Writes Augmentation -->
+				<div class="bg-black/30 rounded-xl p-6 border border-teal-500/30 mb-6">
+					<h3 class="text-2xl font-bold text-teal-400 mb-4">2. Agent Writes Augmentation</h3>
+					<p class="text-slate-300 mb-4">CodeMesh forces agent to document the output format with parsing examples.</p>
+					<div class="bg-black/50 rounded-lg p-4 border border-white/10">
+						<div class="flex items-center gap-3 mb-3">
+							<div class="flex gap-2">
+								<div class="w-3 h-3 rounded-full bg-red-500"></div>
+								<div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+								<div class="w-3 h-3 rounded-full bg-green-500"></div>
+							</div>
+							<span class="text-sm text-slate-400">Markdown (saved to .codemesh/)</span>
+						</div>
+						<pre class="text-sm text-slate-300 overflow-x-auto"><code>## Output Format
+Returns newline-delimited key-value pairs: `key: value`
+
+### Fields
+- size: File size in bytes (number)
+- isDirectory: Boolean (true/false)
+- isFile: Boolean (true/false)
+- permissions: Unix permissions (e.g., "644")
+
+### Parsing Example
+```typescript
+const text = result.content[0].text;
+const info = Object.fromEntries(
+  text.split('\\n').map(line =&gt; line.split(': '))
+);
+console.log(info.size); // "38075"
+```</code></pre>
+					</div>
+				</div>
+
+				<!-- Step 3: Future Success -->
+				<div class="bg-black/30 rounded-xl p-6 border border-green-500/30">
+					<h3 class="text-2xl font-bold text-green-400 mb-4">3. Agent and ALL Future Agents Succeed</h3>
+					<p class="text-slate-300 mb-4">Now every agent knows how to parse file info. No more trial-and-error!</p>
+					<div class="bg-black/50 rounded-lg p-4 border border-white/10">
+						<div class="flex items-center gap-3 mb-3">
+							<div class="flex gap-2">
+								<div class="w-3 h-3 rounded-full bg-red-500"></div>
+								<div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+								<div class="w-3 h-3 rounded-full bg-green-500"></div>
+							</div>
+							<span class="text-sm text-slate-400">TypeScript (with enhanced docs)</span>
+						</div>
+						<pre class="text-sm text-slate-300 overflow-x-auto"><code>// Agent gets augmented JSDoc with parsing example!
+const result = await filesystemServer.getFileInfo(&#123; path: 'data.json' &#125;);
+
+// Agent knows exact format and how to parse
+const text = result.content[0].text;
+const info = Object.fromEntries(text.split('\\n').map(line =&gt; line.split(': ')));
+const fileSizeBytes = parseInt(info.size);
+
+console.log(`File size: $&#123;fileSizeBytes&#125; bytes`);
+// ✅ Success on first try!</code></pre>
+					</div>
+				</div>
+
+				<div class="mt-8 text-center">
+					<p class="text-lg text-slate-300">
+						<span class="font-semibold text-cyan-400">Validated:</span> Agent A explored and documented. Agent B <span class="font-semibold text-green-400">one-shot the same task</span>. This is compound intelligence in action! 🎉
+					</p>
+				</div>
+			</div>
+		</div>
+
+		<!-- Get Started -->
+		<div id="get-started" class="container mx-auto px-6 py-20">
+			<div class="bg-gradient-to-r from-cyan-500/10 to-teal-500/10 border border-cyan-500/30 rounded-3xl p-12">
+				<h2 class="text-4xl lg:text-5xl font-bold mb-6 text-center">Ready to Get Started?</h2>
+				<p class="text-xl text-slate-300 mb-12 max-w-2xl mx-auto text-center">
+					Four simple steps to orchestrate ANY MCP server with agents.
+				</p>
+
+				<div class="max-w-3xl mx-auto space-y-6">
+					<!-- Step 1 -->
+					<div class="flex items-start gap-4 bg-black/30 rounded-xl p-6 border border-cyan-500/20">
+						<div class="w-10 h-10 rounded-full bg-gradient-to-r from-cyan-500 to-teal-500 flex items-center justify-center font-bold text-lg flex-shrink-0">1</div>
+						<div class="text-left">
+							<h3 class="text-lg font-bold mb-2">Add CodeMesh MCP Server</h3>
+							<p class="text-slate-400 text-sm">Add CodeMesh to your Claude desktop config or MCP client</p>
+						</div>
+					</div>
+
+					<!-- Step 2 -->
+					<div class="flex items-start gap-4 bg-black/30 rounded-xl p-6 border border-cyan-500/20">
+						<div class="w-10 h-10 rounded-full bg-gradient-to-r from-cyan-500 to-teal-500 flex items-center justify-center font-bold text-lg flex-shrink-0">2</div>
+						<div class="text-left">
+							<h3 class="text-lg font-bold mb-2">Copy Your MCP Servers</h3>
+							<p class="text-slate-400 text-sm">Copy your existing MCP server configs to <code class="bg-white/10 px-2 py-1 rounded">.codemesh/config.json</code></p>
+						</div>
+					</div>
+
+					<!-- Step 3 -->
+					<div class="flex items-start gap-4 bg-black/30 rounded-xl p-6 border border-cyan-500/20">
+						<div class="w-10 h-10 rounded-full bg-gradient-to-r from-cyan-500 to-teal-500 flex items-center justify-center font-bold text-lg flex-shrink-0">3</div>
+						<div class="text-left">
+							<h3 class="text-lg font-bold mb-2">Write a Prompt</h3>
+							<p class="text-slate-400 text-sm mb-2">Tell your agent what to do:</p>
+							<code class="bg-black/50 px-3 py-2 rounded text-cyan-300 text-sm block">"Use codemesh to get the current weather for San Francisco"</code>
+						</div>
+					</div>
+
+					<!-- Step 4 -->
+					<div class="flex items-start gap-4 bg-black/30 rounded-xl p-6 border border-cyan-500/20">
+						<div class="w-10 h-10 rounded-full bg-gradient-to-r from-cyan-500 to-teal-500 flex items-center justify-center font-bold text-lg flex-shrink-0">4</div>
+						<div class="text-left">
+							<h3 class="text-lg font-bold mb-2">Watch the Magic! ✨</h3>
+							<p class="text-slate-400 text-sm">Agent writes TypeScript, coordinates multiple servers, returns results</p>
+						</div>
+					</div>
+				</div>
+
+				<div class="mt-12 text-center text-slate-400">
+					Full installation guide in the <a href="https://github.com/kiliman/codemesh#readme" class="text-cyan-400 hover:text-cyan-300 underline">README</a>
+				</div>
+
+				<div class="mt-6 flex flex-wrap justify-center gap-4">
+					<a href="https://github.com/kiliman/codemesh" class="px-8 py-4 bg-gradient-to-r from-cyan-500 to-teal-500 rounded-lg font-semibold hover:from-cyan-600 hover:to-teal-600 transition-all transform hover:scale-105 shadow-lg shadow-cyan-500/50">
+						Star on GitHub ⭐
+					</a>
+					<a href="https://github.com/kiliman/codemesh#readme" class="px-8 py-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg font-semibold hover:bg-white/20 transition-all">
+						Read the Docs
+					</a>
+				</div>
+			</div>
+		</div>
+
+		<!-- Footer -->
+		<footer class="container mx-auto px-6 py-12 border-t border-white/10">
+			<div class="flex flex-col md:flex-row justify-between items-center gap-6">
+				<div class="text-center md:text-left">
+					<div class="flex items-center gap-3 justify-center md:justify-start mb-2">
+						<img src="/codemesh-logo.svg" alt="CodeMesh" class="h-8 w-auto" />
+						<span class="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-teal-400 bg-clip-text text-transparent">CodeMesh</span>
+					</div>
+					<p class="text-slate-400 text-sm">From Claudia, with Love ❤️</p>
+					<p class="text-slate-500 text-xs mt-1">Built with Claude Code using Sonnet 4.5</p>
+				</div>
+
+				<div class="flex gap-8">
+					<a href="https://github.com/kiliman/codemesh" class="text-slate-400 hover:text-white transition-colors">GitHub</a>
+					<a href="https://github.com/kiliman/codemesh#readme" class="text-slate-400 hover:text-white transition-colors">Documentation</a>
+				</div>
+
+				<div class="text-slate-500 text-sm">
+					© 2025 Kiliman. MIT License.
+				</div>
+			</div>
+		</footer>
+	</body>
+</html>
