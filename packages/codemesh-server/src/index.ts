@@ -11,6 +11,7 @@ import { RuntimeWrapper } from './runtimeWrapper.js'
 import { CodeExecutor } from './codeExecutor.js'
 import { createServerObjectName, convertToolName } from './utils.js'
 import { FileLogger } from './fileLogger.js'
+import { hasAugmentation } from './augmentation.js'
 
 // CodeMesh MCP Server - executes TypeScript code against discovered MCP tools
 const getCodeMeshServer = () => {
@@ -601,7 +602,20 @@ const getCodeMeshServer = () => {
           ...requestedTools.map((tool) => {
             const serverObjectName = createServerObjectName(tool.serverId)
             const methodName = convertToolName(tool.name)
-            return `🔧 ${serverObjectName}.${methodName}() [from ${tool.serverName}]`
+            const hasOutputSchema = tool.inputSchema?.outputSchema !== undefined
+            const hasAug = hasAugmentation(serverObjectName, methodName, augmentationDir)
+
+            // Only warn if no output schema AND no augmentation
+            let augStatus = ''
+            if (hasOutputSchema) {
+              augStatus = '✅ Output schema defined'
+            } else if (hasAug) {
+              augStatus = '✅ Has augmentation'
+            } else {
+              augStatus = '⚠️ NO OUTPUT SCHEMA OR AUGMENTATION - May need exploration'
+            }
+
+            return `🔧 ${serverObjectName}.${methodName}() [from ${tool.serverName}] ${augStatus}`
           }),
           '',
           '<augmentation_workflow>',

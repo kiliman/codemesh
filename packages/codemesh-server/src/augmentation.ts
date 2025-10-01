@@ -60,6 +60,19 @@ function parseMarkdownAugmentations(markdown: string, serverObjectName: string):
 /**
  * Load tool augmentations from .codemesh directory
  */
+/**
+ * Check if a tool has augmentation documentation
+ */
+export function hasAugmentation(
+  serverObjectName: string,
+  toolName: string,
+  codemeshDir: string,
+): boolean {
+  const augmentations = loadAugmentations(codemeshDir);
+  const key = `${serverObjectName}.${toolName}`;
+  return augmentations.has(key);
+}
+
 export function loadAugmentations(codemeshDir: string): Map<string, ToolAugmentation> {
   const augmentationMap = new Map<string, ToolAugmentation>();
 
