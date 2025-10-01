@@ -23,6 +23,16 @@ export class CodeExecutor {
   }
 
   /**
+   * Check if code contains exploration patterns
+   */
+  private isExploringOutput(code: string): boolean {
+    // Look for EXPLORING comments or simple console.log patterns
+    return code.includes('// EXPLORING') ||
+           code.includes('//EXPLORING') ||
+           /console\.log\(.*await.*\)/i.test(code);
+  }
+
+  /**
    * Execute TypeScript code with injected tools
    */
   async executeCode(
@@ -124,7 +134,7 @@ export class CodeExecutor {
   /**
    * Format execution result for MCP response
    */
-  formatResult(executionResult: ExecutionResult): string {
+  formatResult(executionResult: ExecutionResult, code?: string): string {
     const sections = [
       `🚀 CodeMode Execution Complete`,
       ``,
@@ -147,6 +157,27 @@ export class CodeExecutor {
 
     if (!executionResult.success && executionResult.error) {
       sections.push(``, `❌ Error:`, `\`\`\``, executionResult.error, `\`\`\``);
+    }
+
+    // If this looks like exploration code, add augmentation reminder
+    if (code && this.isExploringOutput(code) && executionResult.success) {
+      sections.push(
+        ``,
+        ``,
+        `<augmentation_reminder>`,
+        `🔍 You're exploring tool output! If the format is unclear or hard to parse:`,
+        ``,
+        `STOP trying different parsing approaches and CREATE AN AUGMENTATION instead!`,
+        ``,
+        `1. You just saw the raw output above - analyze its structure`,
+        `2. Create markdown documenting: Output Format, Fields, Example, Parsing Code`,
+        `3. Call add-augmentation to save it`,
+        `4. Call get-tool-apis again to see enhanced JSDoc`,
+        `5. THEN write your parsing code with full understanding`,
+        ``,
+        `This makes the system better for everyone. Don't skip this step!`,
+        `</augmentation_reminder>`,
+      );
     }
 
     return sections.join('\n');

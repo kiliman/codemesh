@@ -30,7 +30,7 @@ const getCodeMeshServer = () => {
     {
       title: 'Execute TypeScript Code',
       description:
-        "CODEMESH STEP 3: Execute TypeScript code that can call multiple MCP tools and process their results. CRITICAL: Tools are available as server objects with methods. Use serverName.methodName() format (e.g., await weatherServer.getForecast({ latitude: 36.5, longitude: -76.2 }), await geocodeServer.geocode({ location: 'Moyock, NC' })). Do NOT use direct function calls like get_forecast() or geocode(). Do NOT use prefixes like 'tools.' or 'mcpTools.'. Always use the server object syntax shown in the Tool Mapping section.\n\n⚠️ STOP TRIAL-AND-ERROR! If output is unclear, CREATE AN AUGMENTATION:\nWhen you get output that's hard to parse (unclear format, undocumented fields, weird structure), DO NOT keep trying different parsing approaches. Instead:\n\n1. Look at the raw output and analyze its structure\n2. Create augmentation markdown with these REQUIRED sections:\n\n# serverName.methodName\n\n## Output Format\nDescribe the structure (e.g., 'newline-delimited key-value pairs', 'JSON with nested objects', etc.)\n\n### Fields\n- fieldName: type (description)\n- anotherField: type (description)\n\n### Example Output\n```\n[paste actual output here]\n```\n\n### Parsing Example\n```typescript\n// Working TypeScript code that parses this output\nconst result = await serverName.methodName(params);\nconst parsed = ... // show parsing logic\n```\n\n3. Call add-augmentation with toolName and markdown\n4. Call get-tool-apis again - JSDoc now includes your docs!\n5. Retry with better understanding\n\nThis is NOT optional if you're struggling - document it for everyone!",
+        "CODEMESH STEP 3: Execute TypeScript code that can call multiple MCP tools and process their results.\n\n<critical>\nTools are available as server objects with methods. Use serverName.methodName() format (e.g., await weatherServer.getForecast({ latitude: 36.5, longitude: -76.2 })). Do NOT use direct function calls or 'tools.' prefixes.\n</critical>\n\n<augmentation_instruction>\nIMPORTANT: When exploring tool output, add a comment explaining what you're checking:\n// EXPLORING: checking output format of filesystemServer.getFileInfo\nconst result = await filesystemServer.getFileInfo({path: 'test.txt'});\nconsole.log(result);\n\nThis triggers augmentation guidance in the response.\n</augmentation_instruction>\n\n<augmentation_workflow>\nIf tool output is unclear/hard to parse, DO NOT trial-and-error different parsing approaches!\n\nREQUIRED WORKFLOW:\n1. Inspect raw output with console.log (include // EXPLORING comment)\n2. When you see unclear output, STOP and create augmentation markdown:\n\n# serverName.methodName\n## Output Format\n[Structure description]\n### Fields\n- field: type (description)\n### Example Output\n```\n[actual output]\n```\n### Parsing Example\n```typescript\n[working parse code]\n```\n\n3. Call add-augmentation with toolName and markdown\n4. Call get-tool-apis again to see enhanced JSDoc\n5. NOW write your parsing code with better understanding\n\nThis is MANDATORY when struggling with output parsing!\n</augmentation_workflow>",
       inputSchema: {
         code: z.string().describe('TypeScript code to execute'),
         toolNames: z
@@ -108,8 +108,8 @@ const getCodeMeshServer = () => {
         // Clean up runtime connections
         await runtime.cleanup()
 
-        // Format the execution result
-        const resultText = codeExecutor.formatResult(executionResult)
+        // Format the execution result (pass code for exploration detection)
+        const resultText = codeExecutor.formatResult(executionResult, code)
 
         return {
           content: [
@@ -529,20 +529,19 @@ const getCodeMeshServer = () => {
             return `🔧 ${serverObjectName}.${methodName}() [from ${tool.serverName}]`
           }),
           '',
-          '⚠️  IMPORTANT - AUGMENTATION WORKFLOW:',
-          'If you encounter unclear output when using these tools, DO NOT trial-and-error!',
-          'Instead, follow this workflow to improve documentation for everyone:',
+          '<augmentation_workflow>',
+          '⚠️ IMPORTANT: If tool output is unclear, CREATE AN AUGMENTATION!',
           '',
-          '1. Call the tool once with execute-code to see actual output format',
-          '2. If output is unclear/hard to parse, CREATE AN AUGMENTATION:',
-          '   - Document the output format (JSON, text, key-value, etc.)',
-          '   - List all fields with types and descriptions',
-          '   - Include example output and TypeScript parsing code',
-          '3. Call add-augmentation with your markdown',
-          '4. Call get-tool-apis again - the JSDoc will now include your docs!',
-          '5. Retry execute-code with better understanding',
+          'DO NOT trial-and-error different parsing approaches. Follow this workflow:',
           '',
-          'This makes the system better for future agents. See execute-code for examples.',
+          '1. Call execute-code with // EXPLORING comment to inspect raw output',
+          '2. When output is unclear/hard to parse, STOP and create augmentation',
+          '3. Call add-augmentation with proper markdown documentation',
+          '4. Call get-tool-apis again to see enhanced JSDoc',
+          '5. THEN write parsing code with full understanding',
+          '',
+          'This is MANDATORY when struggling with output. See execute-code for template.',
+          '</augmentation_workflow>',
         )
 
         return {
