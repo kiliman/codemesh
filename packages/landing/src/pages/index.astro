@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import { Code } from 'astro:components';
 ---
 
 <html lang="en">
@@ -184,8 +185,8 @@ import '../styles/global.css';
 					<div class="bg-black/50 rounded-lg p-4 border border-white/10">
 						<div class="text-sm text-slate-400 mb-2">CodeMesh sees available tools:</div>
 						<ul class="text-sm text-slate-300 space-y-1 list-disc list-inside marker:text-cyan-400">
-							<li><code class="text-cyan-300">geocode</code> - Convert "San Francisco, CA" to coordinates</li>
-							<li><code class="text-cyan-300">getAlerts</code> - Fetch weather alerts by state</li>
+							<li><code class="text-cyan-300">geocodeServer.geocode</code> - Convert "San Francisco, CA" to coordinates</li>
+							<li><code class="text-cyan-300">weatherServer.getAlerts</code> - Fetch weather alerts by state</li>
 						</ul>
 					</div>
 				</div>
@@ -199,10 +200,16 @@ import '../styles/global.css';
 							<p class="text-slate-400 mb-3">Generates TypeScript functions with augmentation docs</p>
 						</div>
 					</div>
-					<div class="bg-black/50 rounded-lg p-4 border border-white/10">
-						<pre class="text-sm text-slate-300 overflow-x-auto"><code>// CodeMesh generates these APIs for the agent:
-geocodeServer.geocode(&#123; location: string &#125;)
-weatherServer.getAlerts(&#123; state: string &#125;)</code></pre>
+					<div class="rounded-lg bg-black/50 border border-white/10 overflow-hidden">
+						<div class="p-4">
+							<Code
+								code={`// CodeMesh generates these APIs for the agent:
+geocodeServer.geocode({ location: string })
+weatherServer.getAlerts({ state: string })`}
+								lang="typescript"
+								theme="github-dark"
+							/>
+						</div>
 					</div>
 				</div>
 
@@ -215,24 +222,30 @@ weatherServer.getAlerts(&#123; state: string &#125;)</code></pre>
 							<p class="text-slate-400 mb-3">Agent writes TypeScript, CodeMesh executes in secure sandbox</p>
 						</div>
 					</div>
-					<div class="bg-black/50 rounded-lg p-4 border border-white/10">
-						<pre class="text-sm text-slate-300 overflow-x-auto"><code>// Agent writes this code automatically:
-const coords = await geocodeServer.geocode(&#123;
+					<div class="rounded-lg bg-black/50 border border-white/10 overflow-hidden">
+						<div class="p-4">
+							<Code
+								code={`// Agent writes this code automatically:
+const coords = await geocodeServer.geocode({
   location: "San Francisco, CA"
-&#125;);
+});
 
-const alerts = await weatherServer.getAlerts(&#123;
+const alerts = await weatherServer.getAlerts({
   state: coords.state
-&#125;);
+});
 
 const alertsData = JSON.parse(alerts.content[0].text);
 
 // Filter to top 3 by severity
 const top3 = alertsData.features
-  .sort((a, b) =&gt; severityRank(a) - severityRank(b))
+  .sort((a, b) => severityRank(a) - severityRank(b))
   .slice(0, 3);
 
-return top3;</code></pre>
+return top3;`}
+								lang="typescript"
+								theme="github-dark"
+							/>
+						</div>
 					</div>
 					<div class="mt-3 text-sm text-slate-400">
 						✓ Executes in VM2 sandbox with 30s timeout<br/>
@@ -269,9 +282,9 @@ return top3;</code></pre>
 				<!-- Step 1: Agent Explores -->
 				<div class="bg-black/30 rounded-xl p-6 border border-cyan-500/30 mb-6">
 					<h3 class="text-2xl font-bold text-cyan-400 mb-4">1. Agent Explores</h3>
-					<p class="text-slate-300 mb-4">Agent needs to get file size but isn't sure what format <code class="bg-white/10 px-2 py-1 rounded text-sm">getFileInfo</code> returns.</p>
-					<div class="bg-black/50 rounded-lg p-4 border border-white/10">
-						<div class="flex items-center gap-3 mb-3">
+					<p class="text-slate-300 mb-4">Agent needs to get file size but isn't sure what format <code class="bg-white/10 px-2 py-1 rounded text-sm">filesystemServer.getFileInfo</code> returns.</p>
+					<div class="rounded-lg bg-black/50 border border-white/10 overflow-hidden">
+						<div class="flex items-center gap-3 px-4 py-2 bg-black/30 border-b border-white/10">
 							<div class="flex gap-2">
 								<div class="w-3 h-3 rounded-full bg-red-500"></div>
 								<div class="w-3 h-3 rounded-full bg-yellow-500"></div>
@@ -279,8 +292,10 @@ return top3;</code></pre>
 							</div>
 							<span class="text-sm text-slate-400">TypeScript</span>
 						</div>
-						<pre class="text-sm text-slate-300 overflow-x-auto"><code>// EXPLORING: What format does this return?
-const result = await filesystemServer.getFileInfo(&#123; path: 'package.json' &#125;);
+						<div class="p-4">
+							<Code
+								code={`// EXPLORING: What format does this return?
+const result = await filesystemServer.getFileInfo({ path: 'package.json' });
 console.log(result.content[0].text);
 
 // Output (bespoke format!):
@@ -289,7 +304,11 @@ console.log(result.content[0].text);
 // modified: Tue Sep 30 2025 10:52:47 GMT-0400
 // isDirectory: false
 // isFile: true
-// permissions: 644</code></pre>
+// permissions: 644`}
+								lang="typescript"
+								theme="github-dark"
+							/>
+						</div>
 					</div>
 				</div>
 
@@ -297,8 +316,8 @@ console.log(result.content[0].text);
 				<div class="bg-black/30 rounded-xl p-6 border border-teal-500/30 mb-6">
 					<h3 class="text-2xl font-bold text-teal-400 mb-4">2. Agent Writes Augmentation</h3>
 					<p class="text-slate-300 mb-4">CodeMesh forces agent to document the output format with parsing examples.</p>
-					<div class="bg-black/50 rounded-lg p-4 border border-white/10">
-						<div class="flex items-center gap-3 mb-3">
+					<div class="rounded-lg bg-black/50 border border-white/10 overflow-hidden">
+						<div class="flex items-center gap-3 px-4 py-2 bg-black/30 border-b border-white/10">
 							<div class="flex gap-2">
 								<div class="w-3 h-3 rounded-full bg-red-500"></div>
 								<div class="w-3 h-3 rounded-full bg-yellow-500"></div>
@@ -306,8 +325,10 @@ console.log(result.content[0].text);
 							</div>
 							<span class="text-sm text-slate-400">Markdown (saved to .codemesh/)</span>
 						</div>
-						<pre class="text-sm text-slate-300 overflow-x-auto"><code>## Output Format
-Returns newline-delimited key-value pairs: `key: value`
+						<div class="p-4 space-y-4">
+							<Code
+								code={`## Output Format
+Returns newline-delimited key-value pairs: \`key: value\`
 
 ### Fields
 - size: File size in bytes (number)
@@ -315,14 +336,22 @@ Returns newline-delimited key-value pairs: `key: value`
 - isFile: Boolean (true/false)
 - permissions: Unix permissions (e.g., "644")
 
-### Parsing Example
-```typescript
-const text = result.content[0].text;
+### Parsing Example`}
+								lang="markdown"
+								theme="github-dark"
+							/>
+							<div class="pl-4 border-l-2 border-teal-500/50">
+								<Code
+									code={`const text = result.content[0].text;
 const info = Object.fromEntries(
-  text.split('\\n').map(line =&gt; line.split(': '))
+  text.split('\\n').map(line => line.split(': '))
 );
-console.log(info.size); // "38075"
-```</code></pre>
+console.log(info.size); // "38075"`}
+									lang="typescript"
+									theme="github-dark"
+								/>
+							</div>
+						</div>
 					</div>
 				</div>
 
@@ -330,8 +359,8 @@ console.log(info.size); // "38075"
 				<div class="bg-black/30 rounded-xl p-6 border border-green-500/30">
 					<h3 class="text-2xl font-bold text-green-400 mb-4">3. Agent and ALL Future Agents Succeed</h3>
 					<p class="text-slate-300 mb-4">Now every agent knows how to parse file info. No more trial-and-error!</p>
-					<div class="bg-black/50 rounded-lg p-4 border border-white/10">
-						<div class="flex items-center gap-3 mb-3">
+					<div class="rounded-lg bg-black/50 border border-white/10 overflow-hidden">
+						<div class="flex items-center gap-3 px-4 py-2 bg-black/30 border-b border-white/10">
 							<div class="flex gap-2">
 								<div class="w-3 h-3 rounded-full bg-red-500"></div>
 								<div class="w-3 h-3 rounded-full bg-yellow-500"></div>
@@ -339,16 +368,22 @@ console.log(info.size); // "38075"
 							</div>
 							<span class="text-sm text-slate-400">TypeScript (with enhanced docs)</span>
 						</div>
-						<pre class="text-sm text-slate-300 overflow-x-auto"><code>// Agent gets augmented JSDoc with parsing example!
-const result = await filesystemServer.getFileInfo(&#123; path: 'data.json' &#125;);
+						<div class="p-4">
+							<Code
+								code={`// Agent gets augmented JSDoc with parsing example!
+const result = await filesystemServer.getFileInfo({ path: 'data.json' });
 
 // Agent knows exact format and how to parse
 const text = result.content[0].text;
-const info = Object.fromEntries(text.split('\\n').map(line =&gt; line.split(': ')));
+const info = Object.fromEntries(text.split('\\n').map(line => line.split(': ')));
 const fileSizeBytes = parseInt(info.size);
 
-console.log(`File size: $&#123;fileSizeBytes&#125; bytes`);
-// ✅ Success on first try!</code></pre>
+console.log(\`File size: \${fileSizeBytes} bytes\`);
+// ✅ Success on first try!`}
+								lang="typescript"
+								theme="github-dark"
+							/>
+						</div>
 					</div>
 				</div>
 

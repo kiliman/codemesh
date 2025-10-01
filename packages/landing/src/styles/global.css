@@ -1,1 +1,11 @@
 @import "tailwindcss";
+
+/* Override Shiki's background to be transparent */
+.astro-code {
+  background-color: transparent !important;
+  padding: 0 !important;
+}
+
+.astro-code code {
+  background-color: transparent !important;
+}
