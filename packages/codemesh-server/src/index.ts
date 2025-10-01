@@ -119,17 +119,20 @@ const getCodeMeshServer = () => {
         // Format the execution result (pass code for exploration detection)
         const resultText = codeExecutor.formatResult(executionResult, code)
 
+        // Check if exploring mode was detected
+        const isExploring = code.includes('// EXPLORING')
+        const shouldReturnError = !executionResult.success || (isExploring && executionResult.success)
+
         // Log the tool call
         const duration = Date.now() - startTime
-        const isExploring = code.includes('// EXPLORING')
         fileLogger.logToolCall({
           tool: 'execute-code',
           args: { toolNames, serverId },
           code,
           duration,
-          status: executionResult.success ? 'success' : 'error',
-          response: executionResult.success ? executionResult.result : undefined,
-          error: executionResult.success ? undefined : executionResult.error,
+          status: shouldReturnError ? 'error' : 'success',
+          response: executionResult.success && !isExploring ? executionResult.result : undefined,
+          error: shouldReturnError ? resultText : undefined,
           consoleOutput: executionResult.logs?.join('\n') || undefined,
           isExploring,
         })
@@ -141,7 +144,7 @@ const getCodeMeshServer = () => {
               text: resultText,
             },
           ],
-          isError: !executionResult.success,
+          isError: shouldReturnError,
         }
       } catch (error) {
         const duration = Date.now() - startTime
