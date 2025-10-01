@@ -80,13 +80,14 @@ packages/
    - ✅ **OC validation**: Fresh Claude instance one-shotted search parsing using augmentation
    - ✅ **Production ready**: Full workflow tested end-to-end with real API calls
 
-11. **Agent-Driven Auto-Augmentation** (`add-augmentation` tool)
-   - ✅ **Self-documenting system**: Agents can create augmentations on-the-fly when encountering unclear outputs
-   - ✅ **Agent autonomy**: No external LLMs needed - the calling agent analyzes and documents outputs
+11. **Agent-Driven Auto-Augmentation** (`add-augmentation` tool) 🎉 **BREAKTHROUGH!**
+   - ✅ **Self-documenting system**: Agents create augmentations when encountering unclear outputs
+   - ✅ **Agent autonomy**: No external LLMs needed - the calling agent analyzes and documents
    - ✅ **Markdown persistence**: Saves to `.codemesh/{serverId}.md` for future sessions
    - ✅ **Automatic JSDoc enhancement**: Augmentations immediately appear in `get-tool-apis` output
-   - ✅ **Workflow integration**: Embedded instructions in `execute-code` guide agents through the process
-   - ✅ **Tested and validated**: Successfully created and verified augmentation for test server
+   - ✅ **Nuclear option validated**: `// EXPLORING` returns ERROR, forcing augmentation creation
+   - ✅ **PROVEN TO WORK**: Agent A struggled & documented → Agent B one-shotted the same task!
+   - ✅ **Self-improving architecture**: Each agent's exploration makes the system smarter for everyone
 
 ### 🎯 **BREAKTHROUGH ACHIEVED**
 
@@ -119,15 +120,20 @@ packages/
 - ✅ **Real-World Use Case**: Web search with parsing, filtering, and result extraction
 - ✅ **Auto-Augmentation**: Agent-driven documentation creation tested and working
 
-**Self-Improving Architecture:**
+**Self-Improving Architecture (VALIDATED!):**
 - ✅ **Agent-Generated Docs**: Agents create augmentations when they encounter unclear outputs
 - ✅ **No External LLMs**: The calling agent analyzes outputs and writes docs (no shelling out!)
+- ✅ **Nuclear Option**: `// EXPLORING` comment triggers ERROR that forces augmentation creation
 - ✅ **Immediate Feedback**: Augmentations instantly enhance `get-tool-apis` JSDoc
 - ✅ **Knowledge Persistence**: `.codemesh/*.md` files improve the system for future agents
-- ✅ **Simple Workflow**: analyze → document → save → refresh → retry
+- ✅ **PROVEN EFFECTIVE**: Fresh agent one-shotted task that previous agent struggled with!
+- ✅ **Compound Intelligence**: Each exploration makes CodeMesh smarter for everyone
 
-**Key Insight from Testing:**
-> "Other Claudia" (fresh Claude instance) successfully used CodeMesh to search the web for "best MCP servers 2025", parse the results using our augmentation examples, and extract the top 3 URLs - **all in one shot, with zero errors**. This validates that our augmentation system, security model, and workflow design are production-ready!
+**Key Insights from Testing:**
+
+> **Brave Search Validation**: "Other Claudia" (fresh Claude instance) successfully used CodeMesh to search the web for "best MCP servers 2025", parse the results using our augmentation examples, and extract the top 3 URLs - **all in one shot, with zero errors**. This validates that our augmentation system, security model, and workflow design are production-ready!
+
+> **Auto-Augmentation Breakthrough**: After struggling with polite suggestions, assertive instructions, and XML tags, we implemented the "nuclear option" - making `// EXPLORING` return an ERROR that blocks execution until augmentation is created. **IT WORKED!** Agent A used `// EXPLORING`, hit the error, created TWO perfect augmentations for `filesystemServer.directoryTree` and `filesystemServer.getFileInfo`. Then Agent B (fresh session) received the SAME task and **one-shotted it** using the enhanced JSDoc from Agent A's augmentations. This proves the self-improving architecture: each agent's exploration permanently improves the system for all future agents! 🎉
 
 ## Key Files
 
@@ -165,6 +171,55 @@ EOF
 # Build all packages
 pnpm build
 ```
+
+## Auto-Augmentation Workflow 🎉
+
+**The Challenge**: Getting agents to document unclear tool outputs instead of trial-and-error parsing.
+
+**The Solution - Nuclear Option**: Make exploration without documentation an ERROR!
+
+### How It Works
+
+1. **Agent uses `// EXPLORING` comment** when inspecting tool output:
+   ```typescript
+   // EXPLORING: checking output format of filesystemServer.getFileInfo
+   const result = await filesystemServer.getFileInfo({ path: 'test.txt' });
+   console.log(result);
+   ```
+
+2. **CodeMesh returns ERROR (not success!)** with the output and mandatory instructions:
+   ```
+   ❌ EXPLORATION MODE - AUGMENTATION REQUIRED
+
+   <exploration_output>
+   [shows the output they wanted to see]
+   </exploration_output>
+
+   ❌ ERROR: You CANNOT proceed with parsing until you create an augmentation!
+   REQUIRED ACTIONS: [step-by-step workflow]
+   ```
+
+3. **Agent creates augmentation** using `add-augmentation` tool:
+   - Documents output format (JSON, text, key-value pairs, etc.)
+   - Lists all fields with types and descriptions
+   - Includes example output and TypeScript parsing code
+
+4. **Future agents benefit immediately** via enhanced JSDoc in `get-tool-apis`
+
+### Validation Results
+
+**Agent A (Exploration Session)**:
+- Used `// EXPLORING` to inspect `filesystemServer.directoryTree` and `filesystemServer.getFileInfo`
+- Hit ERROR both times, forced to create augmentations
+- Created TWO perfect augmentation documents
+- Successfully completed task after documentation
+
+**Agent B (Fresh Session - Same Task)**:
+- Called `get-tool-apis` and received enhanced JSDoc with augmentations
+- **One-shotted the task** with perfect parsing on first try
+- No errors, no trial-and-error, no struggle
+
+**Result**: PROVEN self-improving architecture! Each agent's exploration permanently enhances the system! 🚀
 
 ## Major Breakthrough
 
