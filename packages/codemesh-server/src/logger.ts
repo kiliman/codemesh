@@ -10,19 +10,21 @@ class FileLogger {
   private enabled: boolean;
 
   constructor(logPath?: string) {
-    // Default to tmp/codemesh-server.log in project root
-    this.logPath = logPath || path.join(process.cwd(), 'tmp', 'codemesh-server.log');
-    this.enabled = true;
+    // Only enable logging if logPath is explicitly provided
+    this.logPath = logPath || '';
+    this.enabled = !!logPath;
 
-    // Ensure log directory exists
-    try {
-      const logDir = path.dirname(this.logPath);
-      if (!fs.existsSync(logDir)) {
-        fs.mkdirSync(logDir, { recursive: true });
+    // Ensure log directory exists only if logging is enabled
+    if (this.enabled) {
+      try {
+        const logDir = path.dirname(this.logPath);
+        if (!fs.existsSync(logDir)) {
+          fs.mkdirSync(logDir, { recursive: true });
+        }
+      } catch (error) {
+        // Silently fail if we can't create log directory
+        this.enabled = false;
       }
-    } catch (error) {
-      // Silently fail if we can't create log directory
-      this.enabled = false;
     }
   }
 

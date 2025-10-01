@@ -148,9 +148,6 @@ const getCodeMeshServer = () => {
           isError: shouldReturnError,
         }
 
-        // Log the complete MCP response we're sending
-        fileLogger.logMcpResponse('execute-code', result, duration, isExploring)
-
         return result
       } catch (error) {
         const duration = Date.now() - startTime
@@ -174,8 +171,6 @@ const getCodeMeshServer = () => {
           ],
           isError: true,
         }
-
-        fileLogger.logMcpResponse('execute-code', result, duration)
 
         return result
       }
@@ -245,8 +240,6 @@ const getCodeMeshServer = () => {
           ],
         }
 
-        fileLogger.logMcpResponse('discover-tools', result, duration)
-
         return result
       } catch (error) {
         const duration = Date.now() - startTime
@@ -269,8 +262,6 @@ const getCodeMeshServer = () => {
           ],
           isError: true,
         }
-
-        fileLogger.logMcpResponse('discover-tools', result, duration)
 
         return result
       }
@@ -457,7 +448,7 @@ const getCodeMeshServer = () => {
         const duration = Date.now() - startTime
         fileLogger.logToolCall({
           tool: 'add-augmentation',
-          args: { toolName, codemeshDir },
+          args: { toolName, markdown, codemeshDir },
           duration,
           status: 'success',
           response: responseText,
@@ -472,8 +463,6 @@ const getCodeMeshServer = () => {
           ],
         }
 
-        fileLogger.logMcpResponse('add-augmentation', result, duration)
-
         return result
       } catch (error) {
         const duration = Date.now() - startTime
@@ -481,7 +470,7 @@ const getCodeMeshServer = () => {
 
         fileLogger.logToolCall({
           tool: 'add-augmentation',
-          args: { toolName, codemeshDir },
+          args: { toolName, markdown, codemeshDir },
           duration,
           status: 'error',
           error: errorMessage,
@@ -496,8 +485,6 @@ const getCodeMeshServer = () => {
           ],
           isError: true,
         }
-
-        fileLogger.logMcpResponse('add-augmentation', result, duration)
 
         return result
       }
@@ -706,8 +693,6 @@ const getCodeMeshServer = () => {
           ],
         }
 
-        fileLogger.logMcpResponse('get-tool-apis', result, duration)
-
         return result
       } catch (error) {
         const duration = Date.now() - startTime
@@ -730,8 +715,6 @@ const getCodeMeshServer = () => {
           ],
           isError: true,
         }
-
-        fileLogger.logMcpResponse('get-tool-apis', result, duration)
 
         return result
       }
