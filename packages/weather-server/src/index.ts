@@ -195,12 +195,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 async function main() {
   const transport = new StdioServerTransport()
 
-  fs.writeFileSync(
-    '/Users/michael/Projects/learn/mcp/codemode/tmp/weather-server.log',
-    'Environment:\n' + JSON.stringify(process.env, null, 2) + '\n',
-    { flag: 'a' },
-  )
-
   await server.connect(transport)
   console.error('Weather MCP server running on stdio')
 }
