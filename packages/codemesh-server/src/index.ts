@@ -621,14 +621,14 @@ const getCodeMeshServer = () => {
 
         const responseText = response.join('\n')
 
-        // Log the tool call
+        // Log the tool call with the actual TypeScript API
         const duration = Date.now() - startTime
         fileLogger.logToolCall({
           tool: 'get-tool-apis',
           args: { toolNames, serverId, codemeshDir },
           duration,
           status: 'success',
-          response: `Found ${requestedTools.length} of ${toolNames.length} requested tools`,
+          response: responseText,
         })
 
         return {
