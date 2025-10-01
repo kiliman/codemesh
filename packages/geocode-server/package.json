@@ -1,16 +1,35 @@
 {
-  "name": "geocode-server",
-  "version": "1.0.0",
-  "description": "MCP server for geocoding locations to coordinates",
-  "main": "index.js",
+  "name": "@codemesh/geocode-server",
+  "version": "0.1.0",
+  "description": "Demo MCP server for geocoding locations to coordinates for CodeMesh",
+  "main": "dist/index.js",
+  "bin": {
+    "codemesh-geocode": "dist/index.js"
+  },
+  "files": [
+    "dist/**/*",
+    "README.md"
+  ],
   "scripts": {
     "build": "tsc",
-    "dev": "node src/index.ts",
-    "start": "node src/index.ts"
+    "dev": "tsx src/index.ts",
+    "start": "node dist/index.js",
+    "prepublishOnly": "pnpm build"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "codemesh",
+    "geocoding",
+    "demo"
+  ],
+  "author": "Kiliman <kiliman@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kiliman/codemesh.git",
+    "directory": "packages/geocode-server"
+  },
   "type": "module",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.18.2",
@@ -18,6 +37,7 @@
   },
   "devDependencies": {
     "@types/node": "^24.5.2",
+    "tsx": "^4.20.6",
     "typescript": "^5.9.2"
   }
 }
