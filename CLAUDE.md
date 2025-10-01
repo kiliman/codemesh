@@ -41,6 +41,7 @@ packages/
 5. **Tiered Discovery Workflow** (`packages/codemesh-server/src/index.ts`)
    - ✅ `discover-tools` - High-level tool overview (context-efficient)
    - ✅ `get-tool-apis` - Selective TypeScript API loading for specific tools
+   - ✅ `add-augmentation` - Agent-driven documentation enhancement (NEW!)
    - ✅ `generate-types` - File-based type generation for development/debugging
 
 6. **Multi-Server Runtime Wrapper** (`packages/codemesh-server/src/runtimeWrapper.ts`)
@@ -79,6 +80,14 @@ packages/
    - ✅ **OC validation**: Fresh Claude instance one-shotted search parsing using augmentation
    - ✅ **Production ready**: Full workflow tested end-to-end with real API calls
 
+11. **Agent-Driven Auto-Augmentation** (`add-augmentation` tool)
+   - ✅ **Self-documenting system**: Agents can create augmentations on-the-fly when encountering unclear outputs
+   - ✅ **Agent autonomy**: No external LLMs needed - the calling agent analyzes and documents outputs
+   - ✅ **Markdown persistence**: Saves to `.codemesh/{serverId}.md` for future sessions
+   - ✅ **Automatic JSDoc enhancement**: Augmentations immediately appear in `get-tool-apis` output
+   - ✅ **Workflow integration**: Embedded instructions in `execute-code` guide agents through the process
+   - ✅ **Tested and validated**: Successfully created and verified augmentation for test server
+
 ### 🎯 **BREAKTHROUGH ACHIEVED**
 
 ✅ **Full Multi-Server CodeMesh Implementation Complete + Battle-Tested!**
@@ -108,6 +117,14 @@ packages/
 - ✅ **Augmentation Validation**: OC used parsing examples to extract structured data
 - ✅ **End-to-End Testing**: Full workflow from discovery → API loading → code execution
 - ✅ **Real-World Use Case**: Web search with parsing, filtering, and result extraction
+- ✅ **Auto-Augmentation**: Agent-driven documentation creation tested and working
+
+**Self-Improving Architecture:**
+- ✅ **Agent-Generated Docs**: Agents create augmentations when they encounter unclear outputs
+- ✅ **No External LLMs**: The calling agent analyzes outputs and writes docs (no shelling out!)
+- ✅ **Immediate Feedback**: Augmentations instantly enhance `get-tool-apis` JSDoc
+- ✅ **Knowledge Persistence**: `.codemesh/*.md` files improve the system for future agents
+- ✅ **Simple Workflow**: analyze → document → save → refresh → retry
 
 **Key Insight from Testing:**
 > "Other Claudia" (fresh Claude instance) successfully used CodeMesh to search the web for "best MCP servers 2025", parse the results using our augmentation examples, and extract the top 3 URLs - **all in one shot, with zero errors**. This validates that our augmentation system, security model, and workflow design are production-ready!
