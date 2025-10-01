@@ -159,33 +159,80 @@ export class CodeExecutor {
   formatResult(executionResult: ExecutionResult, code?: string): string {
     const isExploring = code && this.isExploringOutput(code);
 
+    // NUCLEAR OPTION: If exploring, return as ERROR to force augmentation creation
+    if (isExploring && executionResult.success) {
+      const sections = [
+        `❌ EXPLORATION MODE - AUGMENTATION REQUIRED`,
+        ``,
+        `You used // EXPLORING or similar exploration patterns in your code.`,
+        `This triggers MANDATORY augmentation workflow.`,
+        ``,
+        `<exploration_output>`,
+      ];
+
+      // Show the output they wanted to see
+      if (executionResult.logs && executionResult.logs.length > 0) {
+        sections.push(`📝 Console Output:`, ...executionResult.logs.map((log) => `  ${log}`));
+      }
+
+      if (executionResult.result !== undefined) {
+        sections.push(
+          ``,
+          `📤 Execution Result:`,
+          `\`\`\`json`,
+          JSON.stringify(executionResult.result, null, 2),
+          `\`\`\``,
+        );
+      }
+
+      sections.push(`</exploration_output>`);
+
+      // Now the mandatory instructions
+      sections.push(
+        ``,
+        ``,
+        `<mandatory_next_steps>`,
+        `❌ ERROR: You CANNOT proceed with parsing until you create an augmentation!`,
+        ``,
+        `REQUIRED ACTIONS (in order):`,
+        ``,
+        `1. Analyze the output above - what's the structure?`,
+        `   (JSON? Key-value text? Nested objects? Arrays?)`,
+        ``,
+        `2. Create augmentation markdown with these sections:`,
+        `   # serverName.methodName`,
+        `   ## Output Format`,
+        `   [Describe structure]`,
+        `   ### Fields`,
+        `   - field: type (description)`,
+        `   ### Example Output`,
+        `   [Paste actual output from above]`,
+        `   ### Parsing Example`,
+        `   \`\`\`typescript`,
+        `   [Working TypeScript parsing code]`,
+        `   \`\`\``,
+        ``,
+        `3. Call add-augmentation tool with:`,
+        `   - toolName: "serverName.methodName"`,
+        `   - markdown: [your documentation]`,
+        ``,
+        `4. Call get-tool-apis again to verify enhanced JSDoc`,
+        ``,
+        `5. THEN call execute-code again WITHOUT // EXPLORING comment`,
+        ``,
+        `This is NOT optional. Document first, parse second!`,
+        `</mandatory_next_steps>`,
+      );
+
+      return sections.join('\n');
+    }
+
+    // Normal execution (no exploration)
     const sections = [
       `🚀 CodeMode Execution Complete`,
       ``,
       `Status: ${executionResult.success ? '✅ Success' : '❌ Failed'}`,
     ];
-
-    // If this looks like exploration code, add augmentation reminder FIRST
-    if (isExploring && executionResult.success) {
-      sections.push(
-        ``,
-        `<augmentation_reminder>`,
-        `⚠️ WAIT! You're using // EXPLORING - read this BEFORE looking at output:`,
-        ``,
-        `If the output below is unclear or hard to parse, DO NOT trial-and-error!`,
-        ``,
-        `REQUIRED NEXT STEPS:`,
-        `1. Look at the raw output below and analyze its structure`,
-        `2. Create augmentation markdown: Output Format, Fields, Example, Parsing Code`,
-        `3. Call add-augmentation to save it`,
-        `4. Call get-tool-apis again to see enhanced JSDoc`,
-        `5. THEN write your parsing code with full understanding`,
-        ``,
-        `You MUST document unclear output before trying to parse it!`,
-        `</augmentation_reminder>`,
-        ``,
-      );
-    }
 
     if (executionResult.logs && executionResult.logs.length > 0) {
       sections.push(``, `📝 Console Output:`, ...executionResult.logs.map((log) => `  ${log}`));
