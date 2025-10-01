@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1280, height=640">
+  <title>CodeMesh Social Preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 1280px;
+      height: 640px;
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #164e63 50%, #0f172a 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Animated background elements */
+    .bg-gradient {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 30% 50%, rgba(34, 211, 238, 0.1) 0%, transparent 50%),
+                  radial-gradient(circle at 70% 50%, rgba(20, 184, 166, 0.1) 0%, transparent 50%);
+      animation: pulse 3s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 0.8; }
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      gap: 80px;
+      padding: 80px;
+    }
+
+    .logo-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .logo {
+      width: 280px;
+      height: 280px;
+      filter: drop-shadow(0 20px 60px rgba(34, 211, 238, 0.4));
+    }
+
+    .content {
+      flex: 1;
+      max-width: 700px;
+    }
+
+    .title {
+      font-size: 72px;
+      font-weight: 900;
+      line-height: 1.1;
+      margin-bottom: 20px;
+      background: linear-gradient(135deg, #22d3ee 0%, #14b8a6 50%, #10b981 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      font-size: 48px;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 30px;
+      line-height: 1.2;
+    }
+
+    .description {
+      font-size: 28px;
+      color: #cbd5e1;
+      line-height: 1.5;
+      margin-bottom: 30px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 24px;
+      background: rgba(34, 211, 238, 0.2);
+      border: 2px solid rgba(34, 211, 238, 0.3);
+      border-radius: 50px;
+      font-size: 22px;
+      color: #22d3ee;
+      font-weight: 600;
+    }
+
+    .footer {
+      position: absolute;
+      bottom: 30px;
+      left: 80px;
+      right: 80px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #64748b;
+      font-size: 20px;
+    }
+
+    .footer-left {
+      font-weight: 600;
+    }
+
+    .footer-right {
+      color: #94a3b8;
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-gradient"></div>
+
+  <div class="container">
+    <div class="logo-section">
+      <!-- CodeMesh Logo SVG -->
+      <svg class="logo" viewBox="0 0 505.6 526.15" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="linear-gradient" x1="79.89" y1="224.9" x2="333.23" y2="663.69" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#0ad7f9"/>
+            <stop offset=".83" stop-color="#07b9c6"/>
+          </linearGradient>
+          <linearGradient id="linear-gradient-2" x1="252.82" y1="260.12" x2="505.6" y2="260.12" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#0ad3dd"/>
+            <stop offset="1" stop-color="#057d8e"/>
+          </linearGradient>
+        </defs>
+        <polygon fill="url(#linear-gradient)" points="253.31 377.04 153.58 476.78 104.2 526.15 78.65 500.6 .9 422.85 .9 .73 63.74 .73 64.43 1.42 78.09 15.08 253.02 190.01 206.09 236.94 78.09 108.94 78.09 401.29 106.65 429.85 206.38 330.11 253.31 377.04"/>
+        <rect fill="#00b8cc" x="323.06" y="226.39" width=".4" height="66.09" transform="translate(-88.77 304.56) rotate(-45)"/>
+        <polygon fill="#086a81" points="346.48 282.94 300.04 329.38 299.55 329.87 252.82 283.14 299.75 236.21 346.48 282.94"/>
+        <polygon fill="url(#linear-gradient-2)" points="505.6 0 505.6 520.24 428.41 520.24 428.41 107.55 300.03 235.93 299.83 235.73 299.55 236.01 252.82 189.28 442.1 0 505.6 0"/>
+        <rect fill="#003e54" x="220.13" y="296.68" width="65.68" height="66.09" transform="translate(-159.06 275.45) rotate(-45)"/>
+        <rect fill="#08b8c4" x="173.3" y="249.71" width="65.68" height="66.37" transform="translate(-139.66 228.62) rotate(-45)"/>
+        <rect fill="#00273d" x="219.64" y="203.03" width="66.37" height="66.37" transform="translate(-92.98 247.96) rotate(-45)"/>
+      </svg>
+    </div>
+
+    <div class="content">
+      <div class="title">CodeMesh</div>
+      <div class="subtitle">The Self-Improving MCP Server</div>
+      <div class="description">
+        Agents write code. Orchestrate everything. Automatically coordinate multiple MCP servers with intelligent TypeScript execution.
+      </div>
+      <div class="badge">
+        🏆 Built for Anthropic MCP Hackathon
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="footer-left">github.com/kiliman/codemesh</div>
+    <div class="footer-right">From Claudia, with Love ❤️</div>
+  </div>
+</body>
+</html>

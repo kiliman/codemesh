@@ -1,4 +1,8 @@
-# CodeMesh MCP Server
+<div align="center">
+  <img src="./assets/codemesh-logo.svg" alt="CodeMesh Logo" width="200" />
+  <h1>CodeMesh MCP Server</h1>
+  <p><strong>Agents Write Code. Orchestrate Everything.</strong></p>
+</div>
 
 > **Inspired by [Cloudflare's Code Mode](https://blog.cloudflare.com/code-mode/)** - Execute TypeScript code against multiple MCP tools for advanced data processing and analysis.
 
