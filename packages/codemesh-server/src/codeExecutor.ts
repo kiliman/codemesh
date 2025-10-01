@@ -26,32 +26,9 @@ export class CodeExecutor {
    * Check if code contains exploration patterns
    */
   private isExploringOutput(code: string): boolean {
-    // Look for explicit EXPLORING comments
-    if (code.includes('// EXPLORING') || code.includes('//EXPLORING')) {
-      return true;
-    }
-
-    // Look for common exploration comment patterns
-    const explorationComments = [
-      /\/\/\s*Test/i,
-      /\/\/\s*Check/i,
-      /\/\/\s*Parse/i,
-      /\/\/\s*Display/i,
-      /\/\/\s*Raw result/i,
-      /\/\/\s*Get the/i,
-      /\/\/\s*Inspect/i,
-    ];
-
-    if (explorationComments.some(pattern => pattern.test(code))) {
-      return true;
-    }
-
-    // Look for simple console.log of tool results (variable then log pattern)
-    // Pattern: await ...Server.method(...); followed by console.log
-    const hasToolCall = /await\s+\w+Server\.\w+\(/i.test(code);
-    const hasConsoleLog = /console\.log\(/i.test(code);
-
-    return hasToolCall && hasConsoleLog;
+    // ONLY look for explicit EXPLORING comments
+    // This is consistent and doesn't have false positives
+    return code.includes('// EXPLORING') || code.includes('//EXPLORING');
   }
 
   /**
