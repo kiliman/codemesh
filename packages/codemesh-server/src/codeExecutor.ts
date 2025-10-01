@@ -157,11 +157,35 @@ export class CodeExecutor {
    * Format execution result for MCP response
    */
   formatResult(executionResult: ExecutionResult, code?: string): string {
+    const isExploring = code && this.isExploringOutput(code);
+
     const sections = [
       `🚀 CodeMode Execution Complete`,
       ``,
       `Status: ${executionResult.success ? '✅ Success' : '❌ Failed'}`,
     ];
+
+    // If this looks like exploration code, add augmentation reminder FIRST
+    if (isExploring && executionResult.success) {
+      sections.push(
+        ``,
+        `<augmentation_reminder>`,
+        `⚠️ WAIT! You're using // EXPLORING - read this BEFORE looking at output:`,
+        ``,
+        `If the output below is unclear or hard to parse, DO NOT trial-and-error!`,
+        ``,
+        `REQUIRED NEXT STEPS:`,
+        `1. Look at the raw output below and analyze its structure`,
+        `2. Create augmentation markdown: Output Format, Fields, Example, Parsing Code`,
+        `3. Call add-augmentation to save it`,
+        `4. Call get-tool-apis again to see enhanced JSDoc`,
+        `5. THEN write your parsing code with full understanding`,
+        ``,
+        `You MUST document unclear output before trying to parse it!`,
+        `</augmentation_reminder>`,
+        ``,
+      );
+    }
 
     if (executionResult.logs && executionResult.logs.length > 0) {
       sections.push(``, `📝 Console Output:`, ...executionResult.logs.map((log) => `  ${log}`));
@@ -179,27 +203,6 @@ export class CodeExecutor {
 
     if (!executionResult.success && executionResult.error) {
       sections.push(``, `❌ Error:`, `\`\`\``, executionResult.error, `\`\`\``);
-    }
-
-    // If this looks like exploration code, add augmentation reminder
-    if (code && this.isExploringOutput(code) && executionResult.success) {
-      sections.push(
-        ``,
-        ``,
-        `<augmentation_reminder>`,
-        `🔍 You're exploring tool output! If the format is unclear or hard to parse:`,
-        ``,
-        `STOP trying different parsing approaches and CREATE AN AUGMENTATION instead!`,
-        ``,
-        `1. You just saw the raw output above - analyze its structure`,
-        `2. Create markdown documenting: Output Format, Fields, Example, Parsing Code`,
-        `3. Call add-augmentation to save it`,
-        `4. Call get-tool-apis again to see enhanced JSDoc`,
-        `5. THEN write your parsing code with full understanding`,
-        ``,
-        `This makes the system better for everyone. Don't skip this step!`,
-        `</augmentation_reminder>`,
-      );
     }
 
     return sections.join('\n');
