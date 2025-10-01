@@ -4,7 +4,6 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js'
 import { z } from 'zod'
-import * as fs from 'node:fs'
 import { ConfigLoader } from './config.js'
 import { ToolDiscoveryService } from './toolDiscovery.js'
 import { TypeGeneratorService } from './typeGenerator.js'
@@ -666,18 +665,6 @@ const getCodeMeshServer = () => {
 
 async function main() {
   const transport = new StdioServerTransport()
-
-  // Log the PWD environment variable to verify we can access project root
-  const logPath = '/Users/michael/Projects/learn/mcp/codemode/tmp/codemesh-server.log'
-  fs.writeFileSync(
-    logPath,
-    `CodeMesh Server Started\n` +
-      `Timestamp: ${new Date().toISOString()}\n` +
-      `PWD: ${process.env.PWD}\n` +
-      `CWD: ${process.cwd()}\n` +
-      `Environment Keys: ${Object.keys(process.env).sort().join(', ')}\n\n`,
-    { flag: 'a' },
-  )
 
   const server = getCodeMeshServer()
   await server.connect(transport)
