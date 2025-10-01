@@ -45,6 +45,11 @@ Create a `.codemesh/config.json` file in your project directory to configure whi
 
 ```json
 {
+  "logging": {
+    "enabled": true,
+    "level": "info",
+    "logDir": ".codemesh/logs"
+  },
   "servers": [
     {
       "id": "filesystem",
@@ -99,6 +104,53 @@ Use `${VAR}` or `${VAR:-default}` syntax in your config for secure credential ma
 ```
 
 This works with any environment variable manager (Doppler, 1Password, etc.) and keeps your config safe to commit.
+
+#### Logging Configuration
+
+Enable markdown-based file logging to track tool calls, code execution, and responses:
+
+```json
+{
+  "logging": {
+    "enabled": true,
+    "level": "info",
+    "logDir": ".codemesh/logs"
+  }
+}
+```
+
+**Options:**
+- **`enabled`** (boolean) - Enable/disable file logging
+- **`level`** ("debug" | "info" | "warn" | "error") - Minimum log level to record
+- **`logDir`** (string) - Directory for log files (defaults to `.codemesh/logs`)
+
+**Log Format:**
+
+Logs are saved as markdown files (`.codemesh/logs/YYYY-MM-DD.md`) with syntax highlighting:
+
+```markdown
+## 14:52:45 - execute-code
+**Duration:** 2.1s
+**Status:** ✅ Success
+
+### Request
+` ``typescript
+const alerts = await weatherServer.getAlerts({ state: 'CA' })
+return alerts
+` ``
+
+### Console Output
+` ``
+Found 3 alerts
+` ``
+
+### Response
+` ``json
+{ "count": 3, "alerts": [...] }
+` ``
+```
+
+Perfect for debugging, demo preparation, and understanding what CodeMesh is doing! 🎯
 
 ## How It Works
 
