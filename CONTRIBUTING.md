@@ -229,12 +229,12 @@ Use `config.example.json` for version control with placeholders.
 
 ### Safe Function Names
 
-Tools are exposed as `toolName_serverId` to avoid collisions:
+Tools are exposed as `serverId.toolName` (camelCase) to avoid collisions:
 
 ```typescript
 // Multiple servers can have a 'search' tool
-await search_braveSearch({ query: 'test' })
-await search_googleSearch({ query: 'test' })
+await braveSearch.search({ query: 'test' })
+await googleSearch.search({ query: 'test' })
 ```
 
 ### VM2 Sandbox Security
@@ -250,13 +250,13 @@ Code can call tools from multiple servers in a single execution:
 
 ```typescript
 // HTTP server
-const greeting = await greet_example_server({ name: 'Developer' })
+const greeting = await exampleServer.greet({ name: 'Developer' })
 
 // Stdio server 1
-const alerts = await get_alerts_weather_server({ state: 'NC' })
+const alerts = await weatherServer.getAlerts({ state: 'NC' })
 
 // Stdio server 2
-const files = await list_directory_filesystem_server({ path: '/tmp' })
+const files = await filesystemServer.listDirectory({ path: '/tmp' })
 
 // Process results together
 return { greeting, alertCount: alerts.length, fileCount: files.length }
