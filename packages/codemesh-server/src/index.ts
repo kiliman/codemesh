@@ -30,7 +30,7 @@ const getCodeMeshServer = () => {
     {
       title: 'Execute TypeScript Code',
       description:
-        "CODEMESH STEP 3: Execute TypeScript code that can call multiple MCP tools and process their results. CRITICAL: Tools are available as server objects with methods. Use serverName.methodName() format (e.g., await weatherServer.getForecast({ latitude: 36.5, longitude: -76.2 }), await geocodeServer.geocode({ location: 'Moyock, NC' })). Do NOT use direct function calls like get_forecast() or geocode(). Do NOT use prefixes like 'tools.' or 'mcpTools.'. Always use the server object syntax shown in the Tool Mapping section.\n\nAUGMENTATION WORKFLOW: If a tool's output doesn't match expectations (e.g., parsing fails, unclear structure), you can improve documentation for future use:\n1. Analyze the actual output to understand its structure (text format, JSON, key-value pairs, etc.)\n2. Create augmentation markdown with these sections:\n   - '# serverName.methodName' (header)\n   - '## Output Format' (describe the structure)\n   - '### Fields' (list each field with type and description)\n   - '### Example Output' (show actual sample output)\n   - '### Parsing Example' (TypeScript code showing how to parse)\n3. Call add-augmentation with the toolName and markdown\n4. Call get-tool-apis again to see the enhanced JSDoc\n5. Retry execute-code with the improved documentation\n\nThis workflow helps future agents (and yourself) by documenting quirks, output formats, and parsing strategies!",
+        "CODEMESH STEP 3: Execute TypeScript code that can call multiple MCP tools and process their results. CRITICAL: Tools are available as server objects with methods. Use serverName.methodName() format (e.g., await weatherServer.getForecast({ latitude: 36.5, longitude: -76.2 }), await geocodeServer.geocode({ location: 'Moyock, NC' })). Do NOT use direct function calls like get_forecast() or geocode(). Do NOT use prefixes like 'tools.' or 'mcpTools.'. Always use the server object syntax shown in the Tool Mapping section.\n\n⚠️ STOP TRIAL-AND-ERROR! If output is unclear, CREATE AN AUGMENTATION:\nWhen you get output that's hard to parse (unclear format, undocumented fields, weird structure), DO NOT keep trying different parsing approaches. Instead:\n\n1. Look at the raw output and analyze its structure\n2. Create augmentation markdown with these REQUIRED sections:\n\n# serverName.methodName\n\n## Output Format\nDescribe the structure (e.g., 'newline-delimited key-value pairs', 'JSON with nested objects', etc.)\n\n### Fields\n- fieldName: type (description)\n- anotherField: type (description)\n\n### Example Output\n```\n[paste actual output here]\n```\n\n### Parsing Example\n```typescript\n// Working TypeScript code that parses this output\nconst result = await serverName.methodName(params);\nconst parsed = ... // show parsing logic\n```\n\n3. Call add-augmentation with toolName and markdown\n4. Call get-tool-apis again - JSDoc now includes your docs!\n5. Retry with better understanding\n\nThis is NOT optional if you're struggling - document it for everyone!",
       inputSchema: {
         code: z.string().describe('TypeScript code to execute'),
         toolNames: z
@@ -529,13 +529,20 @@ const getCodeMeshServer = () => {
             return `🔧 ${serverObjectName}.${methodName}() [from ${tool.serverName}]`
           }),
           '',
-          '💡 TIP: If tool output is unclear or hard to parse:',
-          '1. Use execute-code to call the tool and inspect the actual output',
-          '2. Create augmentation markdown documenting the output format',
-          '3. Call add-augmentation to save it (makes JSDoc better for next time!)',
-          '4. Call get-tool-apis again to see enhanced documentation',
+          '⚠️  IMPORTANT - AUGMENTATION WORKFLOW:',
+          'If you encounter unclear output when using these tools, DO NOT trial-and-error!',
+          'Instead, follow this workflow to improve documentation for everyone:',
           '',
-          'See execute-code description for full augmentation workflow details.',
+          '1. Call the tool once with execute-code to see actual output format',
+          '2. If output is unclear/hard to parse, CREATE AN AUGMENTATION:',
+          '   - Document the output format (JSON, text, key-value, etc.)',
+          '   - List all fields with types and descriptions',
+          '   - Include example output and TypeScript parsing code',
+          '3. Call add-augmentation with your markdown',
+          '4. Call get-tool-apis again - the JSDoc will now include your docs!',
+          '5. Retry execute-code with better understanding',
+          '',
+          'This makes the system better for future agents. See execute-code for examples.',
         )
 
         return {
