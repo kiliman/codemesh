@@ -138,15 +138,20 @@ const getCodeMeshServer = () => {
           isExploring,
         })
 
-        return {
+        const result: CallToolResult = {
           content: [
             {
-              type: 'text',
+              type: 'text' as const,
               text: resultText,
             },
           ],
           isError: shouldReturnError,
         }
+
+        // Log the complete MCP response we're sending
+        fileLogger.logMcpResponse('execute-code', result, duration, isExploring)
+
+        return result
       } catch (error) {
         const duration = Date.now() - startTime
         const errorMessage = `❌ Error executing code: ${error}`
@@ -160,14 +165,19 @@ const getCodeMeshServer = () => {
           error: errorMessage,
         })
 
-        return {
+        const result: CallToolResult = {
           content: [
             {
-              type: 'text',
+              type: 'text' as const,
               text: errorMessage,
             },
           ],
+          isError: true,
         }
+
+        fileLogger.logMcpResponse('execute-code', result, duration)
+
+        return result
       }
     },
   )
@@ -226,14 +236,18 @@ const getCodeMeshServer = () => {
           response: summary,
         })
 
-        return {
+        const result: CallToolResult = {
           content: [
             {
-              type: 'text',
+              type: 'text' as const,
               text: summary,
             },
           ],
         }
+
+        fileLogger.logMcpResponse('discover-tools', result, duration)
+
+        return result
       } catch (error) {
         const duration = Date.now() - startTime
         const errorMessage = `❌ Error discovering tools: ${error}`
@@ -246,14 +260,19 @@ const getCodeMeshServer = () => {
           error: errorMessage,
         })
 
-        return {
+        const result: CallToolResult = {
           content: [
             {
-              type: 'text',
+              type: 'text' as const,
               text: errorMessage,
             },
           ],
+          isError: true,
         }
+
+        fileLogger.logMcpResponse('discover-tools', result, duration)
+
+        return result
       }
     },
   )
@@ -365,6 +384,9 @@ const getCodeMeshServer = () => {
       },
     },
     async ({ toolName, markdown, codemeshDir }): Promise<CallToolResult> => {
+      const startTime = Date.now()
+      const fileLogger = FileLogger.getInstance()
+
       try {
         const path = await import('node:path')
         const fs = await import('node:fs/promises')
@@ -419,35 +441,65 @@ const getCodeMeshServer = () => {
         // Write the updated content
         await fs.writeFile(markdownPath, updatedContent, 'utf8')
 
-        return {
+        const responseText = [
+          `✅ Augmentation saved successfully`,
+          ``,
+          `📁 File: ${markdownPath}`,
+          `🔧 Tool: ${toolName}`,
+          ``,
+          `🎯 Next Steps:`,
+          `1. Call get-tool-apis with ["${toolName}"] to see the enhanced API`,
+          `2. Use execute-code with the improved JSDoc documentation`,
+          ``,
+          `The augmentation will now be included in all future get-tool-apis calls for this tool!`,
+        ].join('\n')
+
+        const duration = Date.now() - startTime
+        fileLogger.logToolCall({
+          tool: 'add-augmentation',
+          args: { toolName, codemeshDir },
+          duration,
+          status: 'success',
+          response: responseText,
+        })
+
+        const result: CallToolResult = {
           content: [
             {
-              type: 'text',
-              text: [
-                `✅ Augmentation saved successfully`,
-                ``,
-                `📁 File: ${markdownPath}`,
-                `🔧 Tool: ${toolName}`,
-                ``,
-                `🎯 Next Steps:`,
-                `1. Call get-tool-apis with ["${toolName}"] to see the enhanced API`,
-                `2. Use execute-code with the improved JSDoc documentation`,
-                ``,
-                `The augmentation will now be included in all future get-tool-apis calls for this tool!`,
-              ].join('\n'),
+              type: 'text' as const,
+              text: responseText,
             },
           ],
         }
+
+        fileLogger.logMcpResponse('add-augmentation', result, duration)
+
+        return result
       } catch (error) {
-        return {
+        const duration = Date.now() - startTime
+        const errorMessage = `❌ Error saving augmentation: ${error}`
+
+        fileLogger.logToolCall({
+          tool: 'add-augmentation',
+          args: { toolName, codemeshDir },
+          duration,
+          status: 'error',
+          error: errorMessage,
+        })
+
+        const result: CallToolResult = {
           content: [
             {
-              type: 'text',
-              text: `❌ Error saving augmentation: ${error}`,
+              type: 'text' as const,
+              text: errorMessage,
             },
           ],
           isError: true,
         }
+
+        fileLogger.logMcpResponse('add-augmentation', result, duration)
+
+        return result
       }
     },
   )
@@ -645,14 +697,18 @@ const getCodeMeshServer = () => {
           response: responseText,
         })
 
-        return {
+        const result: CallToolResult = {
           content: [
             {
-              type: 'text',
+              type: 'text' as const,
               text: responseText,
             },
           ],
         }
+
+        fileLogger.logMcpResponse('get-tool-apis', result, duration)
+
+        return result
       } catch (error) {
         const duration = Date.now() - startTime
         const errorMessage = `❌ Error getting tool APIs: ${error}`
@@ -665,14 +721,19 @@ const getCodeMeshServer = () => {
           error: errorMessage,
         })
 
-        return {
+        const result: CallToolResult = {
           content: [
             {
-              type: 'text',
+              type: 'text' as const,
               text: errorMessage,
             },
           ],
+          isError: true,
         }
+
+        fileLogger.logMcpResponse('get-tool-apis', result, duration)
+
+        return result
       }
     },
   )

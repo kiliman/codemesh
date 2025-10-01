@@ -1,6 +1,7 @@
-import { appendFileSync, mkdirSync, existsSync } from 'node:fs';
+import { appendFileSync, mkdirSync, existsSync, readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import type { LoggingConfig } from './config.js';
+import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
@@ -42,6 +43,18 @@ export class FileLogger {
     return this.config?.enabled === true;
   }
 
+  private getVersion(): string {
+    try {
+      // Read package.json from the codemesh-server directory
+      const packageJsonPath = join(dirname(new URL(import.meta.url).pathname), '..', 'package.json');
+      const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
+      return packageJson.version || 'unknown';
+    } catch (error) {
+      console.error('Failed to read package.json version:', error);
+      return 'unknown';
+    }
+  }
+
   private initSession() {
     if (!this.config?.enabled) return;
 
@@ -49,6 +62,7 @@ export class FileLogger {
     this.sessionStartTime = now;
     const dateStr = now.toISOString().split('T')[0]; // YYYY-MM-DD
     const logDir = this.config.logDir || '.codemesh/logs';
+    const version = this.getVersion();
 
     // Create log directory if it doesn't exist
     if (!existsSync(logDir)) {
@@ -60,12 +74,14 @@ export class FileLogger {
     // Write session header if this is a new file
     if (!existsSync(this.currentLogFile)) {
       this.writeToFile(`# CodeMesh Session Log\n`);
-      this.writeToFile(`**Date:** ${dateStr}\n\n`);
+      this.writeToFile(`**Date:** ${dateStr}\n`);
+      this.writeToFile(`**Version:** ${version}\n\n`);
       this.writeToFile(`---\n\n`);
     } else {
       // Add separator for new session in existing file
       this.writeToFile(`\n---\n\n`);
-      this.writeToFile(`## New Session - ${now.toTimeString().split(' ')[0]}\n\n`);
+      this.writeToFile(`## New Session - ${now.toTimeString().split(' ')[0]}\n`);
+      this.writeToFile(`**Version:** ${version}\n\n`);
     }
   }
 
@@ -144,6 +160,28 @@ export class FileLogger {
         content += `\`\`\`json\n${JSON.stringify(log.response, null, 2)}\n\`\`\`\n\n`;
       }
     }
+
+    content += `---\n\n`;
+
+    this.writeToFile(content);
+  }
+
+  public logMcpResponse(tool: string, result: CallToolResult, duration: number, isExploring?: boolean) {
+    if (!this.config?.enabled) return;
+
+    const timestamp = this.formatTimestamp();
+    const durationStr = this.formatDuration(duration);
+    const exploringTag = isExploring ? ' (EXPLORING)' : '';
+    const statusEmoji = result.isError ? '❌' : '✅';
+    const statusText = result.isError ? 'Error' : 'Success';
+
+    let content = `### 📤 MCP Response - ${timestamp} - ${tool}${exploringTag}\n`;
+    content += `**Duration:** ${durationStr}  \n`;
+    content += `**Status:** ${statusEmoji} ${statusText}  \n`;
+    content += `**isError:** ${result.isError || false}\n\n`;
+
+    content += `#### Complete Response Object\n`;
+    content += `\`\`\`json\n${JSON.stringify(result, null, 2)}\n\`\`\`\n\n`;
 
     content += `---\n\n`;
 

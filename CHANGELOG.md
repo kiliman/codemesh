@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.3] - 2025-10-01
+
+### ✨ Added
+- Version number logging at the start of each log file session
+- Complete MCP response logging via new `logMcpResponse()` method
+- Comprehensive logging of all tool responses (execute-code, discover-tools, get-tool-apis, add-augmentation)
+- Full visibility into what CodeMesh sends back to clients, including `isError` field
+
+### 🐛 Fixed
+- EXPLORING mode now correctly shows "Status: ❌ Error" in logs instead of "Status: ✅ Success"
+- All tool handlers now properly log complete MCP responses for debugging
+
+**Why patch version?** Bug fixes to logging system that improve debugging without changing API behavior.
+
 ## [0.2.1] - 2025-10-01
 
 ### 🐛 Fixed
