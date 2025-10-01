@@ -528,6 +528,14 @@ const getCodeMeshServer = () => {
             const methodName = convertToolName(tool.name)
             return `🔧 ${serverObjectName}.${methodName}() [from ${tool.serverName}]`
           }),
+          '',
+          '💡 TIP: If tool output is unclear or hard to parse:',
+          '1. Use execute-code to call the tool and inspect the actual output',
+          '2. Create augmentation markdown documenting the output format',
+          '3. Call add-augmentation to save it (makes JSDoc better for next time!)',
+          '4. Call get-tool-apis again to see enhanced documentation',
+          '',
+          'See execute-code description for full augmentation workflow details.',
         )
 
         return {
