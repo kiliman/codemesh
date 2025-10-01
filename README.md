@@ -266,6 +266,33 @@ return {
 - ✅ Secure authentication with environment variable substitution
 - ✅ Works with any compliant MCP server
 
+## Best Practices
+
+### Use Subagents for Maximum Context Efficiency
+
+While CodeMesh is context-efficient internally (tiered discovery prevents tool pollution), **we strongly recommend spawning a subagent** to execute CodeMesh operations. This keeps your main agent's context clean while CodeMesh does the heavy lifting.
+
+**Example with Claude Code:**
+
+```
+User: "Analyze the weather data and file structure for my project"
+Main Agent: Let me spawn a subagent to handle this task...
+```
+
+Main agent uses the Task tool to spawn a codemesh subagent with the prompt: "Use CodeMesh to analyze weather alerts for NC and correlate with local file timestamps"
+
+**Benefits:**
+- 🧹 Main context stays clean
+- ⚡ Subagent can iterate on CodeMesh without polluting parent
+- 🎯 Specialized subagent focused solely on orchestration
+- 📦 Results summarized back to main agent when complete
+
+**When NOT to use subagents:**
+- Simple single-tool calls (just use the tool directly)
+- When you need tight integration with main conversation flow
+
+See [`examples/codemesh-agent.md`](./examples/codemesh-agent.md) for a ready-to-use Claude Code agent configuration.
+
 ## Contributing
 
 Want to contribute to CodeMesh development? See [CONTRIBUTING.md](./CONTRIBUTING.md) for developer setup, architecture details, and development workflows.

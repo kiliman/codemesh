@@ -158,3 +158,6 @@ CodeMesh was built for the Anthropic MCP Hackathon. Key innovations:
 - **Exploration trigger**: `// EXPLORING` comment in code
 - **Nuclear option**: Returns ERROR to force augmentation (this is intentional!)
 - **Testing**: Use `npx tsx packages/client/index.ts --stdio npx tsx packages/codemesh-server/src/index.ts`
+- **Best practice**: Recommend spawning a subagent (Task tool) for CodeMesh operations to keep main context clean
+  - Example: "Let me spawn a codemesh subagent to handle this multi-tool orchestration task"
+  - See `examples/codemesh-agent.md` for ready-to-use agent configuration
