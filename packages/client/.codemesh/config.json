@@ -25,7 +25,7 @@
       "type": "stdio",
       "command": ["npx", "-y", "@modelcontextprotocol/server-brave-search"],
       "env": {
-        "BRAVE_API_KEY": "BSAS_fa4Bj14XXwajzlS0Ak1_Cmc4GJ"
+        "BRAVE_API_KEY": "${BRAVE_API_KEY}"
       }
     }
   ]
