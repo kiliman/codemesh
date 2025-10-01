@@ -11,6 +11,7 @@ import { TypeGeneratorService } from './typeGenerator.js'
 import { RuntimeWrapper } from './runtimeWrapper.js'
 import { CodeExecutor } from './codeExecutor.js'
 import { createServerObjectName, convertToolName } from './utils.js'
+import { FileLogger } from './fileLogger.js'
 
 // CodeMesh MCP Server - executes TypeScript code against discovered MCP tools
 const getCodeMeshServer = () => {
@@ -44,9 +45,17 @@ const getCodeMeshServer = () => {
       },
     },
     async ({ code, toolNames, serverId }): Promise<CallToolResult> => {
+      const startTime = Date.now()
+      const fileLogger = FileLogger.getInstance()
+
       try {
         const configLoader = ConfigLoader.getInstance()
         const config = configLoader.loadConfigAuto()
+
+        // Configure file logger if not already done
+        if (!fileLogger.isEnabled() && config.logging) {
+          fileLogger.configure(config.logging)
+        }
 
         const serversToUse = serverId ? config.servers.filter((s) => s.id === serverId) : config.servers
 
@@ -111,6 +120,21 @@ const getCodeMeshServer = () => {
         // Format the execution result (pass code for exploration detection)
         const resultText = codeExecutor.formatResult(executionResult, code)
 
+        // Log the tool call
+        const duration = Date.now() - startTime
+        const isExploring = code.includes('// EXPLORING')
+        fileLogger.logToolCall({
+          tool: 'execute-code',
+          args: { toolNames, serverId },
+          code,
+          duration,
+          status: executionResult.success ? 'success' : 'error',
+          response: executionResult.success ? executionResult.result : undefined,
+          error: executionResult.success ? undefined : executionResult.error,
+          consoleOutput: executionResult.logs?.join('\n') || undefined,
+          isExploring,
+        })
+
         return {
           content: [
             {
@@ -121,11 +145,23 @@ const getCodeMeshServer = () => {
           isError: !executionResult.success,
         }
       } catch (error) {
+        const duration = Date.now() - startTime
+        const errorMessage = `❌ Error executing code: ${error}`
+
+        fileLogger.logToolCall({
+          tool: 'execute-code',
+          args: { code, toolNames, serverId },
+          code,
+          duration,
+          status: 'error',
+          error: errorMessage,
+        })
+
         return {
           content: [
             {
               type: 'text',
-              text: `❌ Error executing code: ${error}`,
+              text: errorMessage,
             },
           ],
         }
@@ -145,9 +181,17 @@ const getCodeMeshServer = () => {
       },
     },
     async ({ serverId }): Promise<CallToolResult> => {
+      const startTime = Date.now()
+      const fileLogger = FileLogger.getInstance()
+
       try {
         const configLoader = ConfigLoader.getInstance()
         const config = configLoader.loadConfigAuto()
+
+        // Configure file logger if not already done
+        if (!fileLogger.isEnabled() && config.logging) {
+          fileLogger.configure(config.logging)
+        }
 
         const serversToDiscover = serverId ? config.servers.filter((s) => s.id === serverId) : config.servers
 
@@ -169,6 +213,16 @@ const getCodeMeshServer = () => {
         const discoveryResults = await discoveryService.discoverAllTools(serversToDiscover)
         const summary = discoveryService.generateDiscoverySummary(discoveryResults)
 
+        // Log the tool call
+        const duration = Date.now() - startTime
+        fileLogger.logToolCall({
+          tool: 'discover-tools',
+          args: serverId ? { serverId } : undefined,
+          duration,
+          status: 'success',
+          response: summary,
+        })
+
         return {
           content: [
             {
@@ -178,11 +232,22 @@ const getCodeMeshServer = () => {
           ],
         }
       } catch (error) {
+        const duration = Date.now() - startTime
+        const errorMessage = `❌ Error discovering tools: ${error}`
+
+        fileLogger.logToolCall({
+          tool: 'discover-tools',
+          args: serverId ? { serverId } : undefined,
+          duration,
+          status: 'error',
+          error: errorMessage,
+        })
+
         return {
           content: [
             {
               type: 'text',
-              text: `❌ Error discovering tools: ${error}`,
+              text: errorMessage,
             },
           ],
         }
@@ -408,9 +473,17 @@ const getCodeMeshServer = () => {
       },
     },
     async ({ toolNames, serverId, codemeshDir }): Promise<CallToolResult> => {
+      const startTime = Date.now()
+      const fileLogger = FileLogger.getInstance()
+
       try {
         const configLoader = ConfigLoader.getInstance()
         const config = configLoader.loadConfigAuto()
+
+        // Configure file logger if not already done
+        if (!fileLogger.isEnabled() && config.logging) {
+          fileLogger.configure(config.logging)
+        }
 
         // Determine .codemesh directory location (defaults to project root)
         const augmentationDir = codemeshDir || `${process.env.PWD || process.cwd()}/.codemesh`
@@ -544,20 +617,43 @@ const getCodeMeshServer = () => {
           '</augmentation_workflow>',
         )
 
+        const responseText = response.join('\n')
+
+        // Log the tool call
+        const duration = Date.now() - startTime
+        fileLogger.logToolCall({
+          tool: 'get-tool-apis',
+          args: { toolNames, serverId, codemeshDir },
+          duration,
+          status: 'success',
+          response: `Found ${requestedTools.length} of ${toolNames.length} requested tools`,
+        })
+
         return {
           content: [
             {
               type: 'text',
-              text: response.join('\n'),
+              text: responseText,
             },
           ],
         }
       } catch (error) {
+        const duration = Date.now() - startTime
+        const errorMessage = `❌ Error getting tool APIs: ${error}`
+
+        fileLogger.logToolCall({
+          tool: 'get-tool-apis',
+          args: { toolNames, serverId, codemeshDir },
+          duration,
+          status: 'error',
+          error: errorMessage,
+        })
+
         return {
           content: [
             {
               type: 'text',
-              text: `❌ Error getting tool APIs: ${error}`,
+              text: errorMessage,
             },
           ],
         }

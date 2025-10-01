@@ -22,11 +22,19 @@ const McpServerConfigSchema = z.object({
   retries: z.number().optional().describe('Number of connection retries'),
 });
 
+const LoggingConfigSchema = z.object({
+  enabled: z.boolean().default(false).describe('Enable local file logging'),
+  level: z.enum(['debug', 'info', 'warn', 'error']).default('info').describe('Log level'),
+  logDir: z.string().default('.codemesh/logs').describe('Directory for log files'),
+}).optional();
+
 const McpConfigSchema = z.object({
+  logging: LoggingConfigSchema,
   servers: z.array(McpServerConfigSchema).describe('List of MCP servers to connect to'),
 });
 
 export type McpServerConfig = z.infer<typeof McpServerConfigSchema>;
+export type LoggingConfig = z.infer<typeof LoggingConfigSchema>;
 export type McpConfig = z.infer<typeof McpConfigSchema>;
 
 export class ConfigLoader {
