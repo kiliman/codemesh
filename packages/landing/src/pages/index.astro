@@ -132,7 +132,7 @@ import { Code } from 'astro:components'
     <!-- Problem/Solution Section -->
     <div class="container mx-auto md:px-6 py-12 md:py-20">
       <div class="grid lg:grid-cols-2 gap-12">
-        <div class="bg-red-500/10 border border-red-500/30 md:rounded-2xl p-8">
+        <div class="bg-red-500/10 border-y border-red-500/30 md:border-x md:rounded-2xl p-8">
           <div class="flex md:flex-col gap-4 md:gap-0 items-center">
             <div class="text-4xl mb-4">❌</div>
             <h3 class="text-2xl font-bold mb-4 text-red-400">The Problem</h3>
@@ -145,7 +145,7 @@ import { Code } from 'astro:components'
           </ul>
         </div>
 
-        <div class="bg-green-500/10 border border-green-500/30 md:rounded-2xl p-8">
+        <div class="bg-green-500/10 border-y border-green-500/30 md:border-x md:rounded-2xl p-8">
           <div class="flex md:flex-col gap-4 md:gap-0 items-center">
             <div class="text-4xl mb-4">✨</div>
             <h3 class="text-2xl font-bold mb-4 text-green-400">The CodeMesh Way</h3>
@@ -170,7 +170,7 @@ import { Code } from 'astro:components'
       <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
         <!-- Feature 1 -->
         <div
-          class="bg-white/5 backdrop-blur-sm border border-white/10 md:rounded-2xl p-8 hover:bg-white/10 transition-all group"
+          class="bg-white/5 backdrop-blur-sm border-y border-white/10 md:border-x md:rounded-2xl p-8 hover:bg-white/10 transition-all group"
         >
           <div class="text-4xl mb-4 group-hover:scale-110 transition-transform">🧠</div>
           <h3 class="text-xl font-bold mb-3">Self-Improving</h3>
@@ -182,7 +182,7 @@ import { Code } from 'astro:components'
 
         <!-- Feature 2 -->
         <div
-          class="bg-white/5 backdrop-blur-sm border border-white/10 md:rounded-2xl p-8 hover:bg-white/10 transition-all group"
+          class="bg-white/5 backdrop-blur-sm border-y border-white/10 md:border-x md:rounded-2xl p-8 hover:bg-white/10 transition-all group"
         >
           <div class="text-4xl mb-4 group-hover:scale-110 transition-transform">🔗</div>
           <h3 class="text-xl font-bold mb-3">Multi-Server Orchestration</h3>
@@ -193,7 +193,7 @@ import { Code } from 'astro:components'
 
         <!-- Feature 3 -->
         <div
-          class="bg-white/5 backdrop-blur-sm border border-white/10 md:rounded-2xl p-8 hover:bg-white/10 transition-all group"
+          class="bg-white/5 backdrop-blur-sm border-y border-white/10 md:border-x md:rounded-2xl p-8 hover:bg-white/10 transition-all group"
         >
           <div class="text-4xl mb-4 group-hover:scale-110 transition-transform">🎯</div>
           <h3 class="text-xl font-bold mb-3">Context Efficient</h3>
@@ -204,7 +204,7 @@ import { Code } from 'astro:components'
 
         <!-- Feature 4 -->
         <div
-          class="bg-white/5 backdrop-blur-sm border border-white/10 md:rounded-2xl p-8 hover:bg-white/10 transition-all group"
+          class="bg-white/5 backdrop-blur-sm border-y border-white/10 md:border-x md:rounded-2xl p-8 hover:bg-white/10 transition-all group"
         >
           <div class="text-4xl mb-4 group-hover:scale-110 transition-transform">🚀</div>
           <h3 class="text-xl font-bold mb-3">Zero Configuration</h3>
@@ -215,7 +215,7 @@ import { Code } from 'astro:components'
 
         <!-- Feature 5 -->
         <div
-          class="bg-white/5 backdrop-blur-sm border border-white/10 md:rounded-2xl p-8 hover:bg-white/10 transition-all group"
+          class="bg-white/5 backdrop-blur-sm border-y border-white/10 md:border-x md:rounded-2xl p-8 hover:bg-white/10 transition-all group"
         >
           <div class="text-4xl mb-4 group-hover:scale-110 transition-transform">⚡</div>
           <h3 class="text-xl font-bold mb-3">Production Ready</h3>
@@ -226,7 +226,7 @@ import { Code } from 'astro:components'
 
         <!-- Feature 6 -->
         <div
-          class="bg-white/5 backdrop-blur-sm border border-white/10 md:rounded-2xl p-8 hover:bg-white/10 transition-all group"
+          class="bg-white/5 backdrop-blur-sm border-y border-white/10 md:border-x md:rounded-2xl p-8 hover:bg-white/10 transition-all group"
         >
           <div class="text-4xl mb-4 group-hover:scale-110 transition-transform">🔒</div>
           <h3 class="text-xl font-bold mb-3">Secure by Default</h3>
@@ -248,7 +248,9 @@ import { Code } from 'astro:components'
       </div>
 
       <div class="max-w-4xl mx-auto mb-12">
-        <div class="bg-gradient-to-r from-cyan-500/20 to-teal-500/20 border border-cyan-500/30 md:rounded-2xl p-8 mb-8">
+        <div
+          class="bg-gradient-to-r from-cyan-500/20 to-teal-500/20 border-y border-cyan-500/30 md:border-x md:rounded-2xl p-8 mb-8"
+        >
           <h3 class="text-2xl font-bold mb-4 text-center">Example: Real-World Usage</h3>
           <p class="text-lg text-slate-300 mb-2">You ask Claude:</p>
           <div class="bg-black/50 rounded-lg p-4 border border-white/10">
@@ -263,7 +265,7 @@ import { Code } from 'astro:components'
 
       <div class="max-w-4xl mx-auto space-y-6">
         <!-- Step 1: Discover -->
-        <div class="bg-white/5 backdrop-blur-sm border border-white/10 md:rounded-2xl p-8">
+        <div class="bg-white/5 backdrop-blur-sm border-y border-white/10 md:border-x md:rounded-2xl p-8">
           <div class="flex items-start gap-4 mb-4">
             <div
               class="w-12 h-12 rounded-full bg-gradient-to-r from-cyan-500 to-cyan-600 flex items-center justify-center font-bold text-xl flex-shrink-0"
@@ -287,7 +289,7 @@ import { Code } from 'astro:components'
         </div>
 
         <!-- Step 2: Load APIs -->
-        <div class="bg-white/5 backdrop-blur-sm border border-white/10 md:rounded-2xl p-8">
+        <div class="bg-white/5 backdrop-blur-sm border-y border-white/10 md:border-x md:rounded-2xl p-8">
           <div class="flex items-start gap-4 mb-4">
             <div
               class="w-12 h-12 rounded-full bg-gradient-to-r from-teal-500 to-teal-600 flex items-center justify-center font-bold text-xl flex-shrink-0"
@@ -313,7 +315,7 @@ weatherServer.getAlerts({ state: string })`}
         </div>
 
         <!-- Step 3: Write & Execute -->
-        <div class="bg-white/5 backdrop-blur-sm border border-white/10 md:rounded-2xl p-8">
+        <div class="bg-white/5 backdrop-blur-sm border-y border-white/10 md:border-x md:rounded-2xl p-8">
           <div class="flex items-start gap-4 mb-4">
             <div
               class="w-12 h-12 rounded-full bg-gradient-to-r from-emerald-500 to-emerald-600 flex items-center justify-center font-bold text-xl flex-shrink-0"
@@ -368,7 +370,7 @@ return top3;`}
     <!-- Auto-Augmentation Breakthrough -->
     <div class="container mx-auto md:px-6 py-12 md:py-20">
       <div
-        class="bg-gradient-to-r from-cyan-500/20 to-teal-500/20 border border-cyan-500/30 md:rounded-3xl py-12 md:px-8"
+        class="bg-gradient-to-r from-cyan-500/20 to-teal-500/20 border-y border-cyan-500/30 md:border-x md:rounded-3xl py-12 md:px-8"
       >
         <div class="text-center mb-12 px-6">
           <div
@@ -388,7 +390,7 @@ return top3;`}
         </div>
 
         <!-- Step 1: Agent Explores -->
-        <div class="bg-black/30 md:rounded-xl p-6 border border-cyan-500/30 mb-6">
+        <div class="bg-black/30 md:rounded-xl p-6 border-y border-cyan-500/30 md:border-x mb-6">
           <h3 class="text-2xl font-bold text-cyan-400 mb-4">1. Agent Explores</h3>
           <p class="text-slate-300 mb-4">
             Agent needs to get file size but isn't sure what format <code class="bg-white/10 px-2 py-1 rounded text-sm"
@@ -425,7 +427,7 @@ console.log(result.content[0].text);
         </div>
 
         <!-- Step 2: Agent Writes Augmentation -->
-        <div class="bg-black/30 md:rounded-xl p-6 border border-teal-500/30 mb-6">
+        <div class="bg-black/30 md:rounded-xl p-6 border-y border-teal-500/30 md:border-x mb-6">
           <h3 class="text-2xl font-bold text-teal-400 mb-4">2. Agent Writes Augmentation</h3>
           <p class="text-slate-300 mb-4">CodeMesh forces agent to document the output format with parsing examples.</p>
           <div class="rounded-lg bg-black/50 border border-white/10 overflow-hidden">
@@ -468,7 +470,7 @@ console.log(info.size); // "38075"`}
         </div>
 
         <!-- Step 3: Future Success -->
-        <div class="bg-black/30 md:rounded-xl p-6 border border-green-500/30">
+        <div class="bg-black/30 md:rounded-xl p-6 border-y border-green-500/30 md:border-x">
           <h3 class="text-2xl font-bold text-green-400 mb-4">3. Agent and ALL Future Agents Succeed</h3>
           <p class="text-slate-300 mb-4">Now every agent knows how to parse file info. No more trial-and-error!</p>
           <div class="rounded-lg bg-black/50 border border-white/10 overflow-hidden">
@@ -499,7 +501,7 @@ console.log(\`File size: \${fileSizeBytes} bytes\`);
           </div>
         </div>
 
-        <div class="mt-8 text-center">
+        <div class="mt-8 text-center px-6 md:px-0">
           <p class="text-lg text-slate-300">
             <span class="font-semibold text-cyan-400">Validated:</span> Agent A explored and documented. Agent B <span
               class="font-semibold text-green-400">one-shot the same task</span
@@ -512,7 +514,7 @@ console.log(\`File size: \${fileSizeBytes} bytes\`);
     <!-- Get Started -->
     <div id="get-started" class="container mx-auto md:px-6 py-12 md:py-20">
       <div
-        class="bg-gradient-to-r from-cyan-500/10 to-teal-500/10 border border-cyan-500/30 md:rounded-3xl px-6 md:px-12 py-12"
+        class="bg-gradient-to-r from-cyan-500/10 to-teal-500/10 border-y border-cyan-500/30 md:border-x md:rounded-3xl px-6 md:px-12 py-12"
       >
         <h2 class="text-4xl lg:text-5xl font-bold mb-6 text-center">Ready to Get Started?</h2>
         <p class="text-xl text-slate-300 mb-12 max-w-2xl mx-auto text-center">
