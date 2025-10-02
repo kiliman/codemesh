@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/kiliman-codemesh-badge.png)](https://mseep.ai/app/kiliman-codemesh)
+
 <div align="center">
   <img src="./assets/codemesh-logo.svg" alt="CodeMesh Logo" width="200" />
   <h1>CodeMesh MCP Server</h1>
