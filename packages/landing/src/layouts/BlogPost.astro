@@ -4,7 +4,7 @@ import '../styles/global.css'
 const { frontmatter } = Astro.props
 const siteUrl = import.meta.env.PROD ? 'https://www.codemeshmcp.com' : Astro.url.origin
 const currentUrl = `${siteUrl}${Astro.url.pathname}`
-const ogImage = frontmatter.ogImage || '/og-building-codemesh.png'
+const ogImage = frontmatter.ogImage || '/og-building-codemesh.jpg'
 ---
 
 <html lang="en">

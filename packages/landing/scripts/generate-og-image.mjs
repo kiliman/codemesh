@@ -14,7 +14,7 @@ async function generateOGImage() {
   })
 
   const htmlPath = join(__dirname, '../public/og-building-codemesh.html')
-  const outputPath = join(__dirname, '../public/og-building-codemesh.png')
+  const outputPath = join(__dirname, '../public/og-building-codemesh.jpg')
 
   console.log('Loading HTML template...')
   await page.goto(`file://${htmlPath}`, { waitUntil: 'networkidle' })
@@ -22,7 +22,8 @@ async function generateOGImage() {
   console.log('Taking screenshot...')
   await page.screenshot({
     path: outputPath,
-    type: 'png',
+    type: 'jpeg',
+    quality: 90,
   })
 
   await browser.close()
