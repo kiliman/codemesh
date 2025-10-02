@@ -2,6 +2,9 @@
 import '../styles/global.css'
 
 const { frontmatter } = Astro.props
+const currentUrl = Astro.url.href
+const ogImage = frontmatter.ogImage || '/og-building-codemesh.png'
+const siteUrl = Astro.url.origin
 ---
 
 <html lang="en">
@@ -12,6 +15,21 @@ const { frontmatter } = Astro.props
     <meta name="generator" content={Astro.generator} />
     <title>{frontmatter.title} - CodeMesh</title>
     <meta name="description" content={frontmatter.description} />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="article" />
+    <meta property="og:url" content={currentUrl} />
+    <meta property="og:title" content={frontmatter.title} />
+    <meta property="og:description" content={frontmatter.description} />
+    <meta property="og:image" content={`${siteUrl}${ogImage}`} />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content={currentUrl} />
+    <meta name="twitter:title" content={frontmatter.title} />
+    <meta name="twitter:description" content={frontmatter.description} />
+    <meta name="twitter:image" content={`${siteUrl}${ogImage}`} />
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
