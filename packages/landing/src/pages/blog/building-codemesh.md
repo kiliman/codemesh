@@ -1,6 +1,6 @@
 ---
 layout: ../../layouts/BlogPost.astro
-title: "Building CodeMesh: How We Created the World's First Self-Improving MCP Server"
+title: "Building CodeMesh: AI Agents Teaching Each Other"
 subtitle: "From Weekend Inspiration to Compound Intelligence in Just a Few Days"
 tagline: "A story of innovation, iteration, and the magic moment when AI agents started teaching each other"
 description: "The journey of building CodeMesh - from a weekend blog post to a self-improving MCP server that lets agents teach each other through auto-augmentation"

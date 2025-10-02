@@ -2,9 +2,9 @@
 import '../styles/global.css'
 
 const { frontmatter } = Astro.props
-const currentUrl = Astro.url.href
+const siteUrl = import.meta.env.PROD ? 'https://www.codemeshmcp.com' : Astro.url.origin
+const currentUrl = `${siteUrl}${Astro.url.pathname}`
 const ogImage = frontmatter.ogImage || '/og-building-codemesh.png'
-const siteUrl = Astro.url.origin
 ---
 
 <html lang="en">
