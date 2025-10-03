@@ -433,10 +433,9 @@ const getCodeMeshServer = () => {
         await fs.writeFile(markdownPath, updatedContent, 'utf8')
 
         const responseText = [
-          `✅ Augmentation saved successfully`,
+          `✅ Augmentation saved for ${toolName}`,
           ``,
           `📁 File: ${markdownPath}`,
-          `🔧 Tool: ${toolName}`,
           ``,
           `🎯 Next Steps:`,
           `1. Call get-tool-apis with ["${toolName}"] to see the enhanced API`,
