@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1280, height=720">
+  <title>CodeMesh - Splash Screen</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 1280px;
+      height: 720px;
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #020617 0%, #083344 50%, #020617 100%);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Animated gradient overlay */
+    body::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        radial-gradient(circle at 30% 40%, rgba(10, 215, 249, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 70% 60%, rgba(7, 185, 198, 0.15) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 60px;
+    }
+
+    .logo {
+      width: 280px;
+      height: auto;
+      filter: drop-shadow(0 20px 60px rgba(10, 215, 249, 0.3));
+    }
+
+    .brand-name {
+      font-size: 140px;
+      font-weight: 900;
+      background: linear-gradient(to right, #0ad7f9, #07b9c6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -0.02em;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <img src="codemesh-logo.svg" alt="CodeMesh" class="logo">
+    <div class="brand-name">CodeMesh</div>
+  </div>
+</body>
+</html>

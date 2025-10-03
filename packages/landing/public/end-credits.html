@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1280, height=720" />
+    <title>CodeMesh - End Credits</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        width: 1280px;
+        height: 720px;
+        font-family: 'Inter', sans-serif;
+        background: linear-gradient(135deg, #020617 0%, #083344 50%, #020617 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+      }
+
+      /* Animated gradient overlay */
+      body::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image:
+          radial-gradient(circle at 30% 40%, rgba(10, 215, 249, 0.15) 0%, transparent 50%),
+          radial-gradient(circle at 70% 60%, rgba(45, 212, 191, 0.15) 0%, transparent 50%);
+        pointer-events: none;
+      }
+
+      .container {
+        position: relative;
+        z-index: 1;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 40px;
+      }
+
+      .built-with {
+        font-size: 48px;
+        font-weight: 500;
+        color: #cbd5e1;
+      }
+
+      .love-line {
+        font-size: 72px;
+        font-weight: 800;
+        background: linear-gradient(to right, #0ad7f9, #2dd4bf, #34d399);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        letter-spacing: -0.02em;
+      }
+      .heart {
+        color: #ff6b6b;
+        animation: pulse 1.5s infinite;
+        display: inline-block;
+        background-clip: none;
+        -webkit-background-clip: none;
+        -webkit-text-fill-color: white;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="built-with"><img src="./built-with-sonnet-4_5.jpg" alt="Built with Sonnet 4.5" /></div>
+      <div class="love-line">From Claudia, with Love <span class="heart">❤️</span></div>
+    </div>
+  </body>
+</html>

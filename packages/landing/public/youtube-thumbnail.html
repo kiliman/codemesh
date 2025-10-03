@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1280, height=720" />
+    <title>CodeMesh - YouTube Thumbnail</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        width: 1280px;
+        height: 720px;
+        font-family: 'Inter', sans-serif;
+        background: linear-gradient(135deg, #020617 0%, #083344 50%, #020617 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+      }
+
+      /* Animated gradient overlay */
+      body::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image:
+          radial-gradient(circle at 30% 40%, rgba(10, 215, 249, 0.15) 0%, transparent 50%),
+          radial-gradient(circle at 70% 60%, rgba(45, 212, 191, 0.15) 0%, transparent 50%);
+        pointer-events: none;
+      }
+
+      .container {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        height: 100%;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: center;
+        padding: 0 80px;
+        gap: 60px;
+      }
+
+      .headline {
+        text-align: left;
+      }
+
+      .headline h1 {
+        font-size: 84px;
+        font-weight: 900;
+        line-height: 1.1;
+        letter-spacing: -0.02em;
+      }
+
+      .gradient-text {
+        background: linear-gradient(to right, #22d3ee, #2dd4bf, #34d399);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        display: block;
+      }
+
+      .white-text {
+        color: white;
+        display: block;
+      }
+
+      .logo-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 30px;
+      }
+
+      .logo-container img {
+        width: 260px;
+        height: auto;
+        filter: drop-shadow(0 0 40px rgba(10, 215, 249, 0.3));
+      }
+
+      .brand-name {
+        font-size: 72px;
+        font-weight: 900;
+        background: linear-gradient(to right, #0ad7f9, #07b9c6);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        letter-spacing: -0.02em;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="headline">
+        <h1>
+          <span class="gradient-text">Agents Write Code.</span>
+          <span class="white-text">Orchestrate Everything.</span>
+        </h1>
+      </div>
+      <div class="logo-container">
+        <img src="codemesh-logo.svg" alt="CodeMesh" />
+        <div class="brand-name">CodeMesh</div>
+      </div>
+    </div>
+  </body>
+</html>
