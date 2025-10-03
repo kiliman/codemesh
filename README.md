@@ -1,22 +1,40 @@
 <div align="center">
   <img src="./assets/codemesh-logo.svg" alt="CodeMesh Logo" width="200" />
-  <h1>CodeMesh MCP Server</h1>
+  <h1>CodeMesh</h1>
   <p><strong>Agents Write Code. Orchestrate Everything.</strong></p>
+
+  <p>
+    <a href="https://www.npmjs.com/package/codemesh"><img src="https://img.shields.io/npm/v/codemesh?color=0ad7f9" alt="npm version" /></a>
+    <a href="https://github.com/kiliman/codemesh/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg?color=2dd4bf" alt="License" /></a>
+    <a href="https://www.codemeshmcp.com"><img src="https://img.shields.io/badge/docs-codemeshmcp.com-34d399" alt="Documentation" /></a>
+  </p>
+
+  <p><em>The world's first self-improving MCP server</em></p>
 </div>
 
-> **Inspired by [Cloudflare's Code Mode](https://blog.cloudflare.com/code-mode/)** - Execute TypeScript code against multiple MCP tools for advanced data processing and analysis.
+## 📺 See It In Action
+
+[![CodeMesh Demo](https://img.youtube.com/vi/kb6JkeiQXAM/maxresdefault.jpg)](https://www.youtube.com/watch?v=kb6JkeiQXAM)
+
+**Watch:** How Agent A explores and documents, then Agent B one-shots the same task - **2.6x faster!**
+
+📖 **Read the story:** [Building CodeMesh - From Idea to Self-Improving Intelligence](https://www.codemeshmcp.com/blog/building-codemesh)
 
 ## What is CodeMesh?
 
-CodeMesh is an intelligent MCP server that **automatically writes and executes TypeScript code** to orchestrate multiple MCP tools. Just give it a natural language prompt, and CodeMesh:
+CodeMesh lets AI agents write **TypeScript code** to orchestrate **ANY MCP server**. One prompt. One code block. Multiple servers working together.
 
-- **Discovers** available tools from your configured MCP servers
-- **Loads** type-safe APIs for the tools it needs
-- **Writes** TypeScript code to accomplish your task
-- **Executes** the code with intelligent data processing
-- **Self-improves** by documenting unclear outputs for future runs
+Instead of exposing dozens of individual tools, CodeMesh provides just **3 tools**:
 
-**The magic**: When CodeMesh encounters unclear tool outputs, it enters EXPLORATION mode, figures out the format, documents it, and saves that knowledge. The next agent benefits immediately - **CodeMesh gets smarter with every run!**
+1. **`discover-tools`** - See what's available (context-efficient overview)
+2. **`get-tool-apis`** - Get TypeScript APIs for specific tools
+3. **`execute-code`** - Execute TypeScript that calls multiple tools
+
+### 🎉 The Innovation: Auto-Augmentation
+
+When agents encounter unclear tool outputs, CodeMesh **forces documentation before proceeding**. This creates compound intelligence - each exploration helps ALL future agents.
+
+**Proven:** Agent A explored and documented. Agent B one-shot the same task. **2.6x faster!** 🚀
 
 ## Installation
 
@@ -246,25 +264,28 @@ return {
 
 ## Why CodeMesh?
 
-| Traditional MCP          | CodeMesh                                     |
-| ------------------------ | -------------------------------------------- |
-| All tools loaded upfront | Discovers, then loads only what's needed     |
-| Context pollution        | Context-efficient tiered discovery           |
-| One tool call at a time  | Multi-tool orchestration in single execution |
-| Manual data processing   | Intelligent filtering, sorting, correlation  |
-| Static documentation     | Self-improving augmentation system           |
-| Trial-and-error parsing  | One-shot success after first exploration     |
+### ❌ The Problem
 
-**Perfect for**: Complex tasks requiring coordination, filtering, correlation, or custom logic across multiple MCP servers! 🚀
+- **Traditional MCP:** Expose 50+ tools, flood agent context
+- Agents can't coordinate tools from different servers
+- Trial-and-error on unclear tool outputs wastes tokens
+- Every agent repeats the same mistakes
 
-## Features
+### ✨ The CodeMesh Way
 
-- ✅ Multi-server coordination (HTTP + stdio + websocket)
-- ✅ Context-efficient tiered discovery (no tool pollution)
-- ✅ Type-safe TypeScript execution in VM2 sandbox
-- ✅ Auto-augmentation system (self-improving documentation)
-- ✅ Secure authentication with environment variable substitution
-- ✅ Works with any compliant MCP server
+- **Just 3 tools:** discover, get APIs, execute code
+- Agents write TypeScript calling multiple servers at once
+- Auto-augmentation forces documentation of outputs
+- **Knowledge compounds:** Agent A helps Agent B
+
+### 🏆 Key Features
+
+- 🧠 **Self-Improving** - Agents document unclear outputs, future agents benefit
+- 🔗 **Multi-Server Orchestration** - Coordinate tools from different MCP servers in single code block (HTTP + stdio + websocket)
+- 🎯 **Context Efficient** - Load only the tools you need, 3 tools vs 50+
+- 🚀 **Zero Configuration** - Point to your MCP servers and go, works with ANY compliant MCP server
+- ⚡ **Production Ready** - Type-safe TypeScript execution in VM2 sandbox, authentication, error handling
+- 🔒 **Secure by Default** - Environment variable substitution, principle of least privilege
 
 ## Best Practices
 
@@ -303,6 +324,10 @@ Want to contribute to CodeMesh development? See [CONTRIBUTING.md](./CONTRIBUTING
 
 ![Built with Sonnet 4.5](./assets/built-with-sonnet-4_5.jpg)
 
-Built with love for the [Anthropic MCP Hackathon](https://x.com/alexalbert__/status/1973071320025014306) 💙
+**From Claudia, with Love ❤️**
+
+_Built with [Claude Code](https://claude.com/claude-code) using Sonnet 4.5 for the [Anthropic MCP Hackathon](https://x.com/alexalbert__/status/1973071320025014306)_
+
+**[🌐 Website](https://www.codemeshmcp.com)** • **[📖 Blog](https://www.codemeshmcp.com/blog/building-codemesh)** • **[📦 NPM](https://www.npmjs.com/package/codemesh)** • **[📺 Demo Video](https://www.youtube.com/watch?v=kb6JkeiQXAM)**
 
 </div>
