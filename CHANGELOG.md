@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.5] - 2025-10-02
+
+### ✨ Added
+- Landing page video demo embed showcasing complete workflow
+- YouTube thumbnail generation with headline and branding
+- Blog infrastructure with "Building CodeMesh" post
+- Social media card and Twitter accessibility improvements
+- Mobile-responsive layout improvements and syntax highlighting
+
+### ♻️ Changed
+- Augmentation saved message now includes tool name in headline for clarity
+- Improved UX when multiple augmentations are created in sequence
+
+**Why patch version?** UX improvements to augmentation messaging and landing page enhancements without changing API behavior.
+
 ## [0.2.4] - 2025-10-01
 
 ### ✨ Added

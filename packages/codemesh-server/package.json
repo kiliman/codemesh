@@ -1,6 +1,6 @@
 {
   "name": "codemesh",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "Execute TypeScript code against multiple MCP servers, weaving them together into powerful workflows",
   "type": "module",
   "main": "dist/index.js",
