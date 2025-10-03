@@ -138,6 +138,7 @@ Enable markdown-based file logging to track tool calls, code execution, and resp
 ```
 
 **Options:**
+
 - **`enabled`** (boolean) - Enable/disable file logging
 - **`level`** ("debug" | "info" | "warn" | "error") - Minimum log level to record
 - **`logDir`** (string) - Directory for log files (defaults to `.codemesh/logs`)
@@ -148,24 +149,25 @@ Logs are saved as markdown files (`.codemesh/logs/YYYY-MM-DD.md`) with syntax hi
 
 ```markdown
 ## 14:52:45 - execute-code
+
 **Duration:** 2.1s
 **Status:** ✅ Success
 
 ### Request
+
 ` ``typescript
 const alerts = await weatherServer.getAlerts({ state: 'CA' })
-return alerts
-` ``
+return alerts ` ``
 
 ### Console Output
+
 ` ``
-Found 3 alerts
-` ``
+Found 3 alerts ` ``
 
 ### Response
+
 ` ``json
-{ "count": 3, "alerts": [...] }
-` ``
+{ "count": 3, "alerts": [...] } ` ``
 ```
 
 Perfect for debugging, demo preparation, and understanding what CodeMesh is doing! 🎯
@@ -241,7 +243,7 @@ You ask Claude:
 
 ```typescript
 // Step 1: Fetch weather alerts
-const alerts = await get_alerts_weather_server({ state: 'NC' })
+const alerts = await weatherServer.getAlerts({ state: 'NC' })
 const alertsData = JSON.parse(alerts.content[0].text)
 
 // Step 2: Define severity hierarchy
@@ -303,12 +305,14 @@ Main Agent: Let me spawn a subagent to handle this task...
 Main agent uses the Task tool to spawn a codemesh subagent with the prompt: "Use CodeMesh to analyze weather alerts for NC and correlate with local file timestamps"
 
 **Benefits:**
+
 - 🧹 Main context stays clean
 - ⚡ Subagent can iterate on CodeMesh without polluting parent
 - 🎯 Specialized subagent focused solely on orchestration
 - 📦 Results summarized back to main agent when complete
 
 **When NOT to use subagents:**
+
 - Simple single-tool calls (just use the tool directly)
 - When you need tight integration with main conversation flow
 
